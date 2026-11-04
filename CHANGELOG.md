@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.2.2 - 2026-11-04
+
+### 中文
+
+- 新增 `AGENTS.md` 常驻规则和 `PITFALLS.md` 避坑记录，明确任务边界、只读纪律和证据要求。
+- 检查流程第 0 步先读本技能与目标项目的避坑记录；遇到新坑必须记录，先查重，重复的坑只补充原条目。
+- 反复出现两次以上的坑提升为 `AGENTS.md` 规则、测试或 CI 检查。
+- 包校验把两份新文件加入必需文件；不改变许可证条款。
+
+### English
+
+- Add `AGENTS.md` standing rules and `PITFALLS.md`, covering task boundaries, read-only discipline, and evidence requirements.
+- Workflow step 0 reads the skill's and target project's pitfall logs first; new pitfalls must be recorded, duplicates update the existing entry instead of creating a synonym.
+- Promote a pitfall seen twice or more into an `AGENTS.md` rule, test, or CI check.
+- Add both files to the package verifier's required-file list; no license terms changed.
+
 ## 1.2.1 - 2026-11-04
 
 ### 中文

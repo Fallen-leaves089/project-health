@@ -2,7 +2,7 @@
 name: project-health
 description: Evidence-driven health checks and delivery acceptance for existing software projects: history-first review, standards/spec two-axis audit, real build/migration/container regressions, ending in an evidence-linked P0-P3 findings report. Use for pre-release audits, periodic reviews, project handovers, and accepting work produced or modified by an agent.
 metadata:
-  version: 1.2.1
+  version: 1.2.2
 license: PolyForm-Noncommercial-1.0.0
 ---
 
@@ -46,14 +46,17 @@ Read-only during review means **do not modify source, configuration, dependencie
 
 ### 0. Read the project's history first
 
-Read, in order:
+Read this skill's `AGENTS.md` and `PITFALLS.md` first, then the target project's copies if present. Read, in order:
 
 - `AGENTS.md` / `CLAUDE.md` (repository conventions and prohibitions)
+- `PITFALLS.md` (recurring traps; apply the documented correct action when one matches)
 - historical check reports, remediation logs, and ADRs under `docs/`
 - the project's agent memory directory, if present
 - previous findings, build baselines, environment traps, and user prohibitions
 
 **This saves a lot of repeated trial and error.** If there is no history, say so; do not pretend there is.
+
+**Record every pitfall, but do not duplicate one.** Search `PITFALLS.md` first; if a matching entry exists, add only the date, scope, or verification evidence to that entry instead of creating a synonym. During a review, write back to this skill's directory; get consent before writing to the target project. Promote a pitfall seen twice or more into an `AGENTS.md` rule, test, or CI check.
 
 ### 1. Align with the user
 

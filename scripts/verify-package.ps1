@@ -41,6 +41,8 @@ $failures = New-Object System.Collections.Generic.List[string]
 $required = @(
     'SKILL.md',
     'SKILL.en.md',
+    'AGENTS.md',
+    'PITFALLS.md',
     'README.md',
     'README.en.md',
     'LICENSE',

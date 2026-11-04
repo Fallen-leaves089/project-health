@@ -42,7 +42,7 @@ Or clone the repository:
 git clone https://github.com/Fallen-leaves089/project-health.git "<HOST_SKILLS_DIR>/project-health"
 ```
 
-The directory root must contain `SKILL.md`; do not copy only that file. `references/` and `scripts/` must travel with it.
+The directory root must contain `SKILL.md`; do not copy only that file. `AGENTS.md`, `PITFALLS.md`, `references/`, and `scripts/` must travel with it.
 
 > **Upgrading from 1.1.x**: remove the old `fullstack-health-check` skill directory before installing `project-health`, so both versions do not coexist.
 
@@ -59,7 +59,7 @@ It applies to services, web and mobile clients, database migrations, containeriz
 
 ## How it works
 
-1. **Read the project's own history first**: historical reports, `AGENTS.md`, `docs/`, change logs, previous findings, and build baselines are closer to the truth than a generic checklist.
+1. **Read the project's own history first**: `AGENTS.md`, `PITFALLS.md`, historical reports, `docs/`, change logs, previous findings, and build baselines are closer to the truth than a generic checklist. Search before recording a new pitfall; update the existing entry when it is a duplicate.
 2. **Define the scope first**: a change review covers a fixed point through `HEAD`, a full review covers the current `HEAD` and worktree, and a repository without Git gets a read-only snapshot with explicit limits.
 3. **Two-axis review**: standards compliance and spec compliance are reviewed separately, so "ugly code" and "missing requirement" do not get mixed into one bucket.
 4. **Real regression**: tests, builds, migrations, compose configuration, and key paths are actually run, not just read; obtain consent before commands that write files, install dependencies, or start services.
@@ -109,6 +109,8 @@ Say any of these:
 project-health/
 ├── SKILL.md / SKILL.en.md                # skill body (Chinese default / English mirror)
 ├── README.md / README.en.md              # this file
+├── AGENTS.md                            # standing rules (task boundaries and pitfall discipline)
+├── PITFALLS.md                          # reusable pitfalls log
 ├── references/                           # platform commands, Windows traps, verification, reports
 ├── scripts/                              # cross-platform verification and redaction scanners
 └── LICENSE / COMMERCIAL / SIGNING / SANITIZATION
@@ -181,6 +183,6 @@ Commercial use requires a written license from the author, but **the author is o
 
 ## Version
 
-- Version: 1.2.1
+- Version: 1.2.2
 - Internal source date: 2026-09-04
 - Public release: 2026-10-30

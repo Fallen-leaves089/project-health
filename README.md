@@ -42,7 +42,7 @@ test -f "<宿主技能目录>/project-health/SKILL.md"
 git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能目录>/project-health"
 ```
 
-装好后目录根部必须有 `SKILL.md`，不要只复制这个文件；`references/` 和 `scripts/` 也要一起带走。
+装好后目录根部必须有 `SKILL.md`，不要只复制这个文件；`AGENTS.md`、`PITFALLS.md`、`references/` 和 `scripts/` 也要一起带走。
 
 > **从 1.1.x 升级**：请先删除旧的 `fullstack-health-check` 技能目录，再安装 `project-health`，避免两个技能同时存在。
 
@@ -59,7 +59,7 @@ git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能�
 
 ## 它如何工作
 
-1. **先查项目自己的历史**：历史报告、`AGENTS.md`、`docs/`、变更记录、上一轮遗留项和构建基线，比通用清单更接近事实。
+1. **先查项目自己的历史**：`AGENTS.md`、`PITFALLS.md`、历史报告、`docs/`、变更记录、上一轮遗留项和构建基线，比通用清单更接近事实。遇到新坑先查重再记录，重复的坑只补充原条目。
 2. **先定检查范围**：变更是看固定基准点到 `HEAD`，全量是看当前 `HEAD` 和整个工作区，没有 Git 则做只读快照并说明限制。
 3. **双轴审查**：规范符合度（Standards）和需求符合度（Spec）分开看，避免把“代码写得丑”和“需求没做完”混在一起。
 4. **真实回归**：测试、构建、迁移、compose 配置和关键路径要实际跑，不只做静态阅读；会写文件、装依赖或启动服务时先取得同意。
@@ -109,6 +109,8 @@ git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能�
 project-health/
 ├── SKILL.md / SKILL.en.md                # 技能本体（中文默认 / 英文镜像）
 ├── README.md / README.en.md              # 本文件
+├── AGENTS.md                            # 常驻规则（任务边界与避坑纪律）
+├── PITFALLS.md                          # 可复用的避坑记录
 ├── references/                           # 平台命令、Windows 坑、验证手册、报告模板
 ├── scripts/                              # 跨平台自检与脱敏扫描
 └── LICENSE / COMMERCIAL / SIGNING / SANITIZATION
@@ -181,6 +183,6 @@ ssh-keygen -lf release-signing-key.pub
 
 ## 版本
 
-- 版本：1.2.1
+- 版本：1.2.2
 - 对应内部整理日期：2026-09-04
 - 公开发布整理：2026-10-30

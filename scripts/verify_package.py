@@ -56,6 +56,8 @@ SKIP_DIRS = {".git", "node_modules", "bin", "obj", "dist", "build", ".venv", "__
 REQUIRED_FILES = [
     "SKILL.md",
     "SKILL.en.md",
+    "AGENTS.md",
+    "PITFALLS.md",
     "README.md",
     "README.en.md",
     "LICENSE",
