@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.3 - 2026-11-04
+
+### 中文
+
+- 新增与 `project-health-lite` 的路由规则：普通用户、第一次体检和快速说人话的请求默认走轻量版；本技能只承接明确要求深度审计、P0-P3、真实回归或交付验收的任务。
+- 专业版报告改为先给“最多 3 条立即行动”和一句话结论，再展开 P0-P3 与技术证据。
+- 报告中英文模板、技能入口和常驻规则同步更新；不改变许可证条款。
+
+### English
+
+- Add routing with `project-health-lite`: everyday users and first-pass, plain-language checks default to the lite edition; this skill handles explicit deep audits, P0-P3 findings, real regression, or delivery acceptance.
+- Lead with up to three immediate actions and a one-line decision before the P0-P3 details and technical evidence.
+- Update the bilingual report templates, skill entry points, and standing rules; no license terms changed.
+
 ## 1.2.2 - 2026-11-04
 
 ### 中文

@@ -11,6 +11,14 @@
 - Coverage: `backend / frontend / mobile / database / containers / deployment`
 - Not covered: `...`
 
+## Three actions to take now
+
+1. `...`
+2. `...`
+3. `...`
+
+> At most 3 actions the user can take today. If evidence is insufficient, name the verification to add first; do not pad the list.
+
 ## Executive summary
 
 - P0: `N`

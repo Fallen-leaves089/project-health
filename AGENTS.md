@@ -10,6 +10,13 @@
 4. 写报告先确认路径；测试、构建、安装依赖、启动服务或联网前说明影响并取得同意；检查前后看 `git status --short`。
 5. 计划或修改任务先做只读影响评估：改什么、为什么、影响范围、验证方式、回滚点；未确认前不动手。
 
+## 与轻量版的路由
+
+- 普通用户、第一次体检、要求“快速看看 / 说人话 / 能不能上线 / 交接前看看”时，默认入口是 `project-health-lite`。
+- 只有用户明确要求深度审计、P0-P3、证据链、真实构建/迁移/容器回归、交付验收或安全复核时，才升级到本技能。
+- 两版同时安装时，不要并行跑两套完整检查。先给轻量版结论；需要升级时说明专业版会多做哪些验证，并征得同意。
+- 如果本技能已经被选中，但用户只想要快速结论，先给“三件事 + 一句话判断”，再说明可以继续展开完整证据。
+
 ## 证据与输出
 
 - 结论必须有文件位置或命令证据；推断标为推断，不写成事实。
@@ -33,6 +40,8 @@
 ## English summary
 
 - Read `PITFALLS.md` at task start.
+- Route everyday, plain-language, first-pass requests to `project-health-lite`; use this skill for explicit deep audits, P0-P3 evidence, real regression, or delivery acceptance.
+- When both editions are available, do not run both full reviews in parallel. Summarize the lite result first and obtain consent before escalating.
 - Review is read-only: do not edit source, configuration, dependencies, or Git history.
 - Confirm report paths; obtain consent before builds, tests, installs, services, or network access.
 - A health-check report is not authorization to modify code.

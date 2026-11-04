@@ -1,8 +1,8 @@
 ---
 name: project-health
-description: Evidence-driven health checks and delivery acceptance for existing software projects: history-first review, standards/spec two-axis audit, real build/migration/container regressions, ending in an evidence-linked P0-P3 findings report. Use for pre-release audits, periodic reviews, project handovers, and accepting work produced or modified by an agent.
+description: Deep, evidence-driven audits and delivery acceptance for existing software projects: history-first review, standards/spec two-axis audit, real build/migration/container regressions, and an evidence-linked P0-P3 report. Use when the user explicitly asks for a deep audit, P0-P3 findings, real regression, project handover, or delivery acceptance; route everyday quick checks to project-health-lite first.
 metadata:
-  version: 1.2.2
+  version: 1.2.3
 license: PolyForm-Noncommercial-1.0.0
 ---
 
@@ -25,6 +25,13 @@ Run evidence-driven health checks and delivery acceptance on an existing softwar
 The workflow also covers verification discipline, platform command differences, security boundaries, redaction, and repair boundaries.
 
 > The core workflow is platform-neutral. See `references/platform-commands.en.md` for side-by-side commands; Windows-only commands and traps live in `references/windows-pitfalls.en.md`, and macOS, Linux, and WSL2 can skip that section.
+
+## Routing with the lite edition
+
+- `project-health-lite` is the default entry for everyday users, first-pass checks, and plain-language answers.
+- This skill handles evidence chains, P0-P3 findings, real build/migration/container regression, handover acceptance, and security re-checks.
+- When both editions are installed, do not run both full reviews in parallel. Summarize the lite result first, explain what the deeper review adds, and obtain consent before escalating.
+- If this skill is already selected but the user only wants a quick answer, start with the three actions and a one-line decision, then offer the full evidence.
 
 ## Iron rules (higher priority than the rest of this file)
 
@@ -115,6 +122,8 @@ If a build fails, decide whether it is an **environment problem** or a **code pr
 ### 5. Graded output
 
 `P0 breaks on deployment day` / `P1 must fix before deployment` / `P2 recommended before deployment` / `P3 hygiene and maintainability`.
+
+Use this order: **three actions to take now (at most 3) -> one-line decision -> P0-P3 details and technical evidence**. For non-technical readers, explain impact and next steps before commands and code locations.
 
 For every item, include **evidence location (`file:line`) + impact + recommendation + verification method + confidence**. Use `verified / observed / inferred`; never present an inference as established fact.
 

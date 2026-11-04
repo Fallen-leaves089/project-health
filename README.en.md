@@ -12,7 +12,13 @@ Use it before release, before handover, for periodic reviews, and to accept work
 
 > Read-only by default during review. Report first; do not change code without an explicit instruction.
 
-Quick navigation: [Quick start](#quick-start) · [What it's for](#what-its-for) · [What it caught](#what-it-caught-a-real-two-pass-health-check) · [Triggers](#triggers) · [Self-check](#self-check) · [License](#license)
+## Which edition
+
+- Start with project-health-lite for a quick, plain-language check.
+- Use this skill for deep audits, P0-P3 findings, evidence chains, real regression, or delivery acceptance.
+- Both editions can coexist; do not run both full reviews in parallel.
+
+Quick navigation: [Quick start](#quick-start) · [Which edition](#which-edition) · [What it's for](#what-its-for) · [What it caught](#what-it-caught-a-real-two-pass-health-check) · [Triggers](#triggers) · [Self-check](#self-check) · [License](#license)
 
 ## Quick start
 
@@ -185,6 +191,6 @@ Commercial use requires a written license from the author, but **the author is o
 
 ## Version
 
-- Version: 1.2.2
+- Version: 1.2.3
 - Internal source date: 2026-09-04
-- Public release: 2026-10-30
+- Public release: 2026-11-04
