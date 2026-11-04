@@ -60,9 +60,10 @@ It applies to services, web and mobile clients, database migrations, containeriz
 ## How it works
 
 1. **Read the project's own history first**: historical reports, `AGENTS.md`, `docs/`, change logs, previous findings, and build baselines are closer to the truth than a generic checklist.
-2. **Two-axis review**: standards compliance and spec compliance are reviewed separately, so "ugly code" and "missing requirement" do not get mixed into one bucket.
-3. **Real regression**: tests, builds, migrations, compose configuration, and key paths are actually run, not just read.
-4. **Evidence output**: every finding includes `file:line`, impact, recommendation, and verification method; the report also lists "verified clean" areas and "not covered this round".
+2. **Define the scope first**: a change review covers a fixed point through `HEAD`, a full review covers the current `HEAD` and worktree, and a repository without Git gets a read-only snapshot with explicit limits.
+3. **Two-axis review**: standards compliance and spec compliance are reviewed separately, so "ugly code" and "missing requirement" do not get mixed into one bucket.
+4. **Real regression**: tests, builds, migrations, compose configuration, and key paths are actually run, not just read; obtain consent before commands that write files, install dependencies, or start services.
+5. **Evidence output**: every finding includes `file:line`, impact, recommendation, verification method, and confidence; the report also lists "verified clean" areas and "not covered this round".
 
 It also checks whether the verification method itself is valid: positive and negative cases, failure exit codes, whether commands actually ran, and whether a guard script can produce a false green.
 
@@ -97,9 +98,9 @@ Say any of these:
 
 ## Requirements
 
-- The project uses Git. The skill validates the baseline with `git rev-parse` and stops if it cannot resolve.
+- Git is preferred. A change review validates the baseline with `git rev-parse`. Without Git, the skill can still take a read-only snapshot, but must state that history, a fixed point, and an exact diff are unavailable.
 - Docker must be available if you want containerized migration/regression checks.
-- The review phase is read-only by default; code changes require an explicit instruction.
+- The review phase is read-only by default; confirm the report path, and require an explicit instruction before code changes.
 - For Windows-specific troubleshooting, read `references/windows-pitfalls.en.md` first.
 
 ## Package layout
@@ -180,6 +181,6 @@ Commercial use requires a written license from the author, but **the author is o
 
 ## Version
 
-- Version: 1.2.0
+- Version: 1.2.1
 - Internal source date: 2026-09-04
 - Public release: 2026-10-30

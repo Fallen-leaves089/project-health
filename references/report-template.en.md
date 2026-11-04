@@ -4,6 +4,7 @@
 
 - Check date: `YYYY-MM-DD`
 - Reviewer: `<NAME>`
+- Review mode: `change review / full review / no-Git snapshot`
 - Baseline: `<COMMIT / BRANCH / TAG>`
 - Worktree state: `clean / uncommitted changes (describe handling)`
 - Rules used: `project conventions / external rule pack / combination`
@@ -21,27 +22,27 @@
 
 ## P0 Will break on deployment day
 
-| ID | Location | Problem | Impact | Recommendation | Verification | Status |
-|---|---|---|---|---|---|---|
-| P0-1 | `file:line` | ... | ... | ... | ... | Open |
+| ID | Location | Problem | Impact | Recommendation | Verification | Confidence | Status |
+|---|---|---|---|---|---|---|---|
+| P0-1 | `file:line` | ... | ... | ... | ... | verified / observed / inferred | Open |
 
 ## P1 Must be fixed before deployment
 
-| ID | Location | Problem | Impact | Recommendation | Verification | Status |
-|---|---|---|---|---|---|---|
-| P1-1 | `file:line` | ... | ... | ... | ... | Open |
+| ID | Location | Problem | Impact | Recommendation | Verification | Confidence | Status |
+|---|---|---|---|---|---|---|---|
+| P1-1 | `file:line` | ... | ... | ... | ... | verified / observed / inferred | Open |
 
 ## P2 Recommended before deployment
 
-| ID | Location | Problem | Impact | Recommendation | Verification | Status |
-|---|---|---|---|---|---|---|
-| P2-1 | `file:line` | ... | ... | ... | ... | Open |
+| ID | Location | Problem | Impact | Recommendation | Verification | Confidence | Status |
+|---|---|---|---|---|---|---|---|
+| P2-1 | `file:line` | ... | ... | ... | ... | verified / observed / inferred | Open |
 
 ## P3 Hygiene and maintainability
 
-| ID | Location | Problem | Recommendation | Status |
-|---|---|---|---|---|
-| P3-1 | `file:line` | ... | ... | Open |
+| ID | Location | Problem | Recommendation | Confidence | Status |
+|---|---|---|---|---|---|
+| P3-1 | `file:line` | ... | ... | verified / observed / inferred | Open |
 
 ## Verified with no issue
 

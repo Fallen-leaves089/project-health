@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.2.1 - 2026-11-04
+
+### 中文
+
+- 区分变更检查、全量检查和无 Git 快照；全量检查不再因为 diff 为空而中止。
+- 明确只读边界：不修改源码、配置、依赖或 Git 历史；写报告前确认路径，构建/测试前说明写入、依赖、服务和网络影响并取得同意。
+- 子代理改为“可用且用户允许时并行”，并强调主代理必须复核关键证据。
+- 报告增加置信度字段，区分 `已验证 / 观察到 / 推断`。
+- 修正 Docker 权限和递归删除的安全表述，去掉为绕过策略移动未知目录的做法。
+- 不改变许可证条款。
+
+### English
+
+- Distinguish change review, full review, and no-Git snapshots; a full review no longer stops merely because the diff is empty.
+- Clarify the read-only boundary: do not modify source, configuration, dependencies, or Git history; confirm report paths and obtain consent before builds or tests that write files, install dependencies, start services, or use the network.
+- Run subagents in parallel only when available and authorized, and require the primary agent to verify key evidence.
+- Add confidence to findings: `verified / observed / inferred`.
+- Correct the Docker privilege and recursive-delete guidance; stop instead of moving unknown directories to bypass policy.
+- No license terms changed.
+
 ## 1.2.0 - 2026-10-30
 
 ### 中文

@@ -126,7 +126,7 @@ Get-Command powershell.exe, pwsh.exe -ErrorAction SilentlyContinue
 
 ## 8. Docker Desktop 与 WSL2
 
-- Docker 守护进程没起时，容器化回归会直接失败。先启动 Docker Desktop，再轮询：
+- Docker 守护进程没起时，容器化回归会直接失败。先征得用户同意，再启动 Docker Desktop，轮询：
   ```powershell
   # 常见路径；按实际安装位置调整
   Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe' -WindowStyle Hidden
@@ -161,7 +161,7 @@ Get-Command powershell.exe, pwsh.exe -ErrorAction SilentlyContinue
 
 ## 10. 文件、进程与清理
 
-- 受控环境可能拦截递归删除。先核对绝对路径，再用 `Move-Item` 挪到临时目录，或精确 `Remove-Item -LiteralPath`；不要对计算出来的路径直接递归删除。
+- 受控环境可能拦截递归删除。先核对绝对路径和删除目标；只清理已知生成物，不要为了绕过策略移动未知目录。无法安全清理时停下报告，不要对计算出来的路径直接递归删除。
 - 清理测试产物前先 `git ls-files <dir>`，确认没有受控占位文件或用户数据。
 - 文件被占用时先查进程：
   ```powershell

@@ -126,7 +126,7 @@ Get-Command powershell.exe, pwsh.exe -ErrorAction SilentlyContinue
 
 ## 8. Docker Desktop and WSL2
 
-- If the Docker daemon is not running, container regressions fail immediately. Start Docker Desktop, then poll:
+- If the Docker daemon is not running, container regressions fail immediately. Ask the user first, then start Docker Desktop and poll:
   ```powershell
   # Common path; adjust to the actual installation.
   Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe' -WindowStyle Hidden
@@ -161,7 +161,7 @@ Get-Command powershell.exe, pwsh.exe -ErrorAction SilentlyContinue
 
 ## 10. Files, processes, and cleanup
 
-- A controlled environment may block recursive deletes. Verify the absolute path first, move the target to a temp directory with `Move-Item`, or use a precise `Remove-Item -LiteralPath`. Never recursively delete a computed path without checking it.
+- A controlled environment may block recursive deletes. Verify the absolute path and target first; clean only known generated artifacts, and never move unknown directories just to bypass policy. If safe cleanup is impossible, stop and report it. Never recursively delete a computed path without checking it.
 - Before cleaning test artifacts, run `git ls-files <dir>` and confirm there are no controlled placeholder files or user data.
 - When a file is locked, inspect the process first:
   ```powershell
