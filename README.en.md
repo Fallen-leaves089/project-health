@@ -4,6 +4,8 @@
 
 **One line: evidence-driven health checks and delivery acceptance for existing software projects, surfacing issues that would block release, handover, or delivery.**
 
+**Built for non-specialists too**: you do not need to know code, build systems, or audit terminology. If you can use an agent, you can ask for a check in plain language; the agent runs it and explains the technical evidence.
+
 Use it before release, before handover, for periodic reviews, and to accept work produced or modified by an agent. The output is not "please pay attention"; it is a graded P0-P3 list with `file:line` evidence, impact, recommendation, and verification.
 
 > **Boundary**: Code generation is handled by the host agent; this skill does not replace that capability. It verifies generated results with evidence checks, real regressions, and delivery acceptance. It does not promise zero defects, but it can significantly reduce detectable defects within the checks it covers. Actual results depend on the project baseline, agent capability, test coverage, and execution depth.
