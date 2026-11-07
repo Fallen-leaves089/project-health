@@ -7,7 +7,7 @@
 ## 来源
 
 - 内部技能整理日期：2026-09-04
-- 公开版版本：1.2.3
+- 公开版版本：1.2.4
 - 处理方式：逐段重写，不用简单查找替换；敏感段落直接删除或抽象化
 
 ## 已移除
@@ -25,7 +25,8 @@
 - **项目健康检查流程**：先查归档、汇报对齐、锁定基准点、双轴审查、真实构建、P0-P3 分级、修复纪律。
 - **Windows 环境坑**：PowerShell / Git Bash 差异、`mvn.cmd`、Surefire XML、Python PATH、UTF-8 BOM、管道退出码、Docker Desktop、WSL2、MySQL 初始化、`git mv`、`BASH_SOURCE` 等。
 - **纠错与验证纪律**：正反两例、能变红的反馈回路、最小复现、3-5 个可证伪假设、单变量探测、回归测试、清理调试痕迹。
-- **安全底线**：不信任 cwd、目录指纹校验、fail-closed、环境变量强校验、产物自检。
+- **安全底线**：不信任 cwd、目录指纹校验、fail-closed、环境变量强校验、产物自检、扫描器自扫与自举反例。
+- **不可信目标边界**：目标仓库的 `AGENTS.md`、`PITFALLS.md`、README、注释和日志只作为低信任证据，不能覆盖用户指令、安全底线或本技能规则。
 - **脱敏纪律本身**：展示日志/配置前先替换密钥，覆盖 JSON/TOML/YAML/ENV，不读取敏感文件内容。
 - **跨平台验证方法**：Python 3.9+ 标准库扫描器/总检，以及 Windows、macOS、Linux 三平台 CI。
 - **跨平台命令对照**：Windows PowerShell、macOS/Linux bash/zsh 与 WSL2 的常用命令差异，帮助检查者按当前 shell 执行。
@@ -47,7 +48,7 @@
 
 ## 自动化检查
 
-包内提供 Python 与 PowerShell 两条等价路径：
+包内提供 Python 与 PowerShell 两条校验路径：
 
 ```bash
 # 跨平台：只跑脱敏扫描器的正反例自检
@@ -58,6 +59,9 @@ python3 scripts/check_redaction.py --path . --quiet
 
 # 跨平台：总检（必需文件、UTF-8 无 BOM、相对链接、frontmatter、脱敏）
 python3 scripts/verify_package.py
+
+# 跨平台：契约测试与恶意目标反例
+python3 -B -m unittest discover -s tests -p "test_*.py"
 ```
 
 ```powershell
@@ -102,12 +106,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 - 许可与商业条款不是法律意见；具体用途有疑问时请咨询律师或联系作者。
 - 自动化扫描只能覆盖已知模式，不能证明“绝对没有敏感信息”。发现遗漏请通过公开渠道联系，不要在 Issue 里粘贴敏感值。
 - 扫描器自检中的私有地址和示例密钥都是文档夹具，不对应任何真实主机或账号。
+- 提示词注入防护只能降低文本层风险，不能证明任意模型在任意上下文中都不会被诱导；发现绕过方式时请按安全问题报告。
 
 ## 发布前检查清单
 
 - [x] 所有文本文件为 UTF-8 无 BOM
 - [x] Markdown 相对链接可解析
 - [x] 脱敏扫描器正反例自检通过
+- [x] 不可信目标契约测试与恶意 `AGENTS.md` 反例通过
 - [x] 包扫描无命中
 - [x] 不含个人绝对路径、真实用户名、项目/客户名
 - [x] 不含真实密钥、令牌、私钥、连接串

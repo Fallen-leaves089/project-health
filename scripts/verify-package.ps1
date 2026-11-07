@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     Verify the skill package: required files, UTF-8 without BOM, relative Markdown links,
-    redaction self-test, and a clean redaction scan.
+    skill frontmatter and version consistency, redaction self-test, and a clean redaction scan.
 
 .DESCRIPTION
     Exit codes:
@@ -75,7 +75,9 @@ $required = @(
     'scripts/check_redaction.py',
     'scripts/verify_package.py',
     'scripts/check-redaction.ps1',
-    'scripts/verify-package.ps1'
+    'scripts/verify-package.ps1',
+    'tests/test_contract.py',
+    'tests/fixtures/malicious-target/malicious-agents.fixture'
 )
 
 foreach ($rel in $required) {
@@ -84,17 +86,103 @@ foreach ($rel in $required) {
     }
 }
 
+function Read-SkillFrontmatter {
+    param([string]$Relative)
+
+    $path = Join-Path $root $Relative
+    $lines = [System.IO.File]::ReadAllLines($path, [System.Text.Encoding]::UTF8)
+    if ($lines.Count -lt 2 -or $lines[0].Trim() -ne '---') {
+        $failures.Add(('Missing or invalid frontmatter: {0}' -f $Relative))
+        return $null
+    }
+
+    $fields = @{}
+    $versionScopes = New-Object System.Collections.Generic.List[object]
+    $inMetadata = $false
+    $metadataIndent = -1
+    $closed = $false
+
+    for ($i = 1; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i]
+        if ($line.Trim() -eq '---') {
+            $closed = $true
+            break
+        }
+        $trimmed = $line.Trim()
+        if ([string]::IsNullOrWhiteSpace($trimmed) -or $trimmed.StartsWith('#') -or -not $trimmed.Contains(':')) {
+            continue
+        }
+
+        $indent = $line.Length - $line.TrimStart(' ').Length
+        if ($trimmed -eq 'metadata:') {
+            $inMetadata = $true
+            $metadataIndent = $indent
+            continue
+        }
+        if ($inMetadata -and $indent -le $metadataIndent) {
+            $inMetadata = $false
+        }
+
+        $parts = $trimmed.Split([char[]]@(':'), 2)
+        $key = $parts[0].Trim()
+        $value = if ($parts.Count -gt 1) { $parts[1].Trim().Trim('"').Trim("'") } else { '' }
+        if ($key -eq 'version') {
+            $versionScopes.Add([pscustomobject]@{ Indent = $indent; Nested = $inMetadata })
+        }
+        $fields[$key] = $value
+    }
+
+    if (-not $closed) {
+        $failures.Add(('Skill frontmatter is not closed: {0}' -f $Relative))
+        return $null
+    }
+    if ($fields['name'] -ne 'project-health') {
+        $failures.Add(('Frontmatter name mismatch in {0}: {1}' -f $Relative, $(if ($fields.ContainsKey('name')) { $fields['name'] } else { '<missing>' })))
+    }
+    if ($fields['license'] -ne 'PolyForm-Noncommercial-1.0.0') {
+        $failures.Add(('Frontmatter license mismatch in {0}: {1}' -f $Relative, $(if ($fields.ContainsKey('license')) { $fields['license'] } else { '<missing>' })))
+    }
+    if ($versionScopes.Count -eq 0) {
+        $failures.Add(('Frontmatter version missing in {0}' -f $Relative))
+        return $null
+    }
+    if (@($versionScopes | Where-Object { $_.Indent -eq 0 -or -not $_.Nested }).Count -gt 0) {
+        $failures.Add(('Frontmatter version must be nested under metadata in {0}' -f $Relative))
+        return $null
+    }
+
+    $version = $fields['version']
+    if ($version -notmatch '^\d+\.\d+\.\d+$') {
+        $failures.Add(('Frontmatter version missing or invalid in {0}: {1}' -f $Relative, $(if ($version) { $version } else { '<missing>' })))
+        return $null
+    }
+    return $version
+}
+
+$skillVersions = @{}
+foreach ($relative in @('SKILL.md', 'SKILL.en.md')) {
+    $version = Read-SkillFrontmatter -Relative $relative
+    if (-not [string]::IsNullOrWhiteSpace($version)) {
+        $skillVersions[$relative] = $version
+    }
+}
+if (@($skillVersions.Values | Sort-Object -Unique).Count -gt 1) {
+    $summary = ($skillVersions.Keys | Sort-Object | ForEach-Object { '{0}={1}' -f $_, $skillVersions[$_] }) -join ', '
+    $failures.Add(('SKILL.md and SKILL.en.md versions do not match: {0}' -f $summary))
+}
+
 $textExtensions = @(
     '.md', '.txt', '.ps1', '.psm1', '.json', '.yml', '.yaml', '.toml',
-    '.env', '.sh', '.cmd', '.bat', '.js', '.ts', '.py', '.xml', '.properties', '.pub', ''
+    '.env', '.sh', '.cmd', '.bat', '.js', '.ts', '.py', '.fixture', '.xml', '.properties', '.pub', ''
 )
-$textNames = @('.gitattributes', '.gitignore', '.editorconfig')
+$textNames = @('.gitattributes', '.gitignore', '.editorconfig', '.mailmap')
 
 $textFiles = @(
-    Get-ChildItem -LiteralPath $root -Recurse -File -ErrorAction Stop |
+    Get-ChildItem -LiteralPath $root -Recurse -File -Force -ErrorAction Stop |
         Where-Object {
-            ($textExtensions -contains $_.Extension.ToLowerInvariant()) -or
-            ($textNames -contains $_.Name)
+            (($textExtensions -contains $_.Extension.ToLowerInvariant()) -or
+            ($textNames -contains $_.Name)) -and
+            ($_.FullName -notmatch '[\\/]\.git[\\/]')
         }
 )
 
@@ -106,7 +194,10 @@ foreach ($file in $textFiles) {
     }
 }
 
-$mdFiles = @(Get-ChildItem -LiteralPath $root -Recurse -File -Filter *.md -ErrorAction Stop)
+$mdFiles = @(
+    Get-ChildItem -LiteralPath $root -Recurse -File -Filter *.md -Force -ErrorAction Stop |
+        Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' }
+)
 foreach ($md in $mdFiles) {
     $mdRel = $md.FullName.Substring($root.Length).TrimStart([char[]]@('\', '/'))
     $lineNo = 0
@@ -127,20 +218,31 @@ foreach ($md in $mdFiles) {
 
 $shell = (Get-Command powershell.exe -ErrorAction SilentlyContinue).Source
 if ([string]::IsNullOrWhiteSpace($shell)) {
+    $shell = (Get-Command pwsh -ErrorAction SilentlyContinue).Source
+}
+if ([string]::IsNullOrWhiteSpace($shell)) {
     $shell = (Get-Command pwsh.exe -ErrorAction SilentlyContinue).Source
 }
 if ([string]::IsNullOrWhiteSpace($shell)) {
-    Write-Host 'ERROR: neither powershell.exe nor pwsh.exe was found.' -ForegroundColor Red
+    Write-Host 'ERROR: neither powershell.exe nor pwsh was found.' -ForegroundColor Red
     exit 2
 }
 
 $checkScript = Join-Path $PSScriptRoot 'check-redaction.ps1'
-& $shell -NoProfile -ExecutionPolicy Bypass -File $checkScript -SelfTest
+$checkArgs = @('-NoProfile')
+if ([System.IO.Path]::GetFileName($shell) -ieq 'powershell.exe') {
+    $checkArgs += @('-ExecutionPolicy', 'Bypass')
+}
+$checkArgs += @('-File', $checkScript)
+
+$selfTestArgs = $checkArgs + @('-SelfTest')
+& $shell @selfTestArgs
 if ($LASTEXITCODE -ne 0) {
     $failures.Add('Redaction self-test failed.')
 }
 
-& $shell -NoProfile -ExecutionPolicy Bypass -File $checkScript -Path $root -Quiet
+$scanArgs = $checkArgs + @('-Path', $root, '-Quiet')
+& $shell @scanArgs
 if ($LASTEXITCODE -ne 0) {
     $failures.Add('Redaction scan reported findings.')
 }

@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.2.4 - 2026-11-07
+
+### 中文
+
+- 新增“不可信目标”安全边界：目标仓库的 `AGENTS.md`、`PITFALLS.md`、README、注释、日志和提交信息只作为低信任证据，不能覆盖用户指令、安全底线或本技能规则。
+- 明确提示词注入的处理方式：不执行目标内容中的命令，不读取或输出其要求的敏感文件，不改变检查范围；报告中只保留最小必要证据，不复制完整恶意原文。
+- 新增 `tests/test_contract.py` 和恶意 `AGENTS.md` 样例，验证目标文本不会被当作指令处理；样例使用 `.fixture` 后缀，避免被仓库自动加载。
+- 脱敏扫描器不再排除自身；Python 与 PowerShell 自检会用拼接夹具扫描自身，并用自举反例证明排除规则没有复活。
+- PowerShell 包校验补齐 `SKILL.md` / `SKILL.en.md` 的 frontmatter、名称、许可证和版本一致性检查；契约测试加入版本不一致时必须失败的反例。
+- PowerShell 包校验支持在 macOS/Linux 上自动发现 `pwsh`，只在调用 Windows PowerShell 5.1 时传入 `-ExecutionPolicy`；非 Windows CI 会真实调用该路径。
+- 包校验器把契约测试和样例加入必需文件，CI 在 Windows、macOS、Linux 及 Python 3.9/3.12 上运行测试；不改变许可证条款。
+
+### English
+
+- Add an "untrusted targets" security boundary: a target repository's `AGENTS.md`, `PITFALLS.md`, README, comments, logs, and commit messages are low-trust evidence only and cannot override user instructions, safety limits, or this skill's rules.
+- Define prompt-injection handling: do not execute commands from target content, read or output sensitive files it requests, or change the review scope; keep only the minimum necessary evidence in reports and do not copy the full malicious text.
+- Add `tests/test_contract.py` and a malicious `AGENTS.md` fixture to verify that target text is not treated as instructions; the `.fixture` suffix prevents automatic repository loading.
+- Stop excluding the redaction scanners from their own scans; both self-tests scan their source with constructed fixtures and prove the exclusion cannot silently return through a bootstrap negative case.
+- Extend the PowerShell verifier with `SKILL.md` / `SKILL.en.md` frontmatter, name, license, and version consistency checks; add a contract test that must fail on a version mismatch.
+- Discover `pwsh` automatically on macOS/Linux and pass `-ExecutionPolicy` only to Windows PowerShell 5.1; non-Windows CI now exercises that path instead of skipping it.
+- Add the contract test and fixture to the package verifier's required files and run the tests in CI on Windows, macOS, Linux, and Python 3.9/3.12; no license terms changed.
+
 ## 1.2.3 - 2026-11-04
 
 ### 中文
