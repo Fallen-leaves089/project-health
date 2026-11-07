@@ -33,7 +33,16 @@ Issue 里请写清：
 - 新增脚本时，必须自带正反例验证；只跑正例的守护不接受。
 - 提交前运行：
 
+  ```bash
+  python -B -m unittest discover -s tests -p "test_*.py"
+  python scripts/verify_package.py
+  ```
+
+- Windows 也可以运行：
+
   ```powershell
+  python -B -m unittest discover -s tests -p "test_*.py"
+  python scripts\verify_package.py
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
   ```
 

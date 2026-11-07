@@ -34,12 +34,15 @@ Please include:
 - Run the verifier before submitting:
 
   ```bash
+  python -B -m unittest discover -s tests -p "test_*.py"
   python3 scripts/verify_package.py
   ```
 
   On Windows you can also run:
 
   ```powershell
+  python -B -m unittest discover -s tests -p "test_*.py"
+  python scripts\verify_package.py
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
   ```
 

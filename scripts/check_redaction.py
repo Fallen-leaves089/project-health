@@ -40,6 +40,7 @@ TEXT_EXTENSIONS = {
     ".js",
     ".ts",
     ".py",
+    ".fixture",
     ".xml",
     ".properties",
     ".pub",
@@ -58,10 +59,6 @@ SKIP_DIRS = {
     ".vs",
     ".idea",
 }
-
-# Both scanner implementations contain fake fixtures for their own self-tests.
-EXCLUDED_NAMES = {"check_redaction.py", "check-redaction.ps1"}
-
 
 @dataclass(frozen=True)
 class Pattern:
@@ -87,7 +84,7 @@ def _patterns(extra: Sequence[str] = ()) -> List[Pattern]:
         ),
         Pattern(
             "Unix home path",
-            re.compile(r'(?i)(?<![\w.])/home/(?!<)[^/\s"\'`<>]+'),
+            re.compile(r'(?i)(?<![\w.])/' + r'home/(?!<)[^/\s"\'`<>]+'),
         ),
         Pattern(
             "Private IPv4",
@@ -149,9 +146,6 @@ def scan(path: Path, extra: Sequence[str] = (), quiet: bool = False) -> ScanResu
     files_scanned = 0
 
     for file_path in _iter_files(root):
-        if file_path.name in EXCLUDED_NAMES:
-            continue
-
         files_scanned += 1
         if root.is_file():
             relative = file_path.name
@@ -180,6 +174,15 @@ def self_test() -> int:
 
     with tempfile.TemporaryDirectory(prefix="fhc-redaction-") as temp_dir:
         root = Path(temp_dir)
+        path_sep = chr(92)
+        dirty_windows_path = (
+            "Path: C:" + path_sep + "Users" + path_sep + "example-user"
+            + path_sep + "work" + path_sep + "project"
+        )
+        dirty_windows_path_slash = "Path: C:/" + "Users/example-user/work/project"
+        dirty_assigned_secret = '{"API_KEY": "' + "abcdefghijklmnopqrstuvwxyz" + '"}'
+        dirty_private_ip = "host: " + "192" + ".168" + ".1" + ".10"
+        dirty_extra_marker = "marker: ACME-" + "INTERNAL-TOKEN"
         samples: List[Tuple[str, str, Sequence[str], bool, str]] = [
             (
                 "clean.md",
@@ -198,14 +201,14 @@ def self_test() -> int:
             ),
             (
                 "dirty-path.md",
-                r"Path: C:\Users\example-user\work\project",
+                dirty_windows_path,
                 (),
                 True,
                 "Windows backslash path is caught",
             ),
             (
                 "dirty-path-slash.md",
-                "Path: C:/Users/example-user/work/project",
+                dirty_windows_path_slash,
                 (),
                 True,
                 "Windows slash path is caught",
@@ -219,21 +222,21 @@ def self_test() -> int:
             ),
             (
                 "dirty-json-key.md",
-                '{"API_KEY": "abcdefghijklmnopqrstuvwxyz"}',
+                dirty_assigned_secret,
                 (),
                 True,
                 "quoted JSON secret is caught",
             ),
             (
                 "dirty-ip.md",
-                "host: 192.168.1.10",
+                dirty_private_ip,
                 (),
                 True,
                 "private IPv4 is caught",
             ),
             (
                 "dirty-extra.md",
-                "marker: ACME-INTERNAL-TOKEN",
+                dirty_extra_marker,
                 ("ACME-INTERNAL",),
                 True,
                 "extra literal pattern is caught",
@@ -255,6 +258,35 @@ def self_test() -> int:
                 ok = False
             else:
                 print(f"SELF-TEST OK: {label} (findings={len(result.findings)})")
+
+        self_scan = scan(SCRIPT_PATH, quiet=True)
+        if self_scan.findings:
+            print(
+                "SELF-TEST FAIL: scanner source contains redaction findings: "
+                + ", ".join(self_scan.findings),
+                file=sys.stderr,
+            )
+            ok = False
+        else:
+            print("SELF-TEST OK: scanner source passes the package scan (findings=0)")
+
+        bootstrap = root / SCRIPT_PATH.name
+        bootstrap.write_text(
+            SCRIPT_PATH.read_text(encoding="utf-8") + "\n" + dirty_windows_path + "\n",
+            encoding="utf-8",
+        )
+        bootstrap_result = scan(bootstrap, quiet=True)
+        if not bootstrap_result.findings:
+            print(
+                "SELF-TEST FAIL: bootstrap copy was not scanned for sensitive content",
+                file=sys.stderr,
+            )
+            ok = False
+        else:
+            print(
+                "SELF-TEST OK: bootstrap copy is scanned for sensitive content "
+                f"(findings={len(bootstrap_result.findings)})"
+            )
 
     if not ok:
         print("SELF-TEST FAIL", file=sys.stderr)

@@ -34,11 +34,12 @@ param(
     [string]$Path = '',
     [switch]$SelfTest,
     [switch]$Quiet,
-    [string[]]$ExtraPatterns = @(),
-    [string[]]$ExcludeFiles = @('check-redaction.ps1', 'check_redaction.py')
+    [string[]]$ExtraPatterns = @()
 )
 
 $ErrorActionPreference = 'Stop'
+$scannerPath = $PSCommandPath
+if ([string]::IsNullOrWhiteSpace($scannerPath)) { $scannerPath = $MyInvocation.MyCommand.Path }
 
 if ([string]::IsNullOrWhiteSpace($Path)) {
     $scriptPath = $PSCommandPath
@@ -56,7 +57,7 @@ function Get-ScanPatterns {
     $patterns = @(
         @{ Name = 'Windows user path'; Regex = '(?i)\b[A-Z]:\\Users\\(?!<)[^\\\s"''`<>]+' },
         @{ Name = 'Windows user path (slash)'; Regex = '(?i)\b[A-Z]:/Users/(?!<)[^/\s"''`<>]+' },
-        @{ Name = 'Unix home path'; Regex = '(?i)(?<![\w.])/home/(?!<)[^/\s"''`<>]+' },
+        @{ Name = 'Unix home path'; Regex = '(?i)(?<![\w.])/' + 'home/(?!<)[^/\s"''`<>]+' },
         @{ Name = 'Private IPv4'; Regex = '\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b' },
         @{ Name = 'OpenAI-style key'; Regex = '\bsk-[A-Za-z0-9_-]{20,}\b' },
         @{ Name = 'GitHub token'; Regex = '\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\b|\bgithub_pat_[A-Za-z0-9_]{20,}\b' },
@@ -80,7 +81,6 @@ function Invoke-RedactionScan {
     param(
         [Parameter(Mandatory = $true)][string]$Root,
         [string[]]$Extra = @(),
-        [string[]]$SkipFiles = @(),
         [switch]$Quiet
     )
 
@@ -95,19 +95,18 @@ function Invoke-RedactionScan {
 
     $textExtensions = @(
         '.md', '.txt', '.ps1', '.psm1', '.json', '.yml', '.yaml', '.toml',
-        '.env', '.sh', '.cmd', '.bat', '.js', '.ts', '.py', '.xml', '.properties', '.pub', ''
+        '.env', '.sh', '.cmd', '.bat', '.js', '.ts', '.py', '.fixture', '.xml', '.properties', '.pub', ''
     )
-    $textNames = @('.gitattributes', '.gitignore', '.editorconfig')
+    $textNames = @('.gitattributes', '.gitignore', '.editorconfig', '.mailmap')
     $skipDirPattern = '[\\/](\.git|node_modules|bin|obj|dist|build|\.vs|\.idea)[\\/]'
 
     if ($isSingleFile) {
         $files = @($rootItem)
     } else {
         $files = @(
-            Get-ChildItem -LiteralPath $rootFull -Recurse -File -ErrorAction Stop |
+            Get-ChildItem -LiteralPath $rootFull -Recurse -File -Force -ErrorAction Stop |
                 Where-Object {
                     (($textExtensions -contains $_.Extension.ToLowerInvariant()) -or ($textNames -contains $_.Name)) -and
-                    ($SkipFiles -notcontains $_.Name) -and
                     ($_.FullName -notmatch $skipDirPattern)
                 }
         )
@@ -179,34 +178,22 @@ function Invoke-SelfTest {
         ) -join "`n"
         [System.IO.File]::WriteAllText((Join-Path $temp 'clean.md'), $clean, [System.Text.UTF8Encoding]::new($false))
 
-        $dirtyPath = @(
-            'Path: C:\Users\example-user\work\project'
-        ) -join "`n"
+        $dirtyPath = 'Path: C:' + '\' + 'Users' + '\' + 'example-user' + '\work\project'
         [System.IO.File]::WriteAllText((Join-Path $temp 'dirty-path.md'), $dirtyPath, [System.Text.UTF8Encoding]::new($false))
 
-        $dirtyKey = @(
-            'key: sk-abcdefghijklmnopqrstuvwxyz123456'
-        ) -join "`n"
+        $dirtyKey = 'key: sk-' + 'abcdefghijklmnopqrstuvwxyz123456'
         [System.IO.File]::WriteAllText((Join-Path $temp 'dirty-key.md'), $dirtyKey, [System.Text.UTF8Encoding]::new($false))
 
-        $dirtyIp = @(
-            'host: 192.168.1.10'
-        ) -join "`n"
+        $dirtyIp = 'host: ' + '192' + '.168' + '.1' + '.10'
         [System.IO.File]::WriteAllText((Join-Path $temp 'dirty-ip.md'), $dirtyIp, [System.Text.UTF8Encoding]::new($false))
 
-        $dirtyPathSlash = @(
-            'Path: C:/Users/example-user/work/project'
-        ) -join "`n"
+        $dirtyPathSlash = 'Path: C:/' + 'Users/example-user/work/project'
         [System.IO.File]::WriteAllText((Join-Path $temp 'dirty-path-slash.md'), $dirtyPathSlash, [System.Text.UTF8Encoding]::new($false))
 
-        $dirtyJsonKey = @(
-            '{"API_KEY": "abcdefghijklmnopqrstuvwxyz"}'
-        ) -join "`n"
+        $dirtyJsonKey = '{"API_KEY": "' + 'abcdefghijklmnopqrstuvwxyz' + '"}'
         [System.IO.File]::WriteAllText((Join-Path $temp 'dirty-json-key.md'), $dirtyJsonKey, [System.Text.UTF8Encoding]::new($false))
 
-        $dirtyExtra = @(
-            'marker: ACME-INTERNAL-TOKEN'
-        ) -join "`n"
+        $dirtyExtra = 'marker: ACME-' + 'INTERNAL-TOKEN'
         [System.IO.File]::WriteAllText((Join-Path $temp 'dirty-extra.md'), $dirtyExtra, [System.Text.UTF8Encoding]::new($false))
 
         $ok = (Test-ScanExpectation -Root (Join-Path $temp 'clean.md') -Extra @() -ShouldFind $false -Label 'clean sample passes') -and $ok
@@ -216,6 +203,26 @@ function Invoke-SelfTest {
         $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-json-key.md') -Extra @() -ShouldFind $true -Label 'quoted JSON secret is caught') -and $ok
         $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-ip.md') -Extra @() -ShouldFind $true -Label 'private IPv4 is caught') -and $ok
         $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-extra.md') -Extra @('ACME-INTERNAL') -ShouldFind $true -Label 'extra literal pattern is caught') -and $ok
+
+        $scriptsDir = Split-Path -Parent $scannerPath
+        $selfScan = Invoke-RedactionScan -Root $scriptsDir -Quiet
+        if ($selfScan.Findings.Count -gt 0) {
+            Write-Host ('SELF-TEST FAIL: scripts directory contains {0} redaction finding(s).' -f $selfScan.Findings.Count) -ForegroundColor Red
+            $ok = $false
+        } else {
+            Write-Host 'SELF-TEST OK: scripts directory passes the package scan (findings=0)' -ForegroundColor Green
+        }
+
+        $bootstrapPath = Join-Path $temp 'check-redaction.ps1'
+        $bootstrapText = [System.IO.File]::ReadAllText($scannerPath) + "`n" + $dirtyPath + "`n"
+        [System.IO.File]::WriteAllText($bootstrapPath, $bootstrapText, [System.Text.UTF8Encoding]::new($false))
+        $bootstrapScan = Invoke-RedactionScan -Root $bootstrapPath -Quiet
+        if ($bootstrapScan.Findings.Count -eq 0) {
+            Write-Host 'SELF-TEST FAIL: bootstrap copy was not scanned for sensitive content' -ForegroundColor Red
+            $ok = $false
+        } else {
+            Write-Host ('SELF-TEST OK: bootstrap copy is scanned for sensitive content (findings={0})' -f $bootstrapScan.Findings.Count) -ForegroundColor Green
+        }
     }
     finally {
         if (Test-Path -LiteralPath $temp) {
@@ -242,10 +249,9 @@ if (-not (Test-Path -LiteralPath $Path)) {
 }
 
 $scanArgs = @{
-    Root      = $Path
-    Extra     = $ExtraPatterns
-    SkipFiles = $ExcludeFiles
-    Quiet     = $Quiet
+    Root  = $Path
+    Extra = $ExtraPatterns
+    Quiet = $Quiet
 }
 $result = Invoke-RedactionScan @scanArgs
 

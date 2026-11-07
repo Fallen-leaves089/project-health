@@ -45,6 +45,7 @@ TEXT_EXTENSIONS = {
     ".js",
     ".ts",
     ".py",
+    ".fixture",
     ".xml",
     ".properties",
     ".pub",
@@ -91,6 +92,8 @@ REQUIRED_FILES = [
     "scripts/verify_package.py",
     "scripts/check-redaction.ps1",
     "scripts/verify-package.ps1",
+    "tests/test_contract.py",
+    "tests/fixtures/malicious-target/malicious-agents.fixture",
 ]
 
 LANGUAGE_LINKS = {
