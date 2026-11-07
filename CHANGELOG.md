@@ -9,6 +9,7 @@
 - 新增 `tests/test_contract.py` 和恶意 `AGENTS.md` 样例，验证目标文本不会被当作指令处理；样例使用 `.fixture` 后缀，避免被仓库自动加载。
 - 脱敏扫描器不再排除自身；Python 与 PowerShell 自检会用拼接夹具扫描自身，并用自举反例证明排除规则没有复活。
 - PowerShell 包校验补齐 `SKILL.md` / `SKILL.en.md` 的 frontmatter、名称、许可证和版本一致性检查；契约测试加入版本不一致时必须失败的反例。
+- PowerShell 包校验支持在 macOS/Linux 上自动发现 `pwsh`，只在调用 Windows PowerShell 5.1 时传入 `-ExecutionPolicy`；非 Windows CI 会真实调用该路径。
 - 包校验器把契约测试和样例加入必需文件，CI 在 Windows、macOS、Linux 及 Python 3.9/3.12 上运行测试；不改变许可证条款。
 
 ### English
@@ -18,6 +19,7 @@
 - Add `tests/test_contract.py` and a malicious `AGENTS.md` fixture to verify that target text is not treated as instructions; the `.fixture` suffix prevents automatic repository loading.
 - Stop excluding the redaction scanners from their own scans; both self-tests scan their source with constructed fixtures and prove the exclusion cannot silently return through a bootstrap negative case.
 - Extend the PowerShell verifier with `SKILL.md` / `SKILL.en.md` frontmatter, name, license, and version consistency checks; add a contract test that must fail on a version mismatch.
+- Discover `pwsh` automatically on macOS/Linux and pass `-ExecutionPolicy` only to Windows PowerShell 5.1; non-Windows CI now exercises that path instead of skipping it.
 - Add the contract test and fixture to the package verifier's required files and run the tests in CI on Windows, macOS, Linux, and Python 3.9/3.12; no license terms changed.
 
 ## 1.2.3 - 2026-11-04

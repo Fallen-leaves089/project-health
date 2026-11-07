@@ -218,20 +218,31 @@ foreach ($md in $mdFiles) {
 
 $shell = (Get-Command powershell.exe -ErrorAction SilentlyContinue).Source
 if ([string]::IsNullOrWhiteSpace($shell)) {
+    $shell = (Get-Command pwsh -ErrorAction SilentlyContinue).Source
+}
+if ([string]::IsNullOrWhiteSpace($shell)) {
     $shell = (Get-Command pwsh.exe -ErrorAction SilentlyContinue).Source
 }
 if ([string]::IsNullOrWhiteSpace($shell)) {
-    Write-Host 'ERROR: neither powershell.exe nor pwsh.exe was found.' -ForegroundColor Red
+    Write-Host 'ERROR: neither powershell.exe nor pwsh was found.' -ForegroundColor Red
     exit 2
 }
 
 $checkScript = Join-Path $PSScriptRoot 'check-redaction.ps1'
-& $shell -NoProfile -ExecutionPolicy Bypass -File $checkScript -SelfTest
+$checkArgs = @('-NoProfile')
+if ([System.IO.Path]::GetFileName($shell) -ieq 'powershell.exe') {
+    $checkArgs += @('-ExecutionPolicy', 'Bypass')
+}
+$checkArgs += @('-File', $checkScript)
+
+$selfTestArgs = $checkArgs + @('-SelfTest')
+& $shell @selfTestArgs
 if ($LASTEXITCODE -ne 0) {
     $failures.Add('Redaction self-test failed.')
 }
 
-& $shell -NoProfile -ExecutionPolicy Bypass -File $checkScript -Path $root -Quiet
+$scanArgs = $checkArgs + @('-Path', $root, '-Quiet')
+& $shell @scanArgs
 if ($LASTEXITCODE -ne 0) {
     $failures.Add('Redaction scan reported findings.')
 }
