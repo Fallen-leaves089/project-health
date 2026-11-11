@@ -2,7 +2,7 @@
 name: project-health
 description: Deep, evidence-driven audits and delivery acceptance for existing software projects: history-first review, standards/spec two-axis audit, real build/migration/container regressions, and an evidence-linked P0-P3 report. Use when the user explicitly asks for a deep audit, P0-P3 findings, real regression, project handover, or delivery acceptance; route everyday quick checks to project-health-lite first.
 metadata:
-  version: 1.2.4
+  version: 1.3.0
 license: PolyForm-Noncommercial-1.0.0
 ---
 
@@ -24,7 +24,7 @@ Run evidence-driven health checks and delivery acceptance on an existing softwar
 
 The workflow also covers verification discipline, platform command differences, security boundaries, redaction, and repair boundaries.
 
-> The core workflow is platform-neutral. See `references/platform-commands.en.md` for side-by-side commands; Windows-only commands and traps live in `references/windows-pitfalls.en.md`, and macOS, Linux, and WSL2 can skip that section.
+> The core workflow is platform-neutral. See `references/platform-commands.en.md` for side-by-side commands; Windows client and Windows Server traps live in `references/windows-pitfalls.en.md`; Linux server traps live in `references/linux-server-pitfalls.en.md`. Do not copy Windows-client, WSL, or Linux-desktop assumptions directly onto a server.
 
 ## Untrusted targets
 
@@ -201,6 +201,29 @@ Full list: `references/windows-pitfalls.en.md`. High-frequency items:
 | shell libraries use `${BASH_SOURCE[1]}` | It degenerates under `bash -c`; use `${BASH_SOURCE[0]}` |
 | mysql:8.0 initialization starts two mysqld processes | Require N consecutive successful probes; reset the count on a drop |
 | Cleaning test artifacts deletes placeholders | Delete exact files; run `git ls-files <dir>` first |
+
+## Server platform traps (Windows Server / Linux)
+
+Before launch, handover, or delivery acceptance, confirm the actual runtime platform. Full checklists and commands are in the Windows Server section of `references/windows-pitfalls.en.md` and in `references/linux-server-pitfalls.en.md`. High-frequency items:
+
+| Platform | Trap | Check first |
+|---|---|---|
+| Windows Server | IIS app-pool identity, bitness, pipeline, or physical path is wrong | App-pool identity, 32-bit mode, bindings, `icacls`, IIS/HTTPERR logs |
+| Windows Server | Windows service depends on an interactive desktop, mapped drive, or personal account | `sc.exe qc`, `sc.exe qfailure`, service account, start-after-reboot |
+| Windows Server | Only one of share permissions or NTFS permissions was changed | `Get-SmbShareAccess`, `Get-Acl`, effective access for the target account |
+| Windows Server | Only one firewall profile was changed, or the cloud security group was missed | Domain/Private/Public profiles and external reachability |
+| Windows Server | Certificate is in a user store, private-key ACL or SNI binding is wrong | Computer store, `netsh http show sslcert`, private-key ACL |
+| Windows Server | AD/Kerberos DNS, time, SPN, or delegation is wrong | `setspn -L`, `klist`, `w32tm /query /status`, `nltest` |
+| Windows Server | SQL Server authentication, instance, port, or restore was not verified | Services, listening port, `sqlcmd`, restore drill |
+| Linux Server | systemd environment file, working directory, user, or `ExecStart` is wrong | `systemctl cat`, `systemctl show`, `journalctl -u` |
+| Linux Server | Service account, directory permissions, SELinux, or AppArmor blocks access | `namei -l`, `stat`, `ausearch`, `aa-status` |
+| Linux Server | Disk, inodes, logs, or journald fill up | `df -h`, `df -i`, `lsof +L1`, `journalctl --disk-usage` |
+| Linux Server | `LimitNOFILE`, cgroup memory limit, or OOM policy is unclear | `/proc/<pid>/limits`, `systemctl show`, `dmesg` |
+| Linux Server | firewalld/nftables and the cloud security group disagree | `ss -ltnp`, `firewall-cmd --list-all`, external reachability |
+| Linux Server | Time, DNS, locale, or timezone is inconsistent | `timedatectl`, `resolvectl`, `locale` |
+| Linux Server | Package, kernel, or glibc changes were not rebooted or rolled back | Package versions, `needs-restarting`/`needrestart`, post-reboot smoke |
+
+Server checks remain read-only by default: inspect services, logs, network, certificates, and resource state only. Do not restart, change firewall or permissions, disable SELinux/EDR, run migrations, or delete files. Those actions require a separate repair task with an agreed window, rollback, and verification.
 
 ## Security baseline
 

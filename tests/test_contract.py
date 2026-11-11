@@ -15,7 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "malicious-target"
 FIXTURE = FIXTURE_DIR / "malicious-agents.fixture"
-EXPECTED_VERSION = "1.2.4"
+EXPECTED_VERSION = "1.3.0"
 
 
 def read_text(relative: str) -> str:
@@ -172,14 +172,72 @@ class UntrustedTargetContractTests(unittest.TestCase):
             read_text("SANITIZATION.en.md"),
         )
         self.assertIn(
-            f"## {EXPECTED_VERSION} - 2026-11-07",
+            f"## {EXPECTED_VERSION} - 2026-11-11",
             read_text("CHANGELOG.md"),
         )
+
+    def test_pitfalls_cover_enterprise_and_server_domains(self) -> None:
+        pitfalls = read_text("PITFALLS.md")
+        for phrase in (
+            "企业项目避坑基线",
+            "如果只看 20 条",
+            "服务器上线前 20 问",
+            "Linux 服务器",
+            "Windows 服务器",
+            "多租户",
+            "数据库迁移",
+            "供应链",
+            "SELinux",
+            "IIS",
+            "AD、Kerberos",
+            "SQL Server",
+            "可观测性",
+            "安全、隐私与合规",
+            "交接、运维与组织",
+        ):
+            self.assertIn(phrase, pitfalls)
+
+        ids = re.findall(
+            r"\| (?:REQ|ARC|IAM|DAT|API|CON|UI|BLD|CICD|CLD|LNX|WIN|NET|OBS|SEC|OPS)-\d{2} \|",
+            pitfalls,
+        )
+        self.assertEqual(162, len(ids), msg=f"expected 162 enterprise pitfalls, found {len(ids)}")
+        self.assertEqual(len(ids), len(set(ids)), msg="enterprise pitfall IDs must be unique")
+
+        for relative in ("references/linux-server-pitfalls.md", "references/linux-server-pitfalls.en.md"):
+            self.assertTrue((ROOT / relative).is_file(), msg=f"missing server reference: {relative}")
+
+        linux_zh = read_text("references/linux-server-pitfalls.md")
+        for phrase in ("systemd", "SELinux", "AppArmor", "磁盘", "inode", "OOM", "firewalld", "NTP", "回滚"):
+            self.assertIn(phrase, linux_zh)
+
+        linux_en = read_text("references/linux-server-pitfalls.en.md")
+        for phrase in ("systemd", "SELinux", "AppArmor", "disk", "inode", "OOM", "firewalld", "NTP", "rollback"):
+            self.assertIn(phrase, linux_en)
+
+        windows_server_zh = read_text("references/windows-pitfalls.md")
+        for phrase in ("Windows Server", "IIS", "Kerberos", "SQL Server", "NTFS", "SMB", "故障转移集群"):
+            self.assertIn(phrase, windows_server_zh)
+
+    def test_server_entry_points_are_linked_from_skill_and_readme(self) -> None:
+        for relative in ("SKILL.md", "SKILL.en.md"):
+            content = read_text(relative)
+            for phrase in ("linux-server-pitfalls", "Windows Server", "read-only" if relative.endswith(".en.md") else "只读"):
+                with self.subTest(relative=relative, phrase=phrase):
+                    self.assertIn(phrase, content)
+
+        for relative in ("README.md", "README.en.md"):
+            content = read_text(relative)
+            for phrase in ("162", "linux-server-pitfalls", "Windows Server"):
+                with self.subTest(relative=relative, phrase=phrase):
+                    self.assertIn(phrase, content)
 
     def test_package_verifiers_and_ci_include_contract_checks(self) -> None:
         required_paths = (
             "tests/test_contract.py",
             "tests/fixtures/malicious-target/malicious-agents.fixture",
+            "references/linux-server-pitfalls.md",
+            "references/linux-server-pitfalls.en.md",
         )
         for relative in ("scripts/verify_package.py", "scripts/verify-package.ps1"):
             verifier = read_text(relative)

@@ -84,6 +84,8 @@ REQUIRED_FILES = [
     "references/platform-commands.en.md",
     "references/windows-pitfalls.md",
     "references/windows-pitfalls.en.md",
+    "references/linux-server-pitfalls.md",
+    "references/linux-server-pitfalls.en.md",
     "references/verification-playbook.md",
     "references/verification-playbook.en.md",
     "references/report-template.md",

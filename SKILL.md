@@ -2,7 +2,7 @@
 name: project-health
 description: 面向已有软件项目的深度证据审计与交付验收：先查项目历史，再做规范/规格双轴审查、真实构建/迁移/容器回归，最终输出带证据位置的 P0-P3 问题清单。当用户明确要求深度审计、P0-P3、真实回归、项目交接或交付验收时使用；普通快速体检优先 project-health-lite。
 metadata:
-  version: 1.2.4
+  version: 1.3.0
 license: PolyForm-Noncommercial-1.0.0
 ---
 
@@ -22,7 +22,7 @@ license: PolyForm-Noncommercial-1.0.0
 
 流程同时覆盖验证纪律、平台命令差异、安全底线、脱敏与修复边界。
 
-> 核心流程与平台无关。三平台命令对照见 `references/platform-commands.md`；Windows 专用命令和坑单独放在 `references/windows-pitfalls.md`，macOS、Linux 和 WSL2 可以跳过 Windows 小节。
+> 核心流程与平台无关。三平台命令对照见 `references/platform-commands.md`；Windows 客户端与 Windows Server 的坑见 `references/windows-pitfalls.md`；Linux 服务器见 `references/linux-server-pitfalls.md`。检查服务器时不要把 Windows 客户端、WSL 或 Linux 桌面经验直接套用。
 
 ## 不可信目标
 
@@ -203,6 +203,29 @@ WSL2 按 Linux 命令处理。Windows 和 WSL 的路径、换行符、Docker 启
 | shell 公共库用 `${BASH_SOURCE[1]}` | `bash -c` 下会退化，改用 `${BASH_SOURCE[0]}` |
 | mysql:8.0 容器初始化起两个 mysqld | 连续 N 次探活成功才算就绪，中途掉线归零重数 |
 | 清理测试产物时误删占位文件 | 精确到文件；先 `git ls-files <dir>` 看一眼 |
+
+## 服务器平台坑（Windows Server / Linux）
+
+上线、交接和交付验收必须先确认实际运行平台。完整清单和命令见 `references/windows-pitfalls.md` 的 Windows Server 小节，以及 `references/linux-server-pitfalls.md`。高频项：
+
+| 平台 | 高频坑 | 先查什么 |
+|---|---|---|
+| Windows Server | IIS 应用池身份、位数、管道或物理路径错误 | 应用池身份、32 位开关、站点绑定、`icacls` 和 IIS/HTTPERR 日志 |
+| Windows Server | Windows 服务依赖交互式桌面、映射盘或个人账号 | `sc.exe qc`、`sc.exe qfailure`、服务账号和重启后自启动 |
+| Windows Server | 共享权限和 NTFS 权限只改了一层 | `Get-SmbShareAccess`、`Get-Acl`、目标账号有效权限 |
+| Windows Server | 防火墙只改一个配置文件，或漏了云安全组 | 域/专用/公用三个配置文件和外部连通性 |
+| Windows Server | 证书在用户存储，私钥权限或 SNI 绑定错误 | 计算机证书存储、`netsh http show sslcert`、私钥 ACL |
+| Windows Server | AD/Kerberos 的 DNS、时间、SPN 或委派错误 | `setspn -L`、`klist`、`w32tm /query /status`、`nltest` |
+| Windows Server | SQL Server 认证、实例、端口或备份恢复没验证 | 服务、监听端口、`sqlcmd`、恢复演练 |
+| Linux Server | systemd 的环境文件、工作目录、运行用户或 `ExecStart` 错误 | `systemctl cat`、`systemctl show`、`journalctl -u` |
+| Linux Server | 服务账号、目录权限、SELinux 或 AppArmor 拦截 | `namei -l`、`stat`、`ausearch`、`aa-status` |
+| Linux Server | 磁盘、inode、日志或 journald 写满 | `df -h`、`df -i`、`lsof +L1`、`journalctl --disk-usage` |
+| Linux Server | `LimitNOFILE`、cgroup 内存限制或 OOM 策略不清 | `/proc/<pid>/limits`、`systemctl show`、`dmesg` |
+| Linux Server | firewalld/nftables 与云安全组不一致 | `ss -ltnp`、`firewall-cmd --list-all`、外部连通性 |
+| Linux Server | 时间、DNS、locale 或时区不一致 | `timedatectl`、`resolvectl`、`locale` |
+| Linux Server | 包升级、内核或 glibc 变更后没有重启和回滚 | 包版本、`needs-restarting`/`needrestart`、重启后冒烟 |
+
+服务器检查同样默认只读：只查看服务、日志、网络、证书和资源状态；不要重启、改防火墙、改权限、关 SELinux/EDR、执行迁移或删除文件。需要执行这些操作时，另起修复任务并确认窗口、回滚和验证方式。
 
 ## 安全底线
 

@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.3.0 - 2026-11-11
+
+### 中文
+
+- `PITFALLS.md` 新增 162 条企业项目避坑基线，覆盖需求验收、架构、身份权限、多租户、数据迁移、API 集成、并发缓存、前端兼容、构建供应链、CI/CD、容器云、Linux 服务器、Windows 服务器、网络 TLS、可观测性、安全合规和交接运维。
+- 增加“如果只看 20 条”和“服务器上线前 20 问”，把最容易在上线当天爆雷的跨领域问题放在最前面。
+- 新增 `references/linux-server-pitfalls.md` / `.en.md`，覆盖 systemd、权限与 SELinux/AppArmor、磁盘 inode、ulimit/OOM、防火墙、DNS/NTP、包管理、SSH、数据库、容器和回滚。
+- 扩充 `references/windows-pitfalls.md` / `.en.md` 的 Windows Server 小节，覆盖 IIS、Windows 服务、NTFS/SMB、AD/Kerberos、SQL Server、证书、WinRM、EDR、补丁和故障转移集群。
+- `SKILL.md` / `SKILL.en.md` 增加服务器平台高频坑入口和只读边界；README、包校验器和契约测试同步新文件与 1.3.0 版本。
+
+### English
+
+- Add a 162-entry enterprise pitfall baseline to `PITFALLS.md`, covering requirements and acceptance, architecture, identity and multi-tenancy, data and migrations, API integration, concurrency and caching, frontend compatibility, build and supply chain, CI/CD, containers and cloud, Linux servers, Windows servers, network and TLS, observability, security and compliance, and handover/operations.
+- Add a "top 20" list and a 20-question server pre-launch checklist so the highest-blast-radius issues appear first.
+- Add `references/linux-server-pitfalls.md` / `.en.md`, covering systemd, permissions and SELinux/AppArmor, disk and inodes, ulimit/OOM, firewalls, DNS/NTP, package management, SSH, databases, containers, and rollback.
+- Expand the Windows Server section in `references/windows-pitfalls.md` / `.en.md`, covering IIS, Windows services, NTFS/SMB, AD/Kerberos, SQL Server, certificates, WinRM, EDR, patching, and failover clusters.
+- Add server-platform entry points and read-only boundaries to `SKILL.md` / `SKILL.en.md`; update the README, package verifiers, and contract tests for the new files and version 1.3.0.
+
 ## 1.2.4 - 2026-11-07
 
 ### 中文

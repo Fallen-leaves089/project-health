@@ -192,7 +192,166 @@ Get-Command powershell.exe, pwsh.exe -ErrorAction SilentlyContinue
 - 多 flavor 项目逐 flavor 编译；只跑一个 flavor 不能代表全部。
 - JDK 版本与 Gradle/AGP 匹配；升级前先看项目文档，不要凭最新版本硬上。
 
-## 13. 快速检查清单
+## 13. Windows Server 部署与运维
+
+这一节面向 Windows Server，不适用于普通 Windows 10/11 客户端排障。先确认角色、版本和是否有桌面体验，再执行命令。
+
+### 13.1 先确认系统与角色
+
+```powershell
+Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsBuildNumber, OsArchitecture
+Get-WindowsFeature | Where-Object Installed | Select-Object Name, DisplayName
+Get-Service | Where-Object Status -eq 'Running' | Select-Object Name, DisplayName
+```
+
+- Server Core 没有完整图形界面，不要假设能打开 IIS 管理器或浏览器；优先用 PowerShell、`sconfig` 和远程管理。
+- 记录是物理机、虚拟机还是云主机；云主机的安全组和 Windows 防火墙是两层，必须同时检查。
+- 确认是否加入域、是否有组策略、是否有杀毒/EDR、是否启用 WinRM 和 RDP。
+
+### 13.2 IIS 与应用池
+
+```powershell
+Get-Website | Select-Object Name, State, PhysicalPath, Bindings
+Get-WebAppPoolState -Name <pool>
+Get-WebConfigurationProperty -PSPath 'IIS:\' -Filter 'system.applicationHost/applicationPools' -Name '.'
+netsh http show sslcert
+netsh http show urlacl
+```
+
+- 应用池身份默认可能是 `ApplicationPoolIdentity`；实际文件权限要授予 `IIS AppPool\<pool>`，不要图省事给 `Everyone` 或 `Users` 全开。
+- 检查应用池的 .NET CLR 版本、托管管道模式、32 位开关、启动模式、空闲超时和回收设置。
+- 站点物理路径、默认文档、身份验证、处理程序映射和 URL Rewrite 规则要逐项核对。
+- 托管 ASP.NET Core 时检查 ANCM 模块、运行时版本和 `web.config` 的 `processPath`。
+- 应用池回收会导致进程内会话、缓存和后台任务丢失；多实例时检查机器密钥、会话状态和分布式缓存。
+- 访问失败先看 IIS 日志、HTTPERR 日志和失败请求跟踪：
+  ```powershell
+  Get-ChildItem "$env:SystemDrive\inetpub\logs\LogFiles" -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 10 FullName
+  ```
+
+### 13.3 Windows 服务
+
+```powershell
+sc.exe qc <service>
+sc.exe qfailure <service>
+Get-CimInstance Win32_Service -Filter "Name='<service>'" | Select-Object Name, State, StartMode, StartName, PathName
+Get-WinEvent -LogName System -MaxEvents 100 | Where-Object ProviderName -match '<service>'
+```
+
+- 服务账号优先用 `NT AUTHORITY\NetworkService`、`LocalSystem` 之外的最小权限域账号或 gMSA；不要用个人域账号。
+- 服务不能依赖交互式桌面、映射网络盘、用户环境变量或“登录时启动”的脚本。
+- `PathName` 里含空格的路径要加引号；工作目录要用绝对路径，不要依赖 `C:\Windows\System32`。
+- 配置失败恢复（第一次、第二次、后续失败）和依赖服务；`sc.exe qfailure` 验证。
+- 服务启动失败先看 System 事件日志、应用日志和服务账号权限；不要直接把账号改成域管理员。
+- 杀进程测试自动恢复；确认服务在无人登录、重启后都能启动。
+
+### 13.4 NTFS、共享与 SMB
+
+```powershell
+icacls <path>
+Get-Acl <path> | Format-List
+Get-SmbShare
+Get-SmbShareAccess -Name <share>
+Get-SmbSession
+```
+
+- 共享权限和 NTFS 权限是两层，最终取交集；只改一层经常出现“看起来给了权限但仍拒绝”。
+- 用目标服务账号做有效权限测试，不要用管理员账号代替。
+- 检查继承、所有者、拒绝项和父目录执行位；不要用 `Everyone: FullControl` 解决。
+- 停用 SMBv1，按需启用 SMB 签名和加密；限制管理共享访问。
+
+### 13.5 防火墙、代理与网络
+
+```powershell
+Get-NetFirewallProfile | Select-Object Name, Enabled, DefaultInboundAction, DefaultOutboundAction
+Get-NetFirewallRule -Enabled True | Where-Object Direction -eq 'Inbound' | Select-Object DisplayName, Profile, Action
+Get-NetTCPConnection -State Listen | Select-Object LocalAddress, LocalPort, OwningProcess
+Test-NetConnection -ComputerName <host> -Port <port>
+netsh winhttp show proxy
+```
+
+- Windows 防火墙有域、专用、公用三个配置文件；只改一个可能不生效。
+- 云主机还要检查安全组/NACL；本机 `127.0.0.1` 能通不代表外部能通。
+- 不要把 RDP 3389、SQL Server、Redis、Docker API 直接暴露公网；用 VPN、堡垒机、白名单和 NLA。
+- 系统代理、WinHTTP 代理和应用自己的代理配置可能不同；构建能联网不等于服务能联网。
+
+### 13.6 证书、TLS 与私钥
+
+```powershell
+Get-ChildItem Cert:\LocalMachine\My | Select-Object Subject, NotAfter, Thumbprint
+netsh http show sslcert
+```
+
+- 证书要装在计算机存储，不是用户存储；IIS 应用池或服务账号要有私钥读权限。
+- 检查证书链、到期时间、SAN/域名匹配、SNI 绑定和中间证书。
+- 不要只看浏览器能打开；从服务器外部和另一台机器验证 TLS 握手、协议版本和加密套件。
+- 更换证书后同步更新绑定、应用配置和监控到期时间。
+
+### 13.7 AD、Kerberos 与组策略
+
+```powershell
+setspn -L <account>
+klist
+w32tm /query /status
+nltest /dsgetdc:<domain>
+gpresult /h gp-report.html
+```
+
+- 认证随机失败先查 DNS、时间偏差、SPN、委派和组策略，不要先怀疑密码。
+- 应用不要用域管理员运行；需要访问网络资源时优先 gMSA 或受约束委派。
+- 双跳场景要理解 CredSSP、Kerberos 委派和凭据传递边界；不要为了“能访问”就放开无约束委派。
+- 组策略变更要记录影响范围、刷新时间和回滚方式。
+
+### 13.8 SQL Server 与数据
+
+```powershell
+Get-Service MSSQL* | Select-Object Name, Status, StartType
+Get-NetTCPConnection -State Listen | Where-Object LocalPort -in 1433,1434
+sqlcmd -S <server> -E -Q "SELECT 1"
+```
+
+- 明确 Windows 身份验证还是 SQL 身份验证、默认实例还是命名实例、静态端口还是动态端口。
+- 应用连接账号最小权限；不要让应用用 `sa`。
+- 备份要覆盖系统库、用户库、作业、凭据和证书；在另一台实例恢复验证。
+- 检查最大内存、tempdb、磁盘、备份链和恢复模式；不要把 Simple 和 Full 混着用还不做日志备份。
+
+### 13.9 PowerShell、WinRM 与自动化
+
+```powershell
+Get-ExecutionPolicy -List
+winrm enumerate winrm/config/listener
+Test-WSMan <host>
+```
+
+- 不要为了跑脚本把整机执行策略改成 `Unrestricted`；优先签名脚本和按进程最小化。
+- 密码、令牌和连接串不要放在命令行、脚本明文或命令历史里；用 SecretManagement 或托管身份。
+- WinRM 要限制来源、使用 HTTPS 或受信网络，并开启必要日志。
+- 远程批量操作先小范围验证，确认幂等、失败退出码和回滚；不要把“所有节点同时执行”当默认。
+
+### 13.10 杀毒、EDR、补丁与重启
+
+```powershell
+Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 10
+Get-CimInstance Win32_QuickFixEngineering | Sort-Object InstalledOn -Descending | Select-Object -First 10
+```
+
+- 构建、解压、上传或数据库文件随机被锁时，先看杀毒/EDR 扫描日志和排除策略；不要直接关闭防护。
+- 补丁安装不等于生效；检查是否需要重启，安排维护窗口并验证关键服务。
+- 记录补丁级别、重启时间、回滚方式和受影响节点；集群不要同时重启所有节点。
+
+### 13.11 任务计划程序与故障转移集群
+
+```powershell
+Get-ScheduledTask | Where-Object TaskName -match '<name>' | Select-Object TaskName, State, Principal
+schtasks /query /tn "<task>" /v /fo LIST
+Get-ClusterNode 2>$null
+Get-ClusterQuorum 2>$null
+```
+
+- 任务计划要明确运行账号、是否“无论用户是否登录都运行”、网络连接、时区、并发策略和上次结果。
+- 不要用交互式用户或映射盘；任务可能需要“最高权限”但并不等于应该用域管理员。
+- 故障转移集群检查 quorum、见证、节点网络、共享存储和验证报告；补丁和重启要逐节点进行。
+
+## 14. 快速检查清单
 
 - [ ] 当前 shell 是 PowerShell 还是 Git Bash？
 - [ ] `python` / `mvn` / `docker` / `git` 解析到哪个路径？
@@ -204,3 +363,11 @@ Get-Command powershell.exe, pwsh.exe -ErrorAction SilentlyContinue
 - [ ] 迁移是否跑了两次？
 - [ ] 清理路径是否核对过绝对路径和 `git ls-files`？
 - [ ] 日志/报告是否已脱敏？
+- [ ] IIS 应用池身份、位数、管道和物理路径是否验证？
+- [ ] Windows 服务账号、路径、依赖和失败恢复是否验证？
+- [ ] NTFS 与共享权限是否用目标账号实测？
+- [ ] 防火墙三个配置文件和云安全组是否都检查？
+- [ ] 证书存储、私钥权限、SNI 和到期时间是否验证？
+- [ ] AD/Kerberos 的 DNS、时间、SPN 和委派是否检查？
+- [ ] SQL Server 实例、端口、认证和恢复演练是否完成？
+- [ ] 补丁、重启、EDR 排除和集群逐节点策略是否记录？

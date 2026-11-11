@@ -67,7 +67,7 @@ It applies to services, web and mobile clients, database migrations, containeriz
 
 ## How it works
 
-1. **Read the project's own history first**: `AGENTS.md`, `PITFALLS.md`, historical reports, `docs/`, change logs, previous findings, and build baselines are closer to the truth than a generic checklist. Search before recording a new pitfall; update the existing entry when it is a duplicate.
+1. **Read the project's own history first**: `AGENTS.md`, `PITFALLS.md`, historical reports, `docs/`, change logs, previous findings, and build baselines are closer to the truth than a generic checklist. The skill ships a 162-entry enterprise pitfall baseline and a 20-question server pre-launch checklist; use them to decide what to inspect, then confirm with project evidence. Search before recording a new pitfall; update the existing entry when it is a duplicate.
 2. **Define the scope first**: a change review covers a fixed point through `HEAD`, a full review covers the current `HEAD` and worktree, and a repository without Git gets a read-only snapshot with explicit limits.
 3. **Two-axis review**: standards compliance and spec compliance are reviewed separately, so "ugly code" and "missing requirement" do not get mixed into one bucket.
 4. **Real regression**: tests, builds, migrations, compose configuration, and key paths are actually run, not just read; obtain consent before commands that write files, install dependencies, or start services.
@@ -109,7 +109,7 @@ Say any of these:
 - Git is preferred. A change review validates the baseline with `git rev-parse`. Without Git, the skill can still take a read-only snapshot, but must state that history, a fixed point, and an exact diff are unavailable.
 - Docker must be available if you want containerized migration/regression checks.
 - The review phase is read-only by default; confirm the report path, and require an explicit instruction before code changes.
-- For Windows-specific troubleshooting, read `references/windows-pitfalls.en.md` first.
+- For Windows client or Windows Server troubleshooting, read `references/windows-pitfalls.en.md` first; for Linux servers, read `references/linux-server-pitfalls.en.md` first.
 
 ## Package layout
 
@@ -118,8 +118,8 @@ project-health/
 ├── SKILL.md / SKILL.en.md                # skill body (Chinese default / English mirror)
 ├── README.md / README.en.md              # this file
 ├── AGENTS.md                            # standing rules (task boundaries and pitfall discipline)
-├── PITFALLS.md                          # reusable pitfalls log
-├── references/                           # platform commands, Windows traps, verification, reports
+├── PITFALLS.md                          # enterprise pitfall baseline + maintainer pitfall log
+├── references/                           # platform commands, Windows/Win Server traps, Linux server traps, verification, reports
 ├── scripts/                              # cross-platform verification and redaction scanners
 ├── tests/                                # contract tests, acceptance cases, malicious-target fixtures
 └── LICENSE / COMMERCIAL / SIGNING / SANITIZATION
@@ -127,7 +127,7 @@ project-health/
 
 ## Platform support
 
-The core skill uses only Markdown and Git commands. It works on Windows 10/11 + PowerShell 5.1/7, macOS / Linux + Python 3.9+, and WSL2. The Python verifier uses only the standard library and needs no network access.
+The core skill uses only Markdown and Git commands. It works on Windows 10/11, Windows Server 2019/2022+, macOS / Linux + Python 3.9+, and WSL2. Server coverage includes Windows Server IIS, services, NTFS/SMB, AD/Kerberos, SQL Server, certificates, patching, and clusters, plus Linux systemd, permissions, SELinux/AppArmor, disk, OOM, firewall, NTP, package management, and rollback. The Python verifier uses only the standard library and needs no network access.
 
 ## Self-check
 
@@ -200,7 +200,8 @@ Commercial use requires a written license from the author, but **the author is o
 
 ## Version
 
-- Version: 1.2.4
+- Version: 1.3.0
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
 - Security fix: 2026-11-07
+- Enterprise and server pitfall expansion: 2026-11-11
