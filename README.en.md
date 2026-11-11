@@ -2,7 +2,7 @@
 
 [中文](README.md) | [English](README.en.md)
 
-**One line: evidence-driven health checks and delivery acceptance for existing software projects, surfacing issues that would block release, handover, or delivery.**
+**One line: evidence-driven audits and delivery acceptance for enterprise software projects, surfacing issues that block release, handover, or delivery.**
 
 **Built for non-specialists too**: you do not need to know code, build systems, or audit terminology. If you can use an agent, you can ask for a check in plain language; the agent runs it and explains the technical evidence.
 
@@ -62,6 +62,7 @@ Skill hosts load the Chinese `SKILL.md` by default. For English, copy `SKILL.en.
 - **Periodic review**: re-align previous findings, build baselines, environment traps, and user prohibitions.
 - **Handover acceptance**: give the next owner an evidence-linked list of findings, gaps, and verification methods.
 - **Agent delivery acceptance**: verify work produced or modified by an agent with evidence, regression, and explicit boundaries.
+- **Enterprise delivery and server launch**: cover multi-team handovers, supplier delivery, Linux and Windows Server launch checks, and cross-platform operational boundaries.
 
 It applies to services, web and mobile clients, database migrations, containerized deployment, and other project layers; full-stack is one common case, not the boundary.
 

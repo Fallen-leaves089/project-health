@@ -9,6 +9,7 @@
 - 新增 `references/linux-server-pitfalls.md` / `.en.md`，覆盖 systemd、权限与 SELinux/AppArmor、磁盘 inode、ulimit/OOM、防火墙、DNS/NTP、包管理、SSH、数据库、容器和回滚。
 - 扩充 `references/windows-pitfalls.md` / `.en.md` 的 Windows Server 小节，覆盖 IIS、Windows 服务、NTFS/SMB、AD/Kerberos、SQL Server、证书、WinRM、EDR、补丁和故障转移集群。
 - `SKILL.md` / `SKILL.en.md` 增加服务器平台高频坑入口和只读边界；README、包校验器和契约测试同步新文件与 1.3.0 版本。
+- README 定位调整为面向企业级项目的审计与交付验收；新增 Linux / Windows Server 只读冒烟检查，在 GitHub Ubuntu 24.04 与 Windows Server 运行器上验证安全命令。
 
 ### English
 
@@ -17,6 +18,7 @@
 - Add `references/linux-server-pitfalls.md` / `.en.md`, covering systemd, permissions and SELinux/AppArmor, disk and inodes, ulimit/OOM, firewalls, DNS/NTP, package management, SSH, databases, containers, and rollback.
 - Expand the Windows Server section in `references/windows-pitfalls.md` / `.en.md`, covering IIS, Windows services, NTFS/SMB, AD/Kerberos, SQL Server, certificates, WinRM, EDR, patching, and failover clusters.
 - Add server-platform entry points and read-only boundaries to `SKILL.md` / `SKILL.en.md`; update the README, package verifiers, and contract tests for the new files and version 1.3.0.
+- Position the README for enterprise project audits and delivery acceptance; add Linux and Windows Server read-only smoke checks for GitHub Ubuntu 24.04 and Windows Server runners.
 
 ## 1.2.4 - 2026-11-07
 
