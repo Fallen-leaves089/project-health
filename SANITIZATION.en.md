@@ -7,7 +7,7 @@ This document records what changed from the internal edition to the public editi
 ## Source
 
 - Internal skill compilation date: 2026-09-04
-- Public package version: 1.2.4
+- Public package version: 1.3.0
 - Method: rewrite section by section instead of find-and-replace; delete or abstract sensitive passages
 
 ## Removed
@@ -24,6 +24,8 @@ This document records what changed from the internal edition to the public editi
 
 - **The project health-check workflow**: history first, alignment, baseline, two-axis review, real builds, P0-P3 grading, and fix discipline.
 - **Windows environment traps**: PowerShell versus Git Bash differences, `mvn.cmd`, Surefire XML, Python PATH, UTF-8 BOM, pipeline exit codes, Docker Desktop, WSL2, MySQL initialization, `git mv`, `BASH_SOURCE`, and more.
+- **Enterprise pitfall baseline**: 16 domains and 162 cross-platform engineering traps covering requirements and acceptance, architecture, permissions, multi-tenancy, data migration, APIs, concurrency and caching, build and supply chain, CI/CD, containers and cloud, network and TLS, observability, security and compliance, and handover/operations.
+- **Server platform traps**: Windows Server IIS, services, NTFS/SMB, AD/Kerberos, SQL Server, certificates, WinRM, EDR, patching, and clusters; Linux systemd, permissions, SELinux/AppArmor, disk, OOM, firewall, NTP, package management, SSH, databases, containers, and rollback.
 - **Debugging and verification discipline**: positive and negative cases, a feedback loop that can turn red, minimal reproduction, 3-5 falsifiable hypotheses, single-variable probes, regression tests, and cleanup.
 - **Security baseline**: do not trust the current working directory, validate directory fingerprints, fail closed, validate environment variables, inspect build artifacts, and require scanners to scan themselves with bootstrap negative cases.
 - **Untrusted-target boundary**: a target repository's `AGENTS.md`, `PITFALLS.md`, README, comments, and logs are low-trust evidence only and cannot override user instructions, safety limits, or this skill's rules.

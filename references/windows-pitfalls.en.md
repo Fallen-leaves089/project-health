@@ -192,7 +192,166 @@ Get-Command powershell.exe, pwsh.exe -ErrorAction SilentlyContinue
 - Build every flavor in a multi-flavor project. One flavor does not represent all of them.
 - Match the JDK version to Gradle and AGP. Read the project documentation before upgrading; do not force the newest version.
 
-## 13. Quick checklist
+## 13. Windows Server deployment and operations
+
+This section targets Windows Server, not ordinary Windows 10/11 client troubleshooting. Confirm the roles, edition, and whether Desktop Experience is installed before running commands.
+
+### 13.1 Confirm the system and roles
+
+```powershell
+Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsBuildNumber, OsArchitecture
+Get-WindowsFeature | Where-Object Installed | Select-Object Name, DisplayName
+Get-Service | Where-Object Status -eq 'Running' | Select-Object Name, DisplayName
+```
+
+- Server Core has no full GUI. Do not assume IIS Manager or a browser is available; use PowerShell, `sconfig`, and remote administration.
+- Record whether the host is physical, virtual, or cloud. On cloud hosts, the security group and Windows Firewall are separate layers; check both.
+- Confirm domain membership, Group Policy, antivirus/EDR, WinRM, and RDP state.
+
+### 13.2 IIS and application pools
+
+```powershell
+Get-Website | Select-Object Name, State, PhysicalPath, Bindings
+Get-WebAppPoolState -Name <pool>
+Get-WebConfigurationProperty -PSPath 'IIS:\' -Filter 'system.applicationHost/applicationPools' -Name '.'
+netsh http show sslcert
+netsh http show urlacl
+```
+
+- The default app-pool identity may be `ApplicationPoolIdentity`. Grant file access to `IIS AppPool\<pool>`, not `Everyone` or broad `Users`.
+- Check .NET CLR version, managed pipeline mode, 32-bit mode, start mode, idle timeout, and recycling.
+- Verify the site physical path, default documents, authentication, handler mappings, and URL Rewrite rules.
+- For hosted ASP.NET Core, check the ANCM module, runtime version, and `processPath` in `web.config`.
+- App-pool recycling drops in-process sessions, caches, and background work. With multiple instances, verify machine keys, session state, and distributed cache.
+- On failure, inspect IIS logs, HTTPERR logs, and failed-request tracing:
+  ```powershell
+  Get-ChildItem "$env:SystemDrive\inetpub\logs\LogFiles" -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 10 FullName
+  ```
+
+### 13.3 Windows services
+
+```powershell
+sc.exe qc <service>
+sc.exe qfailure <service>
+Get-CimInstance Win32_Service -Filter "Name='<service>'" | Select-Object Name, State, StartMode, StartName, PathName
+Get-WinEvent -LogName System -MaxEvents 100 | Where-Object ProviderName -match '<service>'
+```
+
+- Prefer a least-privilege domain account or gMSA, or `NT AUTHORITY\NetworkService` where appropriate. Do not run the service as a personal domain account.
+- Services must not depend on an interactive desktop, mapped drives, user environment variables, or a "run at logon" script.
+- Quote paths with spaces. Use an absolute working directory; do not depend on `C:\Windows\System32`.
+- Configure failure recovery and service dependencies, and verify them with `sc.exe qfailure`.
+- On startup failure, inspect System event logs, application logs, and service-account permissions. Do not "fix" it by making the account a domain administrator.
+- Kill the process once to verify automatic recovery, and confirm the service starts after reboot with nobody logged in.
+
+### 13.4 NTFS, shares, and SMB
+
+```powershell
+icacls <path>
+Get-Acl <path> | Format-List
+Get-SmbShare
+Get-SmbShareAccess -Name <share>
+Get-SmbSession
+```
+
+- Share permissions and NTFS permissions are separate layers; the effective result is the intersection. Changing one layer often leaves "access denied".
+- Test effective access with the actual service account, not an administrator account.
+- Check inheritance, owner, deny entries, and execute bits on parent directories. Do not use `Everyone: FullControl`.
+- Disable SMBv1. Enable SMB signing and encryption as required, and restrict administrative share access.
+
+### 13.5 Firewall, proxy, and network
+
+```powershell
+Get-NetFirewallProfile | Select-Object Name, Enabled, DefaultInboundAction, DefaultOutboundAction
+Get-NetFirewallRule -Enabled True | Where-Object Direction -eq 'Inbound' | Select-Object DisplayName, Profile, Action
+Get-NetTCPConnection -State Listen | Select-Object LocalAddress, LocalPort, OwningProcess
+Test-NetConnection -ComputerName <host> -Port <port>
+netsh winhttp show proxy
+```
+
+- Windows Firewall has Domain, Private, and Public profiles. Changing only one may not take effect.
+- On cloud hosts, also check security groups and NACLs. Local `127.0.0.1` connectivity does not prove external access.
+- Do not expose RDP 3389, SQL Server, Redis, or the Docker API directly to the internet. Use VPN, a bastion, allowlists, and NLA.
+- System proxy, WinHTTP proxy, and application proxy settings may differ. A successful build does not prove the service can reach the network.
+
+### 13.6 Certificates, TLS, and private keys
+
+```powershell
+Get-ChildItem Cert:\LocalMachine\My | Select-Object Subject, NotAfter, Thumbprint
+netsh http show sslcert
+```
+
+- Install certificates in the computer store, not a user store. The IIS app pool or service account needs read access to the private key.
+- Verify chain, expiry, SAN/domain match, SNI binding, and intermediate certificates.
+- Do not rely on a browser opening the page. Test TLS handshake, protocol versions, and cipher suites from another machine and from outside the server.
+- After replacing a certificate, update bindings, application configuration, and expiry monitoring.
+
+### 13.7 AD, Kerberos, and Group Policy
+
+```powershell
+setspn -L <account>
+klist
+w32tm /query /status
+nltest /dsgetdc:<domain>
+gpresult /h gp-report.html
+```
+
+- For random authentication failures, check DNS, clock skew, SPN, delegation, and Group Policy before blaming the password.
+- Do not run applications as Domain Admin. Prefer gMSA or constrained delegation for network resources.
+- Understand CredSSP, Kerberos delegation, and credential boundaries in double-hop scenarios. Do not enable unconstrained delegation just to make access work.
+- Record the blast radius, refresh time, and rollback for Group Policy changes.
+
+### 13.8 SQL Server and data
+
+```powershell
+Get-Service MSSQL* | Select-Object Name, Status, StartType
+Get-NetTCPConnection -State Listen | Where-Object LocalPort -in 1433,1434
+sqlcmd -S <server> -E -Q "SELECT 1"
+```
+
+- Identify Windows versus SQL authentication, default versus named instance, and static versus dynamic ports.
+- Give the application a least-privilege login. Do not use `sa`.
+- Back up system databases, user databases, jobs, credentials, and certificates; restore on another instance to verify.
+- Check max memory, tempdb, disk, backup chain, and recovery model. Do not mix Simple and Full without log backups.
+
+### 13.9 PowerShell, WinRM, and automation
+
+```powershell
+Get-ExecutionPolicy -List
+winrm enumerate winrm/config/listener
+Test-WSMan <host>
+```
+
+- Do not set the machine-wide execution policy to `Unrestricted` just to run a script. Prefer signed scripts and the narrowest per-process scope.
+- Do not put passwords, tokens, or connection strings in command lines, plaintext scripts, or command history. Use SecretManagement or managed identity.
+- Restrict WinRM sources, use HTTPS or a trusted network, and enable the necessary logging.
+- Test remote bulk operations on a small scope first. Verify idempotence, failure exit codes, and rollback; do not default to "run on every node at once".
+
+### 13.10 Antivirus, EDR, patching, and reboots
+
+```powershell
+Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 10
+Get-CimInstance Win32_QuickFixEngineering | Sort-Object InstalledOn -Descending | Select-Object -First 10
+```
+
+- If builds, extraction, uploads, or database files are randomly locked, inspect antivirus/EDR scan logs and exclusion policy. Do not disable protection.
+- Installing a patch is not the same as applying it. Check for pending reboots, schedule a window, and verify critical services.
+- Record patch level, reboot time, rollback method, and affected nodes. Do not reboot every cluster node at once.
+
+### 13.11 Task Scheduler and failover clusters
+
+```powershell
+Get-ScheduledTask | Where-Object TaskName -match '<name>' | Select-Object TaskName, State, Principal
+schtasks /query /tn "<task>" /v /fo LIST
+Get-ClusterNode 2>$null
+Get-ClusterQuorum 2>$null
+```
+
+- For scheduled tasks, verify the run account, "run whether user is logged on or not", network access, timezone, concurrency policy, and last result.
+- Do not use interactive users or mapped drives. "Highest privileges" does not mean the task should run as Domain Admin.
+- For failover clusters, check quorum, witness, node networks, shared storage, and the validation report. Patch and reboot one node at a time.
+
+## 14. Quick checklist
 
 - [ ] Am I in PowerShell or Git Bash?
 - [ ] Which path does `python`, `mvn`, `docker`, or `git` resolve to?
@@ -204,3 +363,11 @@ Get-Command powershell.exe, pwsh.exe -ErrorAction SilentlyContinue
 - [ ] Did I run the migration twice?
 - [ ] Did I verify the absolute path and run `git ls-files` before cleanup?
 - [ ] Are logs and reports redacted?
+- [ ] Did I verify the IIS app-pool identity, bitness, pipeline, and physical path?
+- [ ] Did I verify Windows service accounts, paths, dependencies, and failure recovery?
+- [ ] Did I test effective NTFS and share permissions with the target account?
+- [ ] Did I check all three firewall profiles and the cloud security group?
+- [ ] Did I verify certificate store, private-key permissions, SNI, and expiry?
+- [ ] Did I check AD/Kerberos DNS, time, SPN, and delegation?
+- [ ] Did I verify SQL Server instance, port, authentication, and restore drill?
+- [ ] Did I record patching, reboots, EDR exclusions, and per-node cluster policy?

@@ -67,7 +67,7 @@ git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能�
 
 ## 它如何工作
 
-1. **先查项目自己的历史**：`AGENTS.md`、`PITFALLS.md`、历史报告、`docs/`、变更记录、上一轮遗留项和构建基线，比通用清单更接近事实。遇到新坑先查重再记录，重复的坑只补充原条目。
+1. **先查项目自己的历史**：`AGENTS.md`、`PITFALLS.md`、历史报告、`docs/`、变更记录、上一轮遗留项和构建基线，比通用清单更接近事实。本技能自带 162 条企业项目避坑基线和服务器上线前 20 问，先用来决定“该查什么”，再用项目证据确认。遇到新坑先查重再记录，重复的坑只补充原条目。
 2. **先定检查范围**：变更是看固定基准点到 `HEAD`，全量是看当前 `HEAD` 和整个工作区，没有 Git 则做只读快照并说明限制。
 3. **双轴审查**：规范符合度（Standards）和需求符合度（Spec）分开看，避免把“代码写得丑”和“需求没做完”混在一起。
 4. **真实回归**：测试、构建、迁移、compose 配置和关键路径要实际跑，不只做静态阅读；会写文件、装依赖或启动服务时先取得同意。
@@ -109,7 +109,7 @@ git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能�
 - 项目最好使用 Git；变更检查会用 `git rev-parse` 校验基准点。没有 Git 时仍可做只读快照检查，但必须明确说明看不到历史、基准点和精确 diff。
 - 需要跑容器化回归时，Docker 守护进程要能启动。
 - 检查阶段默认只读；写报告前确认路径，要修代码则等用户明确指令。
-- 需要 Windows 专项排障时，先读 `references/windows-pitfalls.md`，不要凭记忆试。
+- 需要 Windows 客户端或 Windows Server 专项排障时，先读 `references/windows-pitfalls.md`；Linux 服务器先读 `references/linux-server-pitfalls.md`，不要凭记忆试。
 
 ## 包内结构
 
@@ -118,8 +118,8 @@ project-health/
 ├── SKILL.md / SKILL.en.md                # 技能本体（中文默认 / 英文镜像）
 ├── README.md / README.en.md              # 本文件
 ├── AGENTS.md                            # 常驻规则（任务边界与避坑纪律）
-├── PITFALLS.md                          # 可复用的避坑记录
-├── references/                           # 平台命令、Windows 坑、验证手册、报告模板
+├── PITFALLS.md                          # 企业级避坑基线 + 维护者避坑日志
+├── references/                           # 平台命令、Windows/Win Server 坑、Linux 服务器坑、验证手册、报告模板
 ├── scripts/                              # 跨平台自检与脱敏扫描
 ├── tests/                                # 契约测试、验收场景和恶意目标夹具
 └── LICENSE / COMMERCIAL / SIGNING / SANITIZATION
@@ -127,7 +127,7 @@ project-health/
 
 ## 平台支持
 
-核心技能只依赖 Markdown 和 Git 命令；Windows 10/11 + PowerShell 5.1/7、macOS / Linux + Python 3.9+、WSL2 都可使用。Python 自检只用标准库，不需要联网。
+核心技能只依赖 Markdown 和 Git 命令；Windows 10/11、Windows Server 2019/2022+、macOS / Linux + Python 3.9+、WSL2 都可使用。服务器专项覆盖 Windows Server 的 IIS、服务、NTFS/SMB、AD/Kerberos、SQL Server、证书、补丁和集群，以及 Linux 的 systemd、权限、SELinux/AppArmor、磁盘、OOM、防火墙、NTP、包管理和回滚。Python 自检只用标准库，不需要联网。
 
 ## 自检
 
@@ -200,7 +200,8 @@ ssh-keygen -lf release-signing-key.pub
 
 ## 版本
 
-- 版本：1.2.4
+- 版本：1.3.0
 - 对应内部整理日期：2026-09-04
 - 公开发布整理：2026-11-04
 - 安全修复整理：2026-11-07
+- 企业级与服务器避坑扩充：2026-11-11
