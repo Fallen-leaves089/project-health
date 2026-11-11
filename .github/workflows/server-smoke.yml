@@ -1,0 +1,53 @@
+name: Verify server playbooks
+
+on:
+  push:
+    paths:
+      - "references/linux-server-pitfalls*.md"
+      - "references/windows-pitfalls*.md"
+      - "tests/server-smoke.sh"
+      - "tests/server-smoke.ps1"
+      - ".github/workflows/server-smoke.yml"
+  pull_request:
+    paths:
+      - "references/linux-server-pitfalls*.md"
+      - "references/windows-pitfalls*.md"
+      - "tests/server-smoke.sh"
+      - "tests/server-smoke.ps1"
+      - ".github/workflows/server-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: Linux server / Ubuntu 24.04
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run Linux server read-only checks
+        env:
+          REQUIRE_SYSTEMD: "1"
+        run: bash tests/server-smoke.sh
+
+  windows:
+    name: Windows Server / windows-latest
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run Windows Server read-only checks
+        shell: powershell
+        env:
+          REQUIRE_WINDOWS_SERVER: "1"
+        run: .\tests\server-smoke.ps1

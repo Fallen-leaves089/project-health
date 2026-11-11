@@ -251,6 +251,39 @@ class UntrustedTargetContractTests(unittest.TestCase):
             workflow,
         )
 
+    def test_server_smoke_checks_cover_both_platforms(self) -> None:
+        linux = read_text("tests/server-smoke.sh")
+        for phrase in (
+            "REQUIRE_SYSTEMD",
+            "systemd-analyze verify",
+            "firewall-cmd",
+            "docker compose",
+            "mysqladmin",
+        ):
+            with self.subTest(platform="linux", phrase=phrase):
+                self.assertIn(phrase, linux)
+
+        windows = read_text("tests/server-smoke.ps1")
+        for phrase in (
+            "REQUIRE_WINDOWS_SERVER",
+            "Get-WindowsFeature",
+            "Get-NetFirewallProfile",
+            "Get-ClusterNode",
+            "sqlcmd",
+        ):
+            with self.subTest(platform="windows", phrase=phrase):
+                self.assertIn(phrase, windows)
+
+        workflow = read_text(".github/workflows/server-smoke.yml")
+        for phrase in (
+            "ubuntu-24.04",
+            "windows-latest",
+            "bash tests/server-smoke.sh",
+            r".\tests\server-smoke.ps1",
+        ):
+            with self.subTest(workflow="server-smoke", phrase=phrase):
+                self.assertIn(phrase, workflow)
+
 
 if __name__ == "__main__":
     unittest.main()
