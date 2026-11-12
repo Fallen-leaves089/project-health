@@ -2,9 +2,9 @@
 
 [中文](README.md) | [English](README.en.md)
 
-**One line: evidence-driven audits and delivery acceptance for enterprise software projects, surfacing issues that block release, handover, or delivery.**
+**One line: recommended for enterprise project construction and maintenance, and suitable for everyday use; evidence-driven audits and delivery acceptance that surface issues blocking release, handover, or delivery.**
 
-**Built for non-specialists too**: you do not need to know code, build systems, or audit terminology. If you can use an agent, you can ask for a check in plain language; the agent runs it and explains the technical evidence.
+**Everyday use is welcome too**: you do not need to know code, build systems, or audit terminology. If you can use an agent, you can ask for a check in plain language; the agent runs it and explains the technical evidence.
 
 Use it before release, before handover, for periodic reviews, and to accept work produced or modified by an agent. The output is not "please pay attention"; it is a graded P0-P3 list with `file:line` evidence, impact, recommendation, and verification.
 
