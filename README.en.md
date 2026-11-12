@@ -2,11 +2,11 @@
 
 [中文](README.md) | [English](README.en.md)
 
-**One line: recommended for enterprise project construction and maintenance, and suitable for everyday use; evidence-driven audits and delivery acceptance that surface issues blocking release, handover, or delivery.**
+**One line: recommended for enterprise project construction and routine maintenance, and suitable for everyday use; evidence-driven audits and delivery acceptance that surface issues blocking release, handover, or delivery.**
 
 **Everyday use is welcome too**: you do not need to know code, build systems, or audit terminology. If you can use an agent, you can ask for a check in plain language; the agent runs it and explains the technical evidence.
 
-Use it before release, before handover, for periodic reviews, and to accept work produced or modified by an agent. The output is not "please pay attention"; it is a graded P0-P3 list with `file:line` evidence, impact, recommendation, and verification.
+Use it for enterprise project construction and routine maintenance, before release, before handover, for periodic reviews, and to accept work produced or modified by an agent. The output is not "please pay attention"; it is a graded P0-P3 list with `file:line` evidence, impact, recommendation, and verification.
 
 > **Boundary**: Code generation is handled by the host agent; this skill does not replace that capability. It verifies generated results with evidence checks, real regressions, and delivery acceptance. It does not promise zero defects, but it can significantly reduce detectable defects within the checks it covers. Actual results depend on the project baseline, agent capability, test coverage, and execution depth.
 
@@ -14,9 +14,9 @@ Use it before release, before handover, for periodic reviews, and to accept work
 
 ## Which edition
 
-- Start with project-health-lite for a quick, plain-language check.
-- Use this skill for deep audits, P0-P3 findings, evidence chains, real regression, or delivery acceptance.
-- Both editions can coexist; do not run both full reviews in parallel.
+- **Enterprise project construction and routine maintenance, deep audits, evidence chains, real regression, or delivery acceptance**: use this skill; everyday users can choose it too.
+- **For a quick, plain-language first check only**: start with [`project-health-lite`](https://github.com/Fallen-leaves089/project-health-lite). It remains the default entry point for a first check.
+- Both editions can coexist; upgrade to the professional edition only when deeper coverage is needed, and do not run both full reviews in parallel.
 
 Quick navigation: [Quick start](#quick-start) · [Which edition](#which-edition) · [What it's for](#what-its-for) · [What it caught](#what-it-caught-a-real-two-pass-health-check) · [Triggers](#triggers) · [Self-check](#self-check) · [License](#license)
 
