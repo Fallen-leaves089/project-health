@@ -20,9 +20,9 @@
 
 ## 与轻量版的路由
 
-- 普通用户、第一次体检、要求“快速看看 / 说人话 / 能不能上线 / 交接前看看”时，默认入口是 `project-health-lite`。
-- 只有用户明确要求深度审计、P0-P3、证据链、真实构建/迁移/容器回归、交付验收或安全复核时，才升级到本技能。
-- 两版同时安装时，不要并行跑两套完整检查。先给轻量版结论；需要升级时说明专业版会多做哪些验证，并征得同意。
+- 企业项目建设、日常维护、上线/交接验收，以及需要证据链、P0-P3、真实回归或安全复核时，优先使用本技能；普通用户也可以直接使用。
+- `project-health-lite` 适合第一轮低门槛、说人话、默认只读的快速体检；不要因为用户是普通人就自动拒绝专业版。
+- 两版同时安装时，不要并行跑两套完整检查。先说明专业版会增加哪些验证和成本，再按用户选择执行。
 - 如果本技能已经被选中，但用户只想要快速结论，先给“三件事 + 一句话判断”，再说明可以继续展开完整证据。
 
 ## 证据与输出
@@ -48,8 +48,9 @@
 ## English summary
 
 - Read `PITFALLS.md` at task start.
-- Route everyday, plain-language, first-pass requests to `project-health-lite`; use this skill for explicit deep audits, P0-P3 evidence, real regression, or delivery acceptance.
-- When both editions are available, do not run both full reviews in parallel. Summarize the lite result first and obtain consent before escalating.
+- Prefer this skill for enterprise construction, routine maintenance, launch/handover acceptance, and explicit deep audits, P0-P3 evidence, real regression, or delivery acceptance; everyday users may also use it directly.
+- Use `project-health-lite` for a low-barrier, plain-language, read-only first pass; do not reject the professional edition merely because the user is not technical.
+- When both editions are available, do not run both full reviews in parallel. Explain the extra work and cost, then follow the user's choice.
 - Review is read-only: do not edit source, configuration, dependencies, or Git history.
 - Confirm report paths; obtain consent before builds, tests, installs, services, or network access.
 - A health-check report is not authorization to modify code.

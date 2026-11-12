@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.1 - 2026-11-12
+
+### 中文
+
+- 调整专业版技能入口：明确推荐企业项目建设与日常维护，同时允许普通用户直接使用。
+- 同步 README、SKILL、AGENTS 和路由规则，避免“主页推荐专业版、技能说明却把普通用户一律推给轻量版”的不一致。
+- 本版本为说明与路由修订，不改变检查流程、许可证或安全边界。
+
+### English
+
+- Reposition the professional skill entry: recommended for enterprise project construction and routine maintenance while remaining directly usable by everyday users.
+- Align the README, SKILL, AGENTS, and routing rules so the repository positioning does not contradict the skill behavior.
+- This is a documentation and routing revision; audit workflows, licensing, and safety boundaries are unchanged.
+
 ## 1.3.0 - 2026-11-11
 
 ### 中文

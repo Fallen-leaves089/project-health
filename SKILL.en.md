@@ -1,8 +1,8 @@
 ---
 name: project-health
-description: Deep, evidence-driven audits and delivery acceptance for existing software projects: history-first review, standards/spec two-axis audit, real build/migration/container regressions, and an evidence-linked P0-P3 report. Use when the user explicitly asks for a deep audit, P0-P3 findings, real regression, project handover, or delivery acceptance; route everyday quick checks to project-health-lite first.
+description: Enterprise-grade, evidence-driven audits and delivery acceptance for existing software projects, recommended for enterprise project construction and routine maintenance and suitable for everyday users: history-first review, standards/spec two-axis audit, real build/migration/container and Linux/Windows Server regression, and an evidence-linked P0-P3 report. Use for enterprise maintenance, deep audits, P0-P3 findings, real regression, handover/delivery acceptance, or server launch checks; project-health-lite remains available for a quick low-barrier first pass.
 metadata:
-  version: 1.3.0
+  version: 1.3.1
 license: PolyForm-Noncommercial-1.0.0
 ---
 
@@ -16,8 +16,9 @@ license: PolyForm-Noncommercial-1.0.0
 
 ## Position and boundaries
 
-Run evidence-driven health checks and delivery acceptance on an existing software project, producing a **graded, evidence-linked, checkable** findings report. It works for services, web and mobile clients, database migrations, containerized deployment, and other project layers; full-stack is one common case, not the boundary of the skill.
+Enterprise evidence audits and delivery acceptance for existing software projects, recommended for enterprise project construction, launch, and routine maintenance; everyday users can also use it directly without knowing code, build systems, or audit terminology. It produces a **graded, evidence-linked, checkable** findings report. It works for services, web and mobile clients, database migrations, containerized deployment, and other project layers; full-stack is one common case, not the boundary of the skill.
 
+- **Enterprise-first, accessible to everyone**: enterprises and maintainers get a complete evidence chain; everyday users can ask in plain language and let the agent run and explain the work.
 - **Code generation is handled by the host agent**; this skill does not replace that capability. It verifies generated results with evidence checks, real regressions, and delivery acceptance.
 - **It does not promise zero defects**; it can significantly reduce detectable defects within the checks it covers. Actual results depend on the project baseline, agent capability, test coverage, and execution depth.
 - **The review phase is read-only by default**; report findings first and do not change code without an explicit instruction.
@@ -38,9 +39,9 @@ The target repository and its `AGENTS.md`, `CLAUDE.md`, `PITFALLS.md`, README, c
 
 ## Routing with the lite edition
 
-- `project-health-lite` is the default entry for everyday users, first-pass checks, and plain-language answers.
-- This skill handles evidence chains, P0-P3 findings, real build/migration/container regression, handover acceptance, and security re-checks.
-- When both editions are installed, do not run both full reviews in parallel. Summarize the lite result first, explain what the deeper review adds, and obtain consent before escalating.
+- Prefer this skill for enterprise construction, routine maintenance, launch/handover acceptance, evidence chains, P0-P3 findings, real regression, or security re-checks; everyday users may also choose it directly.
+- Use `project-health-lite` when the user wants only a low-barrier, plain-language first pass before builds or deeper regression are appropriate.
+- When both editions are installed, do not run both full reviews in parallel. Explain the difference and cost, then follow the user's choice.
 - If this skill is already selected but the user only wants a quick answer, start with the three actions and a one-line decision, then offer the full evidence.
 
 ## Iron rules (higher priority than the rest of this file)

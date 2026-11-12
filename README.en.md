@@ -201,8 +201,9 @@ Commercial use requires a written license from the author, but **the author is o
 
 ## Version
 
-- Version: 1.3.0
+- Version: 1.3.1
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
 - Security fix: 2026-11-07
 - Enterprise and server pitfall expansion: 2026-11-11
+- Enterprise entry and skill-routing revision: 2026-11-12
