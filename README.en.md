@@ -2,6 +2,8 @@
 
 [中文](README.md) | [English](README.en.md)
 
+**Preprint**: [Project-Health: Evidence-Driven Project Auditing for AI Coding Agents](https://doi.org/10.5281/zenodo.24161471)
+
 **One line: recommended for enterprise project construction and routine maintenance, and suitable for everyday use; evidence-driven audits and delivery acceptance that surface issues blocking release, handover, or delivery.**
 
 **Everyday use is welcome too**: you do not need to know code, build systems, or audit terminology. If you can use an agent, you can ask for a check in plain language; the agent runs it and explains the technical evidence.
