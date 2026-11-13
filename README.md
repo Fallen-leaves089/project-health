@@ -125,6 +125,7 @@ git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能�
 
 - 项目最好使用 Git；变更检查会用 `git rev-parse` 校验基准点。没有 Git 时仍可做只读快照检查，但必须明确说明看不到历史、基准点和精确 diff。
 - 需要跑容器化回归时，Docker 守护进程要能启动。
+- 验证发布包签名时，需要 OpenSSH 8.1+；低于 8.1 只能核对 SHA256 和公钥指纹，不能证明发布者身份，见 `SIGNING.md`。
 - 检查阶段默认只读；写报告前确认路径，要修代码则等用户明确指令。
 - macOS 上先读 `references/macos-pitfalls.md`，记录系统版本、shell、架构和 Rosetta 状态；不要用 Rosetta 终端的通过结果冒充原生 arm64 结果。
 - macOS 隐藏坑使用 `MAC-H01`～`MAC-H08` 共享基线；专业版与 `project-health-macos` 的专业/专用两份文档必须同步更新，不能只补一边。
@@ -206,6 +207,8 @@ Windows PowerShell 版使用 `scripts/check-redaction.ps1`；完整命令见 `SA
 ```bash
 ssh-keygen -lf release-signing-key.pub
 ```
+
+`ssh-keygen -Y sign` 和 `ssh-keygen -Y verify` 需要 **OpenSSH 8.1 或更高版本**；OpenSSH 8.0 及更早版本只能核对 SHA256 和公钥指纹，不能验证签名身份。先运行 `ssh -V` 确认版本；升级方法和低版本处理见 `SIGNING.md` 的“SSH 版本要求”。
 
 完整的 macOS、Linux 和 Windows 校验命令见 `SIGNING.md` / `SIGNING.en.md`。`SHA256SUMS` 和 `SHA256SUMS.sig` 是 zip 生成后的独立发布资产，不放进 zip 内部。
 

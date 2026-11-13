@@ -134,7 +134,9 @@ fi
 
 ## 7. 发布包下载校验
 
-把 zip、`SHA256SUMS`、`SHA256SUMS.sig` 和 `allowed_signers` 下载到同一目录。三个平台都可以用 `ssh-keygen` 核对公钥指纹和签名，但哈希工具不同：
+把 zip、`SHA256SUMS`、`SHA256SUMS.sig` 和 `allowed_signers` 下载到同一目录。三个平台都可以用 `ssh-keygen` 核对公钥指纹，并在 OpenSSH 8.1+ 下验证签名，但哈希工具不同：
+
+`ssh-keygen -Y verify` 需要 OpenSSH 8.1 或更高版本；先运行 `ssh -V`。低于 8.1 时无法验证 SSHSIG 签名，只能核对 SHA256 和公钥指纹，处理方式见 `SIGNING.md`。
 
 | 操作 | Windows PowerShell 5.1 / 7 | macOS | Linux |
 |---|---|---|---|
