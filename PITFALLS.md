@@ -377,3 +377,4 @@ macOS 任务开始先确认环境，再按 `references/macos-pitfalls.md` 加载
 - 2026-11-04 | dsh, credentials, permissions | 写入凭证文件后不检查权限 | 9p/Windows 写入可能把 600 变成 777，服务启动失败 | 写入后立即 chmod 600 并复核；只报权限，不读内容 | 启动无权限错误
 - 2026-11-04 | dsh, startup, token | 重启后复用旧 Web URL 或 token | 每次启动 token 都会变，旧链接失效 | 从运行时生成的 current URL 文件读取 | 新链接可连接
 - 2026-11-04 | dsh, claims, verification | 声称工具、联网或技能可用但没实测 | 凭印象回答，交付时才发现不可用 | 先跑一次最小验证，记录命令、输出和退出码 | 输出与退出码一致
+2026-11-13 | testing, macos, paths | 在 macOS 上比较临时目录路径时直接比较未规范化的 Path | 把 /var 与 /private/var 当作不同目录，导致契约测试假失败 | 比较前对两边调用 resolve()，或使用 samefile；不要硬编码私有前缀 | GitHub macOS runner 上 Python 3.9/3.12 契约测试通过

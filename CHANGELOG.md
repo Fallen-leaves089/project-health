@@ -9,6 +9,7 @@
 - `SKILL.md`、`AGENTS.md` 增加任务结束前的自主记忆检查、同类新机制引用父 ID、记忆范围（工具坑 + 可复用项目失败模式）和最终报告的记忆结果。
 - 新增记录器单元测试、评测器测试和两个基线未覆盖的假绿场景；真实 Agent 行为评测可选运行，默认 CI 不调用 Codex。
 - README 补充本地记忆说明，并提醒覆盖安装前备份 `PITFALLS.local.md`。
+- 修复 macOS 上 `/var` 与 `/private/var` 符号链接造成的路径断言假失败；跨平台路径比较先规范化。
 
 ### English
 
@@ -17,6 +18,7 @@
 - Add an autonomous memory checkpoint before the final report to `SKILL.md` and `AGENTS.md`, including parent IDs for new mechanisms, scope for tooling traps plus reusable project failure modes, and a memory result in the report.
 - Add recorder unit tests, evaluator tests, and two false-green scenarios not covered by the baseline. The real agent behavior evaluation is optional and is not invoked by default CI.
 - Document local memory in the README and warn users to back up `PITFALLS.local.md` before a replacement install.
+- Fix false path-assertion failures caused by the `/var` to `/private/var` symlink on macOS; normalize paths before cross-platform comparisons.
 
 ## 1.4.1 - 2026-11-13
 

@@ -64,7 +64,7 @@ class RecordPitfallTests(unittest.TestCase):
             result = RECORDER.record(root, _entry(), record_date="2026-11-13")
 
             self.assertEqual(result.status, "appended")
-            self.assertEqual(result.path, root / "PITFALLS.local.md")
+            self.assertEqual(result.path.resolve(), (root / "PITFALLS.local.md").resolve())
             data = result.path.read_bytes()
             self.assertFalse(data.startswith(b"\xef\xbb\xbf"))
             self.assertNotIn(b"\r\n", data)
@@ -132,7 +132,7 @@ class RecordPitfallTests(unittest.TestCase):
             result = RECORDER.record(root, _entry(), record_date="2026-11-13")
 
             self.assertEqual(result.status, "appended")
-            self.assertEqual(result.path, root / "PITFALLS.md")
+            self.assertEqual(result.path.resolve(), (root / "PITFALLS.md").resolve())
             self.assertFalse((root / "PITFALLS.local.md").exists())
             self.assertIn(
                 "2026-11-13 | testing, false-green |",
@@ -150,7 +150,7 @@ class RecordPitfallTests(unittest.TestCase):
             root = _root(temp_dir, repo=True)
             _write(root / "PITFALLS.local.md", "# local log\n\n")
             result = RECORDER.record(root, _entry(), record_date="2026-11-13")
-            self.assertEqual(result.path, root / "PITFALLS.local.md")
+            self.assertEqual(result.path.resolve(), (root / "PITFALLS.local.md").resolve())
             self.assertNotIn(
                 "2026-11-13 | testing, false-green |",
                 (root / "PITFALLS.md").read_text(encoding="utf-8"),
@@ -168,7 +168,7 @@ class RecordPitfallTests(unittest.TestCase):
 
             result = RECORDER.record(root, _entry(), record_date="2026-11-13")
 
-            self.assertEqual(result.path, root / "PITFALLS.local.md")
+            self.assertEqual(result.path.resolve(), (root / "PITFALLS.local.md").resolve())
             self.assertNotIn(
                 "2026-11-13 | testing, false-green |",
                 (root / "PITFALLS.md").read_text(encoding="utf-8"),
