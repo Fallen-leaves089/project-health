@@ -2,10 +2,12 @@
 
 [中文](README.md) | [English](README.en.md)
 
+[![Author](https://img.shields.io/badge/author-fallen--leaves-181717?logo=github&logoColor=white)](https://github.com/Fallen-leaves089)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0005--8897--4831-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0005-8897-4831)
 [![License](https://img.shields.io/badge/license-PolyForm--Noncommercial--1.0.0-orange.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/Fallen-leaves089/project-health?label=release)](https://github.com/Fallen-leaves089/project-health/releases/latest)
 [![Verify](https://img.shields.io/github/actions/workflow/status/Fallen-leaves089/project-health/verify.yml?branch=main&label=verify&logo=github)](https://github.com/Fallen-leaves089/project-health/actions/workflows/verify.yml)
+[![Python](https://img.shields.io/badge/validation-Python%203.9%2B-blue?logo=python&logoColor=white)](#self-check)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.24161471-blue)](https://doi.org/10.5281/zenodo.24161471)
 
 **Preprint**: [Project-Health: Evidence-Driven Project Auditing for AI Coding Agents](https://doi.org/10.5281/zenodo.24161471)
@@ -27,6 +29,8 @@ Use it for enterprise project construction and routine maintenance, before relea
 - Both editions can coexist; upgrade to the professional edition only when deeper coverage is needed, and do not run both full reviews in parallel.
 
 Quick navigation: [Quick start](#quick-start) · [Which edition](#which-edition) · [What it's for](#what-its-for) · [What it caught](#what-it-caught-a-real-two-pass-health-check) · [Triggers](#triggers) · [Self-check](#self-check) · [Citation](#citation) · [License](#license)
+
+Repository links: [Source](https://github.com/Fallen-leaves089/project-health) · [Releases](https://github.com/Fallen-leaves089/project-health/releases/latest) · [Changelog](CHANGELOG.md) · [Issues](https://github.com/Fallen-leaves089/project-health/issues) · [Contributing](CONTRIBUTING.en.md) · [Security](SECURITY.md)
 
 ## Quick start
 
@@ -202,7 +206,7 @@ See `CONTRIBUTING.en.md`. New environment traps should include "trap / workaroun
 
 ## Citation
 
-If this project helps your work, cite it using [`CITATION.cff`](CITATION.cff). Author ORCID: [`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831). The repository's **Cite this repository** menu can generate APA and BibTeX.
+Author: [`fallen-leaves`](https://github.com/Fallen-leaves089); ORCID: [`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831). If this project helps your work, cite it using [`CITATION.cff`](CITATION.cff). The repository's **Cite this repository** menu can generate APA and BibTeX.
 
 ## License
 
@@ -214,6 +218,7 @@ Commercial use requires a written license from the author, but **the author is o
 
 ## Version
 
+- Full changelog: [CHANGELOG.md](CHANGELOG.md)
 - Version: 1.3.1
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
