@@ -223,6 +223,13 @@ ssh-keygen -lf release-signing-key.pub
 
 ## 引用
 
+### DOI 分类
+
+| 项目 | 类型 | DOI |
+|---|---|---|
+| `project-health` | 软件归档 | [10.5281/zenodo.24184440](https://doi.org/10.5281/zenodo.24184440) |
+| `project-health-macos` | 软件归档 | [10.5281/zenodo.24184442](https://doi.org/10.5281/zenodo.24184442) |
+
 作者：[`fallen-leaves`](https://github.com/Fallen-leaves089)；ORCID：[`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831)。软件归档 DOI（project-health）：[10.5281/zenodo.24184440](https://doi.org/10.5281/zenodo.24184440)。如果这个项目对你的工作有帮助，请按 [`CITATION.cff`](CITATION.cff) 引用。GitHub 仓库页的 **Cite this repository** 可直接生成 APA 和 BibTeX。
 
 ## 许可

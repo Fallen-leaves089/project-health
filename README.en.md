@@ -223,6 +223,13 @@ See `CONTRIBUTING.en.md`. New environment traps should include "trap / workaroun
 
 ## Citation
 
+### DOI classification
+
+| Project | Type | DOI |
+|---|---|---|
+| `project-health` | Software archive | [10.5281/zenodo.24184440](https://doi.org/10.5281/zenodo.24184440) |
+| `project-health-macos` | Software archive | [10.5281/zenodo.24184442](https://doi.org/10.5281/zenodo.24184442) |
+
 Author: [`fallen-leaves`](https://github.com/Fallen-leaves089); ORCID: [`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831). Software archive DOI (project-health): [10.5281/zenodo.24184440](https://doi.org/10.5281/zenodo.24184440). If this project helps your work, cite it using [`CITATION.cff`](CITATION.cff). The repository's **Cite this repository** menu can generate APA and BibTeX.
 
 ## License
