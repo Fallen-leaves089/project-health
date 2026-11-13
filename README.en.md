@@ -129,7 +129,6 @@ Say any of these:
 - The review phase is read-only by default; confirm the report path, and require an explicit instruction before code changes.
 - On macOS, read `references/macos-pitfalls.en.md` first and record the OS version, shell, architecture, and Rosetta state. Never present a Rosetta pass as a native arm64 result.
 - macOS hidden pitfalls use the shared `MAC-H01` through `MAC-H08` baseline; the professional and dedicated `project-health-macos` documents must be updated together, never one side only.
-- macOS hidden pitfalls use the shared `MAC-H01` through `MAC-H08` baseline; the professional and dedicated `project-health-macos` documents must be updated together, never one side only.
 - For Windows client or Windows Server troubleshooting, read `references/windows-pitfalls.en.md` first; for Linux servers, read `references/linux-server-pitfalls.en.md` first.
 
 ## Package layout

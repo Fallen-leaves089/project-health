@@ -129,7 +129,6 @@ git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能�
 - 检查阶段默认只读；写报告前确认路径，要修代码则等用户明确指令。
 - macOS 上先读 `references/macos-pitfalls.md`，记录系统版本、shell、架构和 Rosetta 状态；不要用 Rosetta 终端的通过结果冒充原生 arm64 结果。
 - macOS 隐藏坑使用 `MAC-H01`～`MAC-H08` 共享基线；专业版与 `project-health-macos` 的专业/专用两份文档必须同步更新，不能只补一边。
-- macOS 隐藏坑使用 `MAC-H01`～`MAC-H08` 共享基线；专业版与 `project-health-macos` 的专业/专用两份文档必须同步更新，不能只补一边。
 - 需要 Windows 客户端或 Windows Server 专项排障时，先读 `references/windows-pitfalls.md`；Linux 服务器先读 `references/linux-server-pitfalls.md`，不要凭记忆试。
 
 ## 包内结构
