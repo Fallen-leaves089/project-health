@@ -8,7 +8,8 @@
 [![Release](https://img.shields.io/github/v/release/Fallen-leaves089/project-health?label=release)](https://github.com/Fallen-leaves089/project-health/releases/latest)
 [![Verify](https://img.shields.io/github/actions/workflow/status/Fallen-leaves089/project-health/verify.yml?branch=main&label=verify&logo=github)](https://github.com/Fallen-leaves089/project-health/actions/workflows/verify.yml)
 [![Python](https://img.shields.io/badge/validation-Python%203.9%2B-blue?logo=python&logoColor=white)](#self-check)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.24161471-blue)](https://doi.org/10.5281/zenodo.24161471)
+[![Preprint DOI](https://img.shields.io/badge/Preprint%20DOI-10.5281%2Fzenodo.24161471-blue)](https://doi.org/10.5281/zenodo.24161471)
+[![Software DOI](https://img.shields.io/badge/Software%20DOI-10.5281%2Fzenodo.24184440-blue)](https://doi.org/10.5281/zenodo.24184440)
 
 **Preprint**: [Project-Health: Evidence-Driven Project Auditing for AI Coding Agents](https://doi.org/10.5281/zenodo.24161471)
 
@@ -222,7 +223,7 @@ See `CONTRIBUTING.en.md`. New environment traps should include "trap / workaroun
 
 ## Citation
 
-Author: [`fallen-leaves`](https://github.com/Fallen-leaves089); ORCID: [`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831). If this project helps your work, cite it using [`CITATION.cff`](CITATION.cff). The repository's **Cite this repository** menu can generate APA and BibTeX.
+Author: [`fallen-leaves`](https://github.com/Fallen-leaves089); ORCID: [`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831). Software archive DOI: [10.5281/zenodo.24184440](https://doi.org/10.5281/zenodo.24184440). If this project helps your work, cite it using [`CITATION.cff`](CITATION.cff). The repository's **Cite this repository** menu can generate APA and BibTeX.
 
 ## License
 

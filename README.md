@@ -8,7 +8,8 @@
 [![Release](https://img.shields.io/github/v/release/Fallen-leaves089/project-health?label=release)](https://github.com/Fallen-leaves089/project-health/releases/latest)
 [![Verify](https://img.shields.io/github/actions/workflow/status/Fallen-leaves089/project-health/verify.yml?branch=main&label=verify&logo=github)](https://github.com/Fallen-leaves089/project-health/actions/workflows/verify.yml)
 [![Python](https://img.shields.io/badge/validation-Python%203.9%2B-blue?logo=python&logoColor=white)](#自检)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.24161471-blue)](https://doi.org/10.5281/zenodo.24161471)
+[![Preprint DOI](https://img.shields.io/badge/Preprint%20DOI-10.5281%2Fzenodo.24161471-blue)](https://doi.org/10.5281/zenodo.24161471)
+[![Software DOI](https://img.shields.io/badge/Software%20DOI-10.5281%2Fzenodo.24184440-blue)](https://doi.org/10.5281/zenodo.24184440)
 
 **预印本**：[Project-Health：面向 AI 编码代理的证据驱动项目审计方法](https://doi.org/10.5281/zenodo.24161471)
 
@@ -222,7 +223,7 @@ ssh-keygen -lf release-signing-key.pub
 
 ## 引用
 
-作者：[`fallen-leaves`](https://github.com/Fallen-leaves089)；ORCID：[`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831)。如果这个项目对你的工作有帮助，请按 [`CITATION.cff`](CITATION.cff) 引用。GitHub 仓库页的 **Cite this repository** 可直接生成 APA 和 BibTeX。
+作者：[`fallen-leaves`](https://github.com/Fallen-leaves089)；ORCID：[`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831)。软件归档 DOI：[10.5281/zenodo.24184440](https://doi.org/10.5281/zenodo.24184440)。如果这个项目对你的工作有帮助，请按 [`CITATION.cff`](CITATION.cff) 引用。GitHub 仓库页的 **Cite this repository** 可直接生成 APA 和 BibTeX。
 
 ## 许可
 
