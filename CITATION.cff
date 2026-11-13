@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata in this file."
+title: "project-health"
+abstract: "An evidence-driven project audit and delivery-acceptance skill for existing software projects. It performs standards and specification review, real build, migration and container regression, and produces P0-P3 findings with file and line evidence."
+version: "1.3.1"
+date-released: "2026-11-12"
+license: "PolyForm-Noncommercial-1.0.0"
+type: software
+authors:
+  - family-names: "fallen-leaves"
+    alias: "fallen-leaves089"
+    orcid: "https://orcid.org/0009-0005-8897-4831"
+    website: "https://github.com/Fallen-leaves089"
+repository-code: "https://github.com/Fallen-leaves089/project-health"
+url: "https://github.com/Fallen-leaves089/project-health"
+keywords:
+  - software audit
+  - project health
+  - AI coding agents
+  - quality assurance
+  - delivery acceptance
