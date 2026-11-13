@@ -134,7 +134,9 @@ A pipeline mixes upstream failure with downstream success. To check the command 
 
 ## 7. Release-download verification
 
-Put the zip, `SHA256SUMS`, `SHA256SUMS.sig`, and `allowed_signers` in the same directory. All three platforms use `ssh-keygen` for the fingerprint and signature, but their hash tools differ:
+Put the zip, `SHA256SUMS`, `SHA256SUMS.sig`, and `allowed_signers` in the same directory. All three platforms use `ssh-keygen` for the fingerprint and, with OpenSSH 8.1+, for signature verification, but their hash tools differ:
+
+`ssh-keygen -Y verify` requires OpenSSH 8.1 or newer; run `ssh -V` first. Below 8.1, SSHSIG signatures cannot be verified, and only the SHA256 hash and public-key fingerprint are available. See `SIGNING.en.md` for the fallback procedure.
 
 | Operation | Windows PowerShell 5.1 / 7 | macOS | Linux |
 |---|---|---|---|

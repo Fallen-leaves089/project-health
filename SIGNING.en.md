@@ -2,7 +2,37 @@
 
 [中文](SIGNING.md) | **English**
 
-Release artifacts use **OpenSSH Ed25519** signatures. Windows 10/11, macOS, and most Linux systems can verify them without installing GPG.
+Release artifacts use **OpenSSH Ed25519** signatures. Signature verification requires OpenSSH 8.1 or newer; when available, Windows 10/11, macOS, and most Linux systems can verify them without installing GPG.
+
+## SSH version requirements
+
+`SHA256SUMS.sig` uses the OpenSSH SSHSIG format. `ssh-keygen -Y sign` and `ssh-keygen -Y verify` were introduced in **OpenSSH 8.1**; OpenSSH 8.0 and earlier do not provide these subcommands. The OpenSSH 8.1 release notes describe the feature as experimental, so use 8.2 or newer when practical. Source: [OpenSSH 8.1 release notes](https://www.openssh.com/txt/release-8.1).
+
+Check the version of the `ssh-keygen` that will actually run:
+
+```bash
+ssh -V
+```
+
+The output looks like `OpenSSH_9.5p2`. `ssh -V` normally writes to standard error; scripts can use `ssh -V 2>&1`.
+
+| OpenSSH version | SHA256 check | SSHSIG signature verification | Recommendation |
+|---|---|---|---|
+| 8.1 | Supported | Supported (experimental) | Works; upgrade to 8.2+ when practical |
+| 8.2 and newer | Supported | Supported | Recommended |
+| 8.0 and older | Supported | Not supported | Upgrade OpenSSH or use a trusted modern environment |
+
+The version that matters is the installed OpenSSH, not the operating-system release. Windows 10/11 optional features, macOS bundled versions, and Linux distribution packages can all differ, so do not infer support from the OS version alone.
+
+### If you are below 8.1
+
+In priority order:
+
+1. **Upgrade OpenSSH**: use the distribution package manager on Linux; update the OpenSSH Client optional feature on Windows; on macOS, upgrade to a supported OS release or install a newer OpenSSH from a trusted package manager. Run `ssh -V` again after upgrading.
+2. **Verify in a trusted modern environment**: on another machine, container, or CI runner with OpenSSH 8.1+, place the zip, `SHA256SUMS`, `SHA256SUMS.sig`, `allowed_signers`, and `release-signing-key.pub` in one directory and run the commands in this document. Copy only the release files; never obtain `ssh-keygen` from a third party.
+3. **If you cannot upgrade and have no trusted environment**: you can only check SHA256 and the public-key fingerprint (`ssh-keygen -lf release-signing-key.pub`). That detects download corruption but does not prove the publisher's identity. Record "signature not verified"; never claim "signature verified".
+
+Do not replace system components with a third-party `ssh-keygen` binary. Even if its fingerprint output matches, a replaced binary can forge the verification result.
 
 ## Release files
 

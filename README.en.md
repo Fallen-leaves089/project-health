@@ -125,6 +125,7 @@ Say any of these:
 
 - Git is preferred. A change review validates the baseline with `git rev-parse`. Without Git, the skill can still take a read-only snapshot, but must state that history, a fixed point, and an exact diff are unavailable.
 - Docker must be available if you want containerized migration/regression checks.
+- Verifying release signatures requires OpenSSH 8.1+. Below 8.1, only the SHA256 hash and public-key fingerprint are available, which does not prove publisher identity; see `SIGNING.en.md`.
 - The review phase is read-only by default; confirm the report path, and require an explicit instruction before code changes.
 - On macOS, read `references/macos-pitfalls.en.md` first and record the OS version, shell, architecture, and Rosetta state. Never present a Rosetta pass as a native arm64 result.
 - macOS hidden pitfalls use the shared `MAC-H01` through `MAC-H08` baseline; the professional and dedicated `project-health-macos` documents must be updated together, never one side only.
@@ -206,6 +207,8 @@ Check the public-key fingerprint first:
 ```bash
 ssh-keygen -lf release-signing-key.pub
 ```
+
+`ssh-keygen -Y sign` and `ssh-keygen -Y verify` require **OpenSSH 8.1 or newer**. OpenSSH 8.0 and earlier can only check the SHA256 hash and public-key fingerprint; they cannot verify the signature identity. Run `ssh -V` first; see "SSH version requirements" in `SIGNING.en.md` for upgrade and fallback paths.
 
 See `SIGNING.md` / `SIGNING.en.md` for the complete macOS, Linux, and Windows verification commands. `SHA256SUMS` and `SHA256SUMS.sig` are separate assets created after the zip; they are not inside the zip.
 
