@@ -9,7 +9,7 @@
 [![Verify](https://img.shields.io/github/actions/workflow/status/Fallen-leaves089/project-health/verify.yml?branch=main&label=verify&logo=github)](https://github.com/Fallen-leaves089/project-health/actions/workflows/verify.yml)
 [![Python](https://img.shields.io/badge/validation-Python%203.9%2B-blue?logo=python&logoColor=white)](#self-check)
 [![Preprint DOI](https://img.shields.io/badge/Preprint%20DOI-10.5281%2Fzenodo.24161471-blue)](https://doi.org/10.5281/zenodo.24161471)
-[![project-health DOI](https://img.shields.io/badge/project-health%20DOI-10.5281%2Fzenodo.24184440-blue)](https://doi.org/10.5281/zenodo.24184440)
+[![project-health DOI](https://img.shields.io/badge/project--health%20DOI-10.5281%2Fzenodo.24184440-blue)](https://doi.org/10.5281/zenodo.24184440)
 
 **Preprint**: [Project-Health: Evidence-Driven Project Auditing for AI Coding Agents](https://doi.org/10.5281/zenodo.24161471)
 
