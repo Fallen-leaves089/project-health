@@ -1,0 +1,44 @@
+{
+  "id": "zero-tests",
+  "description": "The checker treats an empty test discovery result as a successful run.",
+  "baseline_forbidden": [
+    "zero tests",
+    "collected 0 tests",
+    "empty suite",
+    "零测试",
+    "未收集到测试",
+    "测试数为 0"
+  ],
+  "required_groups": [
+    [
+      "zero test",
+      "0 test",
+      "no test",
+      "empty suite",
+      "collected 0",
+      "testsrun",
+      "零测试",
+      "没有测试",
+      "未收集",
+      "测试数为 0",
+      "0 个测试",
+      "0 个用例",
+      "零个测试",
+      "零个用例",
+      "空测试",
+      "空套件",
+      "空集合"
+    ],
+    [
+      "pass",
+      "success",
+      "green",
+      "通过",
+      "假绿",
+      "成功",
+      "exit 0",
+      "return 0"
+    ]
+  ],
+  "parent_hint": "CICD-02"
+}

@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.4.2 - 2026-11-13
+
+### 中文
+
+- 新增 `scripts/record_pitfall.py`：只写技能根目录下的 `PITFALLS.md` 或 `PITFALLS.local.md`，精确查重、保留历史，并拦截分隔符、换行、常见密钥和个人路径。
+- 明确记忆分流：安装技能使用 `PITFALLS.local.md`，首次自动创建、升级保留；维护仓库使用 `PITFALLS.md`。
+- `SKILL.md`、`AGENTS.md` 增加任务结束前的自主记忆检查、同类新机制引用父 ID、记忆范围（工具坑 + 可复用项目失败模式）和最终报告的记忆结果。
+- 新增记录器单元测试、评测器测试和两个基线未覆盖的假绿场景；真实 Agent 行为评测可选运行，默认 CI 不调用 Codex。
+- README 补充本地记忆说明，并提醒覆盖安装前备份 `PITFALLS.local.md`。
+- 修复 macOS 上 `/var` 与 `/private/var` 符号链接造成的路径断言假失败；跨平台路径比较先规范化。
+
+### English
+
+- Add `scripts/record_pitfall.py`, which can only write `PITFALLS.md` or `PITFALLS.local.md` under the skill root, performs exact deduplication, preserves history, and rejects separators, newlines, common secrets, and personal paths.
+- Define two memory stores: installed skills use `PITFALLS.local.md` (created on first use, preserved across upgrades); maintainers use `PITFALLS.md`.
+- Add an autonomous memory checkpoint before the final report to `SKILL.md` and `AGENTS.md`, including parent IDs for new mechanisms, scope for tooling traps plus reusable project failure modes, and a memory result in the report.
+- Add recorder unit tests, evaluator tests, and two false-green scenarios not covered by the baseline. The real agent behavior evaluation is optional and is not invoked by default CI.
+- Document local memory in the README and warn users to back up `PITFALLS.local.md` before a replacement install.
+- Fix false path-assertion failures caused by the `/var` to `/private/var` symlink on macOS; normalize paths before cross-platform comparisons.
+
+## 1.4.1 - 2026-11-13
+
+### 中文
+
+- 与 `project-health-macos` 建立 `MAC-H01`～`MAC-H08` 隐藏坑同步基线，覆盖 Rosetta、AirPlay/本地网络、Xcode/SDK、多语言工具链、dylib 签名、归档元数据、性能基线和 runner 覆盖范围。
+- 专业版 `references/macos-pitfalls.md` / `.en.md` 新增端口与本地网络、多语言工具链、Xcode/CLT/SDK、性能资源和常见假绿清单；`SKILL.md`、`PITFALLS.md` 同步速查项。
+- 两版契约测试检查共享编号和中英文关键证据，防止只更新专用版或只更新一个语言版本。
+
+### English
+
+- Establish the shared `MAC-H01` through `MAC-H08` hidden-pitfall baseline with `project-health-macos`, covering Rosetta, AirPlay/local networking, Xcode/SDK, multi-language toolchains, dylib signing, archive metadata, performance baselines, and runner coverage.
+- Add ports and local networking, multi-language toolchains, Xcode/CLT/SDK, performance resources, and a false-pass checklist to the professional `references/macos-pitfalls.md` / `.en.md`, with matching quick-reference rows in `SKILL.md` and `PITFALLS.md`.
+- Contract tests in both editions now check the shared IDs and bilingual evidence so a one-edition or one-language update cannot pass CI.
+
 ## 1.4.0 - 2026-11-13
 
 ### 中文

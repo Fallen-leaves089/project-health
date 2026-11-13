@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it using the metadata in this file."
 title: "project-health"
 abstract: "An evidence-driven project audit and delivery-acceptance skill for existing software projects. It performs standards and specification review, real build, migration and container regression, and produces P0-P3 findings with file and line evidence."
-version: "1.4.0"
+version: "1.4.2"
 date-released: "2026-11-13"
 license: "PolyForm-Noncommercial-1.0.0"
 type: software

@@ -24,6 +24,21 @@ xcode-select -p
 - Intel Macs can still receive a generic read-only review, but arm64-specific build, signing, performance, and container-architecture conclusions must be marked as not covered. The professional edition is not Apple Silicon-only.
 - Report the macOS version, shell, architecture, Rosetta state, and actual tool paths. Do not reduce the evidence to "it passed on a Mac".
 
+## Hidden-pitfall sync baseline
+
+These eight IDs are shared by the professional `project-health` edition and the dedicated `project-health-macos` edition. Any addition, rewrite, or deletion must update both Chinese and English documents in both repositories. Contract tests check the IDs and key evidence; updating only one edition is incomplete.
+
+| ID | Hidden pitfall | Minimum evidence |
+|---|---|---|
+| MAC-H01 | A Rosetta terminal, IDE, CI step, or parent process pushes the whole toolchain into x86_64 | `uname -m`, `arch`, `sysctl -in sysctl.proc_translated`, then `file` and `lipo -info` on interpreters and binaries |
+| MAC-H02 | AirPlay Receiver occupies 5000/7000, `localhost` resolves to `::1`, or local-network/TCC permission fails without a prompt | `lsof -nP -iTCP:5000 -sTCP:LISTEN` and the same for 7000; `curl -4` / `curl -6`; record permission and session type |
+| MAC-H03 | Only Command Line Tools are installed, the wrong Xcode is selected, or the license/SDK does not match | `xcode-select -p`, `xcodebuild -version`, `xcrun --show-sdk-path`, `xcodebuild -license check` |
+| MAC-H04 | Python, Node, Java, or native modules mix arm64 and x86_64 | `file`, `lipo -info`, `platform.machine()`, `process.arch`, `java -XshowSettings` |
+| MAC-H05 | A dylib has the wrong architecture, `DYLD_*` is ignored by SIP, or a modified library was not re-signed | `otool -L`, `codesign --verify --deep --strict`, `codesign -d --entitlements :-` |
+| MAC-H06 | Quarantine, extended attributes, AppleDouble files, resource forks, or symlinks are lost in an archive | `xattr -p com.apple.quarantine`; package with `ditto`, then verify in a clean extraction directory |
+| MAC-H07 | M1 thread counts, concurrency, connection pools, or performance baselines are copied to M5/M6 | `sysctl -n hw.ncpu`, `sysctl -n hw.memsize`, `vm_stat`, `system_profiler SPHardwareDataType` |
+| MAC-H08 | One arm64 runner or one chip is presented as coverage for every M-series Mac or Intel | Record chip, CPU, memory, macOS, Xcode/SDK, and Rosetta state; list untested generations as uncovered |
+
 ## 1. Rosetta and architecture mixing (the easiest source of false green)
 
 When a parent process starts under Rosetta, child processes usually inherit the x86_64 environment. `python3`, `node`, `java`, Homebrew, and the Docker client may each report a different architecture.
@@ -159,12 +174,99 @@ The free `macos-latest` runner may receive different chips, CPU counts, memory s
 
 Performance, GPU/Metal, Neural Engine, media encoding, and newest SDK conclusions need a real target-machine follow-up. CI success does not prove every Apple Silicon generation has been validated.
 
-## 12. Minimum verification checklist
+## 12. Ports, processes, and local networking
 
-- [ ] macOS version, shell, `uname -m`, `arch`, and Rosetta state are recorded.
-- [ ] Dependencies, interpreters, and binaries use a consistent architecture; no Rosetta pass was presented as native.
+AirPlay Receiver may occupy 5000/7000, and the listener may be `ControlCenter`; this is not a target-project bug. `localhost` may also resolve to IPv6 `::1` first while the service binds only `127.0.0.1`.
+
+```bash
+lsof -nP -iTCP:5000 -sTCP:LISTEN
+lsof -nP -iTCP:7000 -sTCP:LISTEN
+lsof -nP -iTCP:<port> -sTCP:LISTEN
+ps -axo pid,ppid,comm,args
+curl -4 -v http://127.0.0.1:<port>/
+curl -6 -v "http://[::1]:<port>/" 2>/dev/null || true
+```
+
+- Identify the listener with `lsof` and `ps` before using `kill -9`, repeatedly force-killing, or defaulting to `sudo`.
+- macOS 15+ may request Local Network permission on first access. CI, SSH, or a no-GUI session may be unable to show the prompt. Record this as an environment limit, not as proof that the service is broken.
+- If a system service owns the port, change the test port or bind explicitly; do not disable AirPlay Receiver just to "fix" the project.
+- Linux habits such as `ss` and `netstat -tulpn` do not transfer directly. If `lsof` cannot see a protected process, assess permissions first and do not default to elevation.
+
+## 13. Multi-language toolchain architecture
+
+`python3`, `node`, `java`, pip, npm caches, and native modules may come from different architectures. Version strings alone are insufficient.
+
+```bash
+file "$(command -v python3)"
+python3 -c 'import platform,sys; print(platform.machine()); print(sys.executable)'
+python3 -m pip debug --verbose | grep -i 'tags'
+node -p 'process.arch'
+npm config get arch
+printenv npm_config_arch 2>/dev/null || true
+/usr/libexec/java_home -V
+java -XshowSettings:properties -version 2>&1 | grep -E 'os.arch|java.home'
+lipo -info <binary-or-dylib>
+otool -L <binary-or-dylib>
+```
+
+- A universal2 wheel may contain both architectures; `platform.machine()` describes the current process, not a guarantee that the artifact is single-architecture.
+- If `node-gyp`, `sharp`, `canvas`, SQLite, or another native module has mixed architecture, delete `node_modules` and reinstall in a native arm64 terminal. Do not copy caches across architectures.
+- JDKs, JNI libraries, and container base images must share one architecture. Replacing `JAVA_HOME` without reinstalling JNI dependencies may still load the wrong `.dylib`.
+- Re-sign after modifying a dylib. `DYLD_LIBRARY_PATH` may be ignored for protected processes or under SIP; environment injection is not a long-term compatibility strategy.
+- Use `codesign -d --entitlements :-` to inspect JIT, debugger, or hardened-runtime entitlements. Do not disable SIP to work around them.
+
+## 14. Xcode, Command Line Tools, and SDKs
+
+`xcode-select -p` pointing at Command Line Tools does not mean full Xcode is installed. With multiple Xcodes, `xcodebuild` may select the wrong one. An unaccepted CLT license often appears as an opaque CI failure.
+
+```bash
+xcode-select -p
+xcodebuild -version
+xcrun --show-sdk-path
+xcrun --sdk macosx --show-sdk-version
+xcodebuild -showsdks
+xcodebuild -license check
+```
+
+- Record Xcode, SDK, Command Line Tools, the target `MACOSX_DEPLOYMENT_TARGET`, and the actual `xcodebuild` path.
+- `xcodebuild -license check` is a read-only check. Do not run `sudo xcodebuild -license accept`, `sudo xcode-select -s`, or `xcodebuild -runFirstLaunch` during an audit.
+- A CLT-only environment cannot prove a full Xcode project, Interface Builder, simulator, or signing flow works. Mark those conclusions as uncovered.
+- On Apple Silicon, also verify the target architecture, signing, and entitlements. "It compiled" does not mean the artifact is distributable.
+
+## 15. Do not reuse performance baselines across generations
+
+M1 through M6 differ in CPU/GPU cores, unified-memory bandwidth, and Neural Engine size. Copying fixed M1 worker counts, connection pools, Docker CPU limits, or concurrency settings to M5/M6 can cause contention, timeouts, or false performance regressions.
+
+```bash
+sysctl -n hw.ncpu
+sysctl -n hw.memsize
+vm_stat
+system_profiler SPHardwareDataType
+```
+
+Bind performance conclusions to chip, memory, macOS, Xcode/SDK, workload, and concurrency. CI proves functional and basic regressions only; it does not replace real M6 or M5 Ultra hardware testing. `powermetrics` requires additional privileges and must not be assumed available.
+
+## 16. Common false-pass checklist
+
+- The terminal is under Rosetta, but only `python3 --version` was checked, not `platform.machine()`.
+- `brew`, `python3`, and `node` come from different Homebrew prefixes or architectures.
+- A script passes on the developer machine because GNU tools are installed, then fails on a clean Mac.
+- Paths were tested only on case-insensitive APFS, missing a case collision.
+- Removing quarantine with `xattr -d` is treated as proof that the app is runnable.
+- A Docker image starts, so its architecture is assumed to match the host.
+- `lsof` shows no listener, so the service is declared dead without ruling out AirPlay, IPv6, or permission limits.
+- Only Command Line Tools are installed, but an iOS/macOS project is reported as built successfully.
+- One arm64 runner or chip passes, and the result is presented as "all M-series Macs pass".
+
+## 17. Minimum verification checklist
+
+- [ ] macOS version, shell, chip, `uname -m`, `arch`, and Rosetta state are recorded.
+- [ ] Dependencies, interpreters, native modules, and binaries use a consistent architecture; no Rosetta pass was presented as native.
 - [ ] No Homebrew prefix is hard-coded, and PATH shadowing was checked.
 - [ ] BSD versus GNU tool differences were considered.
-- [ ] Case sensitivity, Unicode, code signing, TCC, and launchd limits are documented.
+- [ ] Case sensitivity, Unicode, signing, TCC, local-network, and launchd limits are documented.
 - [ ] Docker client, server, and image architectures are confirmed separately.
+- [ ] Port conflicts, AirPlay 5000/7000, and IPv4/IPv6 behavior are ruled out.
+- [ ] Xcode/CLT/SDK/license state and deployment target are recorded.
+- [ ] Performance baselines are tied to chip and resource specifications; untested generations and hardware are listed.
 - [ ] The report states macOS coverage and uncovered areas.

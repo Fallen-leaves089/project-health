@@ -66,6 +66,8 @@ The directory root must contain `SKILL.md`; do not copy only that file. `AGENTS.
 
 > **Upgrading from 1.1.x**: remove the old `fullstack-health-check` skill directory before installing `project-health`, so both versions do not coexist.
 
+> **Local pitfall memory**: after installation, verified new pitfalls are appended to `PITFALLS.local.md`. It is created on first use, preserved across upgrades, and read back at the start of later tasks. Back it up before a `Copy-Item -Force` replacement; maintainers still write `PITFALLS.md`.
+
 Skill hosts load the Chinese `SKILL.md` by default. For English, copy `SKILL.en.md` over `SKILL.md`. Both files stay in the repository for comparison and updates.
 
 ## What it's for
@@ -85,6 +87,7 @@ It applies to services, web and mobile clients, database migrations, containeriz
 3. **Two-axis review**: standards compliance and spec compliance are reviewed separately, so "ugly code" and "missing requirement" do not get mixed into one bucket.
 4. **Real regression**: tests, builds, migrations, compose configuration, and key paths are actually run, not just read; obtain consent before commands that write files, install dependencies, or start services.
 5. **Evidence output**: every finding includes `file:line`, impact, recommendation, verification method, and confidence; the report also lists "verified clean" areas and "not covered this round".
+6. **Keep the lesson**: before the final report, the agent appends verified new failure mechanisms to the skill's own memory. Exact duplicates are not appended; a new mechanism under the same class cites the parent entry. The report states whether anything was recorded.
 
 It also checks whether the verification method itself is valid: positive and negative cases, failure exit codes, whether commands actually ran, and whether a guard script can produce a false green.
 
@@ -123,6 +126,8 @@ Say any of these:
 - Docker must be available if you want containerized migration/regression checks.
 - The review phase is read-only by default; confirm the report path, and require an explicit instruction before code changes.
 - On macOS, read `references/macos-pitfalls.en.md` first and record the OS version, shell, architecture, and Rosetta state. Never present a Rosetta pass as a native arm64 result.
+- macOS hidden pitfalls use the shared `MAC-H01` through `MAC-H08` baseline; the professional and dedicated `project-health-macos` documents must be updated together, never one side only.
+- macOS hidden pitfalls use the shared `MAC-H01` through `MAC-H08` baseline; the professional and dedicated `project-health-macos` documents must be updated together, never one side only.
 - For Windows client or Windows Server troubleshooting, read `references/windows-pitfalls.en.md` first; for Linux servers, read `references/linux-server-pitfalls.en.md` first.
 
 ## Package layout
@@ -172,6 +177,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 
 The Python verifier checks required files, UTF-8 without BOM, Markdown links, the redaction self-test, sensitive patterns in the package, and `SKILL.md` / `SKILL.en.md` frontmatter, version, and language links. The PowerShell verifier checks required files, BOM, links, frontmatter, version consistency, and redaction; language links are checked by the Python verifier only.
 
+### Optional: verify autonomous pitfall recording
+
+The default tests validate the recorder and rules without calling an external agent. To test real behavior:
+
+```powershell
+python -B tests\agent_memory_eval.py --codex <codex.exe> --require-scenario-match --min-passed 2
+```
+
+The evaluator copies the skill and a fixture target into a temporary directory. Its prompt only asks for an audit and never mentions "record", "memory", or "pitfalls". It then checks whether the agent wrote `PITFALLS.local.md`, whether the entry matches the new scenario, and whether the target and baseline stayed unchanged. It relies on an external agent and is non-deterministic, so it is not part of default CI. Both fixtures (zero-test false green and 0% coverage with PASS) are checked against the baseline to keep them unseen.
+
 Run only the redaction scanner:
 
 ```bash
@@ -220,7 +235,7 @@ Commercial use requires a written license from the author, but **the author is o
 ## Version
 
 - Full changelog: [CHANGELOG.md](CHANGELOG.md)
-- Version: 1.4.0
+- Version: 1.4.2
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
 - Security fix: 2026-11-07

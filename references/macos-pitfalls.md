@@ -24,6 +24,21 @@ xcode-select -p
 - Intel Mac 仍可做通用只读检查，但 arm64 专属构建、签名、性能和容器架构结论必须标为未覆盖；专业版不是 Apple Silicon-only 技能。
 - 报告中写清 macOS 版本、shell、架构、Rosetta 状态和实际工具路径，不要只写“Mac 上通过”。
 
+## 隐藏坑同步基线
+
+以下 8 个编号由专业版 `project-health` 与专用版 `project-health-macos` 共用。新增、改写或删除任一条时，必须同步两边的中英文文档；契约测试会检查编号和关键证据。只更新一个版本不算完成。
+
+| ID | 隐藏坑 | 最低证据 |
+|---|---|---|
+| MAC-H01 | Rosetta 终端、IDE、CI step 或父进程让整个工具链混入 x86_64 | `uname -m`、`arch`、`sysctl -in sysctl.proc_translated`，再用 `file`、`lipo -info` 检查解释器和二进制 |
+| MAC-H02 | AirPlay Receiver 占用 5000/7000、`localhost` 先解析到 `::1`，或本地网络/TCC 权限不弹窗 | `lsof -nP -iTCP:5000 -sTCP:LISTEN`、7000 同查；`curl -4` / `curl -6`；记录权限与会话类型 |
+| MAC-H03 | 只有 Command Line Tools、没有完整 Xcode；多 Xcode 选错；license/SDK 不匹配 | `xcode-select -p`、`xcodebuild -version`、`xcrun --show-sdk-path`、`xcodebuild -license check` |
+| MAC-H04 | Python、Node、Java 或原生模块混用 arm64 与 x86_64 | `file`、`lipo -info`、`platform.machine()`、`process.arch`、`java -XshowSettings` |
+| MAC-H05 | dylib 架构错误、`DYLD_*` 被 SIP 忽略，或改库后没有重新签名 | `otool -L`、`codesign --verify --deep --strict`、`codesign -d --entitlements :-` |
+| MAC-H06 | quarantine、扩展属性、AppleDouble、资源叉或符号链接在归档后丢失 | `xattr -p com.apple.quarantine`；用 `ditto` 打包，并在干净目录解压复核 |
+| MAC-H07 | 把 M1 的线程数、并发、连接池或性能基线照搬到 M5/M6 | `sysctl -n hw.ncpu`、`sysctl -n hw.memsize`、`vm_stat`、`system_profiler SPHardwareDataType` |
+| MAC-H08 | 单个 arm64 runner/单个芯片通过后被写成所有 M 系列或 Intel 通过 | 记录芯片、CPU、内存、macOS、Xcode/SDK、Rosetta 状态；未跑的世代列入未覆盖 |
+
 ## 1. Rosetta 与架构混用（最容易造成假绿）
 
 父进程在 Rosetta 下启动时，子进程通常继续继承 x86_64 环境。`python3`、`node`、`java`、Homebrew、Docker client 可能各自报告不同架构。
@@ -159,12 +174,99 @@ find <dir> -maxdepth 2 -type l -ls
 
 性能、GPU/Metal、Neural Engine、媒体编码和最新 SDK 的结论需要真实目标机补测；CI 通过不等于所有 Apple Silicon 世代都已验证。
 
-## 12. 最小验证清单
+## 12. 端口、进程与本地网络
 
-- [ ] 已记录 macOS 版本、shell、`uname -m`、`arch` 和 Rosetta 状态。
-- [ ] 依赖、解释器和二进制架构一致；没有把 Rosetta 结果当成原生结果。
+AirPlay Receiver 可能占用 5000/7000，监听者可能显示为 `ControlCenter`；这不是目标项目 bug。`localhost` 还可能先解析到 IPv6 `::1`，而服务只绑定 `127.0.0.1`。
+
+```bash
+lsof -nP -iTCP:5000 -sTCP:LISTEN
+lsof -nP -iTCP:7000 -sTCP:LISTEN
+lsof -nP -iTCP:<port> -sTCP:LISTEN
+ps -axo pid,ppid,comm,args
+curl -4 -v http://127.0.0.1:<port>/
+curl -6 -v "http://[::1]:<port>/" 2>/dev/null || true
+```
+
+- 先用 `lsof` 和 `ps` 确认监听者，不要直接 `kill -9`、反复强杀或默认加 `sudo`。
+- macOS 15+ 首次访问局域网可能触发“本地网络”权限；CI、SSH 或无 GUI 会话可能无法弹出授权。把结果记为环境限制，不要写成服务不可用。
+- 端口被系统服务占用时，优先改测试端口或显式绑定地址；不要关闭 AirPlay Receiver 来“修”项目。
+- `ss`、`netstat -tulpn` 等 Linux 习惯不能直接套用；`lsof` 看不到受保护进程时先判断权限，不要默认提权。
+
+## 13. 多语言工具链架构
+
+`python3`、`node`、`java`、pip、npm 缓存和原生模块可能来自不同架构。只看版本号不够。
+
+```bash
+file "$(command -v python3)"
+python3 -c 'import platform,sys; print(platform.machine()); print(sys.executable)'
+python3 -m pip debug --verbose | grep -i 'tags'
+node -p 'process.arch'
+npm config get arch
+printenv npm_config_arch 2>/dev/null || true
+/usr/libexec/java_home -V
+java -XshowSettings:properties -version 2>&1 | grep -E 'os.arch|java.home'
+lipo -info <binary-or-dylib>
+otool -L <binary-or-dylib>
+```
+
+- universal2 wheel 可能同时包含两种架构；`platform.machine()` 只说明当前进程，不等于产物一定是单架构。
+- `node-gyp`、`sharp`、`canvas`、SQLite 等原生模块混架构时，删除 `node_modules` 后在原生 arm64 终端重装，不要跨架构复制缓存。
+- JDK、JNI 库和容器基础镜像必须同架构；只替换 `JAVA_HOME` 而不重装 JNI 依赖，可能仍加载错误的 `.dylib`。
+- 修改 dylib 后要重新签名；`DYLD_LIBRARY_PATH` 在受保护进程或 SIP 场景可能被忽略，不要把注入环境变量当作长期兼容方案。
+- 用 `codesign -d --entitlements :-` 检查 JIT、调试器或 hardened runtime 相关 entitlement；不要通过关闭 SIP 解决。
+
+## 14. Xcode、Command Line Tools 与 SDK
+
+`xcode-select -p` 指向 Command Line Tools 不代表有完整 Xcode；安装多个 Xcode 时 `xcodebuild` 可能选错。CLT license 未接受时，CI 常见为无提示失败。
+
+```bash
+xcode-select -p
+xcodebuild -version
+xcrun --show-sdk-path
+xcrun --sdk macosx --show-sdk-version
+xcodebuild -showsdks
+xcodebuild -license check
+```
+
+- 记录 Xcode、SDK、Command Line Tools、目标 `MACOSX_DEPLOYMENT_TARGET` 和实际 `xcodebuild` 路径。
+- `xcodebuild -license check` 只做只读检查；审计任务不要执行 `sudo xcodebuild -license accept`、`sudo xcode-select -s` 或 `xcodebuild -runFirstLaunch`。
+- CLT-only 环境不能证明完整 Xcode 工程、Interface Builder、模拟器或签名流程通过；这些结论必须标为未覆盖。
+- Apple Silicon 上还要核对目标架构、签名和 entitlement；“编译成功”不等于产物可分发。
+
+## 15. 性能与资源基线不要跨世代照搬
+
+M1 到 M6 的 CPU/GPU 核心、统一内存带宽和 Neural Engine 规模不同。把 M1 的固定 worker 数、连接池、Docker CPU 限制直接搬到 M5/M6，可能造成资源争抢、超时或假性能回归。
+
+```bash
+sysctl -n hw.ncpu
+sysctl -n hw.memsize
+vm_stat
+system_profiler SPHardwareDataType
+```
+
+性能结论至少绑定芯片、内存、macOS、Xcode/SDK、负载和并发度。CI 只能证明功能和基本回归，不能替代 M6 或 M5 Ultra 的真实硬件测试；`powermetrics` 需要额外权限，不能默认可用。
+
+## 16. 常见假绿清单
+
+- 终端在 Rosetta 下，只看了 `python3 --version`，没看 `platform.machine()`。
+- `brew`、`python3`、`node` 来自两套 Homebrew 前缀或不同架构。
+- 在开发者机器上通过，因为本机装了 GNU 工具；干净 Mac 上失败。
+- 只在大小写不敏感 APFS 上验证路径，漏掉大小写冲突。
+- 用 `xattr -d` 去掉 quarantine 后就宣称应用可运行。
+- Docker 镜像能启动，就假设镜像架构与宿主机一致。
+- `lsof` 看不到端口，就断言服务没启动；没有排除 AirPlay、IPv6 或权限限制。
+- 只有 Command Line Tools、没有完整 Xcode，却报告 iOS/macOS 工程构建通过。
+- 一个 arm64 runner/一个芯片通过，就写成“所有 M 系列通过”。
+
+## 17. 最小验证清单
+
+- [ ] 已记录 macOS 版本、shell、芯片、`uname -m`、`arch` 和 Rosetta 状态。
+- [ ] 依赖、解释器、原生模块和二进制架构一致；没有把 Rosetta 结果当成原生结果。
 - [ ] 没有写死 Homebrew 前缀，且已检查 PATH 遮蔽。
 - [ ] macOS 系统工具与 GNU 工具差异已考虑。
-- [ ] 大小写、Unicode、签名、TCC 和 launchd 限制已记录。
+- [ ] 大小写、Unicode、签名、TCC、本地网络和 launchd 限制已记录。
 - [ ] Docker client、server 和镜像架构已分别确认。
+- [ ] 端口冲突、AirPlay 5000/7000、IPv4/IPv6 已排除。
+- [ ] Xcode/CLT/SDK/license 和部署目标已记录。
+- [ ] 性能基线绑定芯片与资源规格；未覆盖的世代和硬件已列出。
 - [ ] 报告写明了 macOS 覆盖范围和未覆盖项。
