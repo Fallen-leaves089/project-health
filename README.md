@@ -202,7 +202,7 @@ ssh-keygen -lf release-signing-key.pub
 
 ## 引用
 
-如果这个项目对你的工作有帮助，请按 [`CITATION.cff`](CITATION.cff) 引用。作者 ORCID：[`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831)。GitHub 仓库页的 **Cite this repository** 可直接生成 APA 和 BibTeX。
+作者：[`fallen-leaves`](https://github.com/Fallen-leaves089)；ORCID：[`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831)。如果这个项目对你的工作有帮助，请按 [`CITATION.cff`](CITATION.cff) 引用。GitHub 仓库页的 **Cite this repository** 可直接生成 APA 和 BibTeX。
 
 ## 许可
 

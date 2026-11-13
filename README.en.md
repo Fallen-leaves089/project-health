@@ -202,7 +202,7 @@ See `CONTRIBUTING.en.md`. New environment traps should include "trap / workaroun
 
 ## Citation
 
-If this project helps your work, cite it using [`CITATION.cff`](CITATION.cff). Author ORCID: [`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831). The repository's **Cite this repository** menu can generate APA and BibTeX.
+Author: [`fallen-leaves`](https://github.com/Fallen-leaves089); ORCID: [`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831). If this project helps your work, cite it using [`CITATION.cff`](CITATION.cff). The repository's **Cite this repository** menu can generate APA and BibTeX.
 
 ## License
 
