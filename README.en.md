@@ -2,6 +2,12 @@
 
 [中文](README.md) | [English](README.en.md)
 
+[![ORCID](https://img.shields.io/badge/ORCID-0009--0005--8897--4831-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0005-8897-4831)
+[![License](https://img.shields.io/badge/license-PolyForm--Noncommercial--1.0.0-orange.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Fallen-leaves089/project-health?label=release)](https://github.com/Fallen-leaves089/project-health/releases/latest)
+[![Verify](https://img.shields.io/github/actions/workflow/status/Fallen-leaves089/project-health/verify.yml?branch=main&label=verify&logo=github)](https://github.com/Fallen-leaves089/project-health/actions/workflows/verify.yml)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.24161471-blue)](https://doi.org/10.5281/zenodo.24161471)
+
 **Preprint**: [Project-Health: Evidence-Driven Project Auditing for AI Coding Agents](https://doi.org/10.5281/zenodo.24161471)
 
 **One line: recommended for enterprise project construction and routine maintenance, and suitable for everyday use; evidence-driven audits and delivery acceptance that surface issues blocking release, handover, or delivery.**
@@ -20,7 +26,7 @@ Use it for enterprise project construction and routine maintenance, before relea
 - **For a quick, plain-language first check only**: start with [`project-health-lite`](https://github.com/Fallen-leaves089/project-health-lite). It remains the default entry point for a first check.
 - Both editions can coexist; upgrade to the professional edition only when deeper coverage is needed, and do not run both full reviews in parallel.
 
-Quick navigation: [Quick start](#quick-start) · [Which edition](#which-edition) · [What it's for](#what-its-for) · [What it caught](#what-it-caught-a-real-two-pass-health-check) · [Triggers](#triggers) · [Self-check](#self-check) · [License](#license)
+Quick navigation: [Quick start](#quick-start) · [Which edition](#which-edition) · [What it's for](#what-its-for) · [What it caught](#what-it-caught-a-real-two-pass-health-check) · [Triggers](#triggers) · [Self-check](#self-check) · [Citation](#citation) · [License](#license)
 
 ## Quick start
 
@@ -120,6 +126,7 @@ Say any of these:
 project-health/
 ├── SKILL.md / SKILL.en.md                # skill body (Chinese default / English mirror)
 ├── README.md / README.en.md              # this file
+├── CITATION.cff                         # citation metadata (includes ORCID)
 ├── AGENTS.md                            # standing rules (task boundaries and pitfall discipline)
 ├── PITFALLS.md                          # enterprise pitfall baseline + maintainer pitfall log
 ├── references/                           # platform commands, Windows/Win Server traps, Linux server traps, verification, reports
@@ -192,6 +199,10 @@ See `SANITIZATION.en.md` for the full scope and `SECURITY.md` for reporting.
 ## Contributing
 
 See `CONTRIBUTING.en.md`. New environment traps should include "trap / workaround / verification"; new guard scripts must include positive and negative cases.
+
+## Citation
+
+If this project helps your work, cite it using [`CITATION.cff`](CITATION.cff). Author ORCID: [`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831). The repository's **Cite this repository** menu can generate APA and BibTeX.
 
 ## License
 
