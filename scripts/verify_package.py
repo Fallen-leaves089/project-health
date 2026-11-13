@@ -82,6 +82,8 @@ REQUIRED_FILES = [
     ".github/workflows/verify.yml",
     "references/platform-commands.md",
     "references/platform-commands.en.md",
+    "references/macos-pitfalls.md",
+    "references/macos-pitfalls.en.md",
     "references/windows-pitfalls.md",
     "references/windows-pitfalls.en.md",
     "references/linux-server-pitfalls.md",

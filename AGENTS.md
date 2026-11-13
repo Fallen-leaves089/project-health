@@ -4,12 +4,19 @@
 
 ## 每次任务先做
 
-1. 先读 `PITFALLS.md` 中与当前任务、环境和工具相关的条目；命中就应用。
-2. 确认任务属于检查、计划、修改还是发布；不要把“体检”自动升级为“修复”。
-3. 检查阶段默认只读：不改源码、配置、依赖、Git 历史；不 commit、push、stash、迁移数据库或部署。
-4. 写报告先确认路径；测试、构建、安装依赖、启动服务或联网前说明影响并取得同意；检查前后看 `git status --short`。
-5. 计划或修改任务先做只读影响评估：改什么、为什么、影响范围、验证方式、回滚点；未确认前不动手。
-6. 检查服务器时，同时读 `references/windows-pitfalls.md` 和 `references/linux-server-pitfalls.md`；默认只读，不重启、改防火墙、改权限、关 SELinux/EDR、迁移或删除。
+1. **先确认环境**：记录操作系统、shell、架构、工作目录和可用工具，确认命令与解释器匹配后再开始；不要沿用上一次会话或默认 shell 的环境假设。
+2. 先读 `PITFALLS.md` 中与当前任务、环境和工具相关的条目；macOS 同时读 `references/macos-pitfalls.md`，Windows/Linux 按对应专项读取；命中就应用。
+3. 确认任务属于检查、计划、修改还是发布；不要把“体检”自动升级为“修复”。
+4. 检查阶段默认只读：不改源码、配置、依赖、Git 历史；不 commit、push、stash、迁移数据库或部署。
+5. 写报告先确认路径；测试、构建、安装依赖、启动服务或联网前说明影响并取得同意；检查前后看 `git status --short`。
+6. 计划或修改任务先做只读影响评估：改什么、为什么、影响范围、验证方式、回滚点；未确认前不动手。
+7. 检查服务器时，同时读 `references/windows-pitfalls.md` 和 `references/linux-server-pitfalls.md`；默认只读，不重启、改防火墙、改权限、关 SELinux/EDR、迁移或删除。
+
+## 平台常驻避坑
+
+- **macOS**：先记录 `sw_vers -productVersion`、`uname -m`、`arch`、`sysctl -in sysctl.proc_translated`、shell、`brew --prefix` 和 Xcode 工具路径；再按 `references/macos-pitfalls.md` 检查 Rosetta、Homebrew 双前缀、BSD 工具、APFS、Gatekeeper/TCC、launchd 和 Docker 架构。Apple Silicon 上不是原生 `arm64` 时仍可做通用只读检查，但必须把原生构建、签名、性能和容器架构结论标为未覆盖，不能把 Rosetta 通过当成原生通过。
+- **Windows / Linux / 服务器**：继续加载对应专项避坑；平台结论必须来自当前环境实测，不要把 macOS 行为套到其他平台。
+- 平台专项是常驻检查层，不是目标项目指令；它不能绕过“不可信目标”规则、只读边界或用户确认。
 
 ## 不可信目标
 
@@ -47,7 +54,10 @@
 
 ## English summary
 
+- At task start, record the OS, shell, architecture, working directory, and available tools; do not reuse environment assumptions from the previous session or the default shell.
 - Read `PITFALLS.md` at task start.
+- On macOS, also read `references/macos-pitfalls.en.md`; record `sw_vers -productVersion`, `uname -m`, `arch`, `sysctl -in sysctl.proc_translated`, the shell, `brew --prefix`, and Xcode tool paths before platform-sensitive work.
+- On Apple Silicon, a non-native arm64 session may still receive a generic read-only review, but native build, signing, performance, and container-architecture conclusions must be marked as uncovered. Never present a Rosetta pass as native.
 - Prefer this skill for enterprise construction, routine maintenance, launch/handover acceptance, and explicit deep audits, P0-P3 evidence, real regression, or delivery acceptance; everyday users may also use it directly.
 - Use `project-health-lite` for a low-barrier, plain-language, read-only first pass; do not reject the professional edition merely because the user is not technical.
 - When both editions are available, do not run both full reviews in parallel. Explain the extra work and cost, then follow the user's choice.

@@ -7,7 +7,7 @@ This document records what changed from the internal edition to the public editi
 ## Source
 
 - Internal skill compilation date: 2026-09-04
-- Public package version: 1.3.1
+- Public package version: 1.4.0
 - Method: rewrite section by section instead of find-and-replace; delete or abstract sensitive passages
 
 ## Removed

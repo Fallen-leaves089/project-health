@@ -122,6 +122,7 @@ Say any of these:
 - Git is preferred. A change review validates the baseline with `git rev-parse`. Without Git, the skill can still take a read-only snapshot, but must state that history, a fixed point, and an exact diff are unavailable.
 - Docker must be available if you want containerized migration/regression checks.
 - The review phase is read-only by default; confirm the report path, and require an explicit instruction before code changes.
+- On macOS, read `references/macos-pitfalls.en.md` first and record the OS version, shell, architecture, and Rosetta state. Never present a Rosetta pass as a native arm64 result.
 - For Windows client or Windows Server troubleshooting, read `references/windows-pitfalls.en.md` first; for Linux servers, read `references/linux-server-pitfalls.en.md` first.
 
 ## Package layout
@@ -133,7 +134,7 @@ project-health/
 ├── CITATION.cff                         # citation metadata (includes ORCID)
 ├── AGENTS.md                            # standing rules (task boundaries and pitfall discipline)
 ├── PITFALLS.md                          # enterprise pitfall baseline + maintainer pitfall log
-├── references/                           # platform commands, Windows/Win Server traps, Linux server traps, verification, reports
+├── references/                           # platform commands, macOS/Apple Silicon traps, Windows/Win Server traps, Linux server traps, verification, reports
 ├── scripts/                              # cross-platform verification and redaction scanners
 ├── tests/                                # contract tests, acceptance cases, malicious-target fixtures
 └── LICENSE / COMMERCIAL / SIGNING / SANITIZATION
@@ -141,7 +142,7 @@ project-health/
 
 ## Platform support
 
-The core skill uses only Markdown and Git commands. It works on Windows 10/11, Windows Server 2019/2022+, macOS / Linux + Python 3.9+, and WSL2. Server coverage includes Windows Server IIS, services, NTFS/SMB, AD/Kerberos, SQL Server, certificates, patching, and clusters, plus Linux systemd, permissions, SELinux/AppArmor, disk, OOM, firewall, NTP, package management, and rollback. The Python verifier uses only the standard library and needs no network access.
+The core skill uses only Markdown and Git commands. It works on Windows 10/11, Windows Server 2019/2022+, macOS / Linux + Python 3.9+, and WSL2. On macOS it loads standing guidance for Apple Silicon / Rosetta, dual Homebrew prefixes, BSD tools, APFS, Gatekeeper/TCC, launchd, and Docker architecture. Intel Macs and Rosetta sessions can still receive a generic read-only review, but native build, signing, performance, and container-architecture conclusions are marked as uncovered. Server coverage includes Windows Server IIS, services, NTFS/SMB, AD/Kerberos, SQL Server, certificates, patching, and clusters, plus Linux systemd, permissions, SELinux/AppArmor, disk, OOM, firewall, NTP, package management, and rollback. The Python verifier uses only the standard library and needs no network access.
 
 ## Self-check
 
@@ -219,9 +220,10 @@ Commercial use requires a written license from the author, but **the author is o
 ## Version
 
 - Full changelog: [CHANGELOG.md](CHANGELOG.md)
-- Version: 1.3.1
+- Version: 1.4.0
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
 - Security fix: 2026-11-07
 - Enterprise and server pitfall expansion: 2026-11-11
 - Enterprise entry and skill-routing revision: 2026-11-12
+- macOS standing pitfalls and environment gate: 2026-11-13

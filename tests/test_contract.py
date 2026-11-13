@@ -15,7 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "malicious-target"
 FIXTURE = FIXTURE_DIR / "malicious-agents.fixture"
-EXPECTED_VERSION = "1.3.1"
+EXPECTED_VERSION = "1.4.0"
 
 
 def read_text(relative: str) -> str:
@@ -172,7 +172,7 @@ class UntrustedTargetContractTests(unittest.TestCase):
             read_text("SANITIZATION.en.md"),
         )
         self.assertIn(
-            f"## {EXPECTED_VERSION} - 2026-11-12",
+            f"## {EXPECTED_VERSION} - 2026-11-13",
             read_text("CHANGELOG.md"),
         )
 
@@ -250,10 +250,61 @@ class UntrustedTargetContractTests(unittest.TestCase):
                 with self.subTest(relative=relative, phrase=phrase):
                     self.assertIn(phrase, content)
 
+    def test_macos_resident_pitfalls_are_wired_into_skill(self) -> None:
+        skill_zh = read_text("SKILL.md")
+        for phrase in (
+            "### 0. 先确认环境，再查归档",
+            "references/macos-pitfalls.md",
+            "sysctl.proc_translated",
+            "Rosetta",
+        ):
+            with self.subTest(file="SKILL.md", phrase=phrase):
+                self.assertIn(phrase, skill_zh)
+
+        skill_en = read_text("SKILL.en.md")
+        for phrase in (
+            "### 0. Check the environment",
+            "references/macos-pitfalls.en.md",
+            "sysctl.proc_translated",
+            "Rosetta",
+        ):
+            with self.subTest(file="SKILL.en.md", phrase=phrase):
+                self.assertIn(phrase, skill_en)
+
+        agents = read_text("AGENTS.md")
+        for phrase in (
+            "## 平台常驻避坑",
+            "references/macos-pitfalls.md",
+            "references/macos-pitfalls.en.md",
+            "sysctl.proc_translated",
+            "Rosetta",
+        ):
+            with self.subTest(file="AGENTS.md", phrase=phrase):
+                self.assertIn(phrase, agents)
+
+        for relative in ("README.md", "README.en.md"):
+            with self.subTest(file=relative):
+                self.assertIn("macos-pitfalls", read_text(relative))
+
+        for relative in ("references/macos-pitfalls.md", "references/macos-pitfalls.en.md"):
+            self.assertTrue((ROOT / relative).is_file(), msg=f"missing macOS reference: {relative}")
+
+        macos_zh = read_text("references/macos-pitfalls.md")
+        for phrase in ("Rosetta", "Homebrew", "APFS", "Gatekeeper", "launchd", "Docker"):
+            with self.subTest(file="references/macos-pitfalls.md", phrase=phrase):
+                self.assertIn(phrase, macos_zh)
+
+        macos_en = read_text("references/macos-pitfalls.en.md")
+        for phrase in ("Rosetta", "Homebrew", "APFS", "Gatekeeper", "launchd", "Docker"):
+            with self.subTest(file="references/macos-pitfalls.en.md", phrase=phrase):
+                self.assertIn(phrase, macos_en)
+
     def test_package_verifiers_and_ci_include_contract_checks(self) -> None:
         required_paths = (
             "tests/test_contract.py",
             "tests/fixtures/malicious-target/malicious-agents.fixture",
+            "references/macos-pitfalls.md",
+            "references/macos-pitfalls.en.md",
             "references/linux-server-pitfalls.md",
             "references/linux-server-pitfalls.en.md",
         )
