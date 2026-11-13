@@ -2,10 +2,12 @@
 
 [中文](README.md) | [English](README.en.md)
 
+[![Author](https://img.shields.io/badge/author-fallen--leaves-181717?logo=github&logoColor=white)](https://github.com/Fallen-leaves089)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0005--8897--4831-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0005-8897-4831)
 [![License](https://img.shields.io/badge/license-PolyForm--Noncommercial--1.0.0-orange.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/Fallen-leaves089/project-health?label=release)](https://github.com/Fallen-leaves089/project-health/releases/latest)
 [![Verify](https://img.shields.io/github/actions/workflow/status/Fallen-leaves089/project-health/verify.yml?branch=main&label=verify&logo=github)](https://github.com/Fallen-leaves089/project-health/actions/workflows/verify.yml)
+[![Python](https://img.shields.io/badge/validation-Python%203.9%2B-blue?logo=python&logoColor=white)](#自检)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.24161471-blue)](https://doi.org/10.5281/zenodo.24161471)
 
 **预印本**：[Project-Health：面向 AI 编码代理的证据驱动项目审计方法](https://doi.org/10.5281/zenodo.24161471)
@@ -27,6 +29,8 @@
 - 两版可以并存；明确需要深度时再升级专业版，不要同时跑两套完整检查。
 
 快速导航：[30 秒开始](#30-秒开始) · [怎么选版本](#怎么选版本) · [主要用途](#主要用途) · [真实收益](#真实收益) · [触发方式](#触发方式) · [自检](#自检) · [引用](#引用) · [许可](#许可)
+
+仓库入口：[源码](https://github.com/Fallen-leaves089/project-health) · [发布下载](https://github.com/Fallen-leaves089/project-health/releases/latest) · [更新记录](CHANGELOG.md) · [问题反馈](https://github.com/Fallen-leaves089/project-health/issues) · [参与贡献](CONTRIBUTING.md) · [安全策略](SECURITY.md)
 
 ## 30 秒开始
 
@@ -214,6 +218,7 @@ ssh-keygen -lf release-signing-key.pub
 
 ## 版本
 
+- 完整更新记录：[CHANGELOG.md](CHANGELOG.md)
 - 版本：1.3.1
 - 对应内部整理日期：2026-09-04
 - 公开发布整理：2026-11-04
