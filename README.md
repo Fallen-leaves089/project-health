@@ -2,6 +2,12 @@
 
 [中文](README.md) | [English](README.en.md)
 
+[![ORCID](https://img.shields.io/badge/ORCID-0009--0005--8897--4831-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0005-8897-4831)
+[![License](https://img.shields.io/badge/license-PolyForm--Noncommercial--1.0.0-orange.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Fallen-leaves089/project-health?label=release)](https://github.com/Fallen-leaves089/project-health/releases/latest)
+[![Verify](https://img.shields.io/github/actions/workflow/status/Fallen-leaves089/project-health/verify.yml?branch=main&label=verify&logo=github)](https://github.com/Fallen-leaves089/project-health/actions/workflows/verify.yml)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.24161471-blue)](https://doi.org/10.5281/zenodo.24161471)
+
 **预印本**：[Project-Health：面向 AI 编码代理的证据驱动项目审计方法](https://doi.org/10.5281/zenodo.24161471)
 
 **一句话：推荐用于企业项目的建设与日常维护，也适合普通人日常使用；通过证据驱动的审计与交付验收，找出会阻断上线、交接或交付的问题。**
@@ -20,7 +26,7 @@
 - **只需要快速、说人话的第一次体检**：优先用 [`project-health-lite`](https://github.com/Fallen-leaves089/project-health-lite)。它仍然是第一次体检的默认入口。
 - 两版可以并存；明确需要深度时再升级专业版，不要同时跑两套完整检查。
 
-快速导航：[30 秒开始](#30-秒开始) · [怎么选版本](#怎么选版本) · [主要用途](#主要用途) · [真实收益](#真实收益) · [触发方式](#触发方式) · [自检](#自检) · [许可](#许可)
+快速导航：[30 秒开始](#30-秒开始) · [怎么选版本](#怎么选版本) · [主要用途](#主要用途) · [真实收益](#真实收益) · [触发方式](#触发方式) · [自检](#自检) · [引用](#引用) · [许可](#许可)
 
 ## 30 秒开始
 
@@ -120,6 +126,7 @@ git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能�
 project-health/
 ├── SKILL.md / SKILL.en.md                # 技能本体（中文默认 / 英文镜像）
 ├── README.md / README.en.md              # 本文件
+├── CITATION.cff                         # 引用元数据（含 ORCID）
 ├── AGENTS.md                            # 常驻规则（任务边界与避坑纪律）
 ├── PITFALLS.md                          # 企业级避坑基线 + 维护者避坑日志
 ├── references/                           # 平台命令、Windows/Win Server 坑、Linux 服务器坑、验证手册、报告模板
@@ -192,6 +199,10 @@ ssh-keygen -lf release-signing-key.pub
 ## 参与贡献
 
 见 `CONTRIBUTING.md`。新增环境坑请写清“坑 / 绕法 / 验证方式”；新增守护脚本必须自带正反例。
+
+## 引用
+
+如果这个项目对你的工作有帮助，请按 [`CITATION.cff`](CITATION.cff) 引用。作者 ORCID：[`0009-0005-8897-4831`](https://orcid.org/0009-0005-8897-4831)。GitHub 仓库页的 **Cite this repository** 可直接生成 APA 和 BibTeX。
 
 ## 许可
 
