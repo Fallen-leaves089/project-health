@@ -122,6 +122,7 @@ git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能�
 - 项目最好使用 Git；变更检查会用 `git rev-parse` 校验基准点。没有 Git 时仍可做只读快照检查，但必须明确说明看不到历史、基准点和精确 diff。
 - 需要跑容器化回归时，Docker 守护进程要能启动。
 - 检查阶段默认只读；写报告前确认路径，要修代码则等用户明确指令。
+- macOS 上先读 `references/macos-pitfalls.md`，记录系统版本、shell、架构和 Rosetta 状态；不要用 Rosetta 终端的通过结果冒充原生 arm64 结果。
 - 需要 Windows 客户端或 Windows Server 专项排障时，先读 `references/windows-pitfalls.md`；Linux 服务器先读 `references/linux-server-pitfalls.md`，不要凭记忆试。
 
 ## 包内结构
@@ -133,7 +134,7 @@ project-health/
 ├── CITATION.cff                         # 引用元数据（含 ORCID）
 ├── AGENTS.md                            # 常驻规则（任务边界与避坑纪律）
 ├── PITFALLS.md                          # 企业级避坑基线 + 维护者避坑日志
-├── references/                           # 平台命令、Windows/Win Server 坑、Linux 服务器坑、验证手册、报告模板
+├── references/                           # 平台命令、macOS/Apple Silicon 坑、Windows/Win Server 坑、Linux 服务器坑、验证手册、报告模板
 ├── scripts/                              # 跨平台自检与脱敏扫描
 ├── tests/                                # 契约测试、验收场景和恶意目标夹具
 └── LICENSE / COMMERCIAL / SIGNING / SANITIZATION
@@ -141,7 +142,7 @@ project-health/
 
 ## 平台支持
 
-核心技能只依赖 Markdown 和 Git 命令；Windows 10/11、Windows Server 2019/2022+、macOS / Linux + Python 3.9+、WSL2 都可使用。服务器专项覆盖 Windows Server 的 IIS、服务、NTFS/SMB、AD/Kerberos、SQL Server、证书、补丁和集群，以及 Linux 的 systemd、权限、SELinux/AppArmor、磁盘、OOM、防火墙、NTP、包管理和回滚。Python 自检只用标准库，不需要联网。
+核心技能只依赖 Markdown 和 Git 命令；Windows 10/11、Windows Server 2019/2022+、macOS / Linux + Python 3.9+、WSL2 都可使用。macOS 会常驻加载 Apple Silicon / Rosetta、Homebrew 双前缀、BSD 工具、APFS、Gatekeeper/TCC、launchd 和 Docker 架构避坑；Intel Mac 或 Rosetta 会话仍可做通用只读检查，但原生构建、签名、性能和容器架构结论会标为未覆盖。服务器专项覆盖 Windows Server 的 IIS、服务、NTFS/SMB、AD/Kerberos、SQL Server、证书、补丁和集群，以及 Linux 的 systemd、权限、SELinux/AppArmor、磁盘、OOM、防火墙、NTP、包管理和回滚。Python 自检只用标准库，不需要联网。
 
 ## 自检
 
@@ -219,9 +220,10 @@ ssh-keygen -lf release-signing-key.pub
 ## 版本
 
 - 完整更新记录：[CHANGELOG.md](CHANGELOG.md)
-- 版本：1.3.1
+- 版本：1.4.0
 - 对应内部整理日期：2026-09-04
 - 公开发布整理：2026-11-04
 - 安全修复整理：2026-11-07
 - 企业级与服务器避坑扩充：2026-11-11
 - 企业入口与技能路由修订：2026-11-12
+- macOS 常驻避坑与环境门禁：2026-11-13

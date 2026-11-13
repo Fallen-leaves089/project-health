@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.4.0 - 2026-11-13
+
+### 中文
+
+- 专业版新增 macOS / Apple Silicon 常驻避坑层：任务开始时先确认系统、shell、架构和 Rosetta 状态，再加载 macOS 专项规则。
+- 新增 `references/macos-pitfalls.md` / `.en.md`，覆盖 Rosetta 架构混用、Homebrew 双前缀、BSD 工具、系统 bash 3.2、APFS、Gatekeeper/TCC、launchd、Docker 架构与卷性能、归档签名和 macOS runner 差异。
+- 将环境探测加入 `SKILL.md` 第 0 步和 `AGENTS.md` 常驻规则；Apple Silicon 非原生 arm64 时仍可做通用只读检查，但必须把原生构建、签名、性能和容器架构结论标为未覆盖。
+- `PITFALLS.md`、README、包校验器、PowerShell 校验器和契约测试同步；专业版保持跨平台，不变成 Apple Silicon-only 技能。
+
+### English
+
+- Add a resident macOS / Apple Silicon pitfall layer to the professional edition: identify the OS, shell, architecture, and Rosetta state at task start before loading macOS-specific rules.
+- Add `references/macos-pitfalls.md` / `.en.md` for Rosetta architecture mixing, dual Homebrew prefixes, BSD tools, system bash 3.2, APFS, Gatekeeper/TCC, launchd, Docker architecture and volume performance, archive signing, and macOS runner differences.
+- Add environment probing to step 0 of `SKILL.md` and the standing rules in `AGENTS.md`; a non-native arm64 Apple Silicon session may continue with a generic read-only review, but native build, signing, performance, and container-architecture conclusions must be marked as uncovered.
+- Update `PITFALLS.md`, the READMEs, package verifiers, PowerShell verifier, and contract tests. The professional edition remains cross-platform rather than becoming Apple Silicon-only.
+
 ## 1.3.1 - 2026-11-12
 
 ### 中文

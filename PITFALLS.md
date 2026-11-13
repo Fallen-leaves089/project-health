@@ -15,7 +15,7 @@
 
 - 「企业项目避坑基线」是没有日期的领域清单，用于全量体检、上线前审计和交付验收；它只能提示“该查什么”，不能仅凭表格判断某个项目已经发生该问题。
 - 「维护者避坑日志」保留原来的日期格式，记录使用本技能时反复出现的工具、流程和判断错误；继续按原规则追加，不删除旧条目。
-- 平台专项放在 `references/windows-pitfalls.md` 和 `references/linux-server-pitfalls.md`；企业级跨平台清单留在本文件，避免两处重复维护。
+- 平台专项放在 `references/macos-pitfalls.md`、`references/windows-pitfalls.md` 和 `references/linux-server-pitfalls.md`；企业级跨平台清单留在本文件，避免两处重复维护。
 - 每条发现都要落到 `file:line`、配置、命令输出或运行记录；无法从当前范围确认时写“未检查”或“需要用户确认”，不要写成既成事实。
 
 ## 如果只看 20 条
@@ -321,6 +321,24 @@
 18. Windows 防火墙的域/专用/公用配置文件和云安全组是否一致？
 19. 证书是否在计算机存储、私钥权限是否正确、SNI 绑定是否验证？
 20. AD/Kerberos、时间同步、SQL Server 实例和备份恢复是否都演练过？
+
+### macOS / Apple Silicon 常驻避坑
+
+macOS 任务开始先确认环境，再按 `references/macos-pitfalls.md` 加载完整清单。专业版允许 Intel Mac 或 Rosetta 会话做通用只读检查，但不得把 x86_64/Rosetta 的结果写成原生 arm64 结果。
+
+| 常见坑 | 错误做法 | 正确做法 | 验证方式 |
+|---|---|---|---|
+| Rosetta 终端或父进程混入 x86_64 | 只看命令能跑就判定 arm64 通过 | 同时检查 `uname -m`、`arch`、`sysctl -in sysctl.proc_translated`；在原生终端重建依赖并重跑 | 架构探测输出与二进制/解释器一致 |
+| Homebrew 双前缀遮蔽 | 写死 `/opt/homebrew` 或 `/usr/local` | 用 `brew --prefix` 和 `PATH` 确认来源 | `command -v brew`、`brew config`、`brew doctor` |
+| BSD 工具套 GNU 参数 | 直接复用 Linux 的 `sed -i`、`date -d`、`stat -c` | 用 BSD 语法；只有安装 coreutils 后才用 `gsed`/`gstat`/`gtimeout` | 在干净 macOS 环境重跑脚本 |
+| 系统 bash 只有 3.2 | 依赖 bash 4+ 的数组、`mapfile` 或 `wait -n` | 优先 `#!/bin/sh`；需要新 bash 时写明确 shebang 并在 CI 固定版本 | `/bin/bash --version` + 干净环境构建 |
+| APFS 大小写和 Unicode 规范化掩盖路径问题 | 只改大小写后看 `git status` 干净就放行 | 用实际目录枚举验证；跨平台路径在大小写敏感卷或 Linux 复核 | `diskutil info /`、`find`、目标平台构建 |
+| Gatekeeper/quarantine 被直接绕过 | 用 `xattr -d` 或关闭 Gatekeeper 让产物运行 | 用 `codesign`、`spctl`、`xcrun stapler` 取证并验证发布签名 | 签名、公证、哈希和实际启动结果 |
+| TCC/SIP 权限被误判为代码 bug | 为自动化申请 Full Disk Access 或关闭 SIP | 说明用途、申请最小权限，把拒绝列为环境限制和未覆盖项 | 权限记录、运行日志和未覆盖声明 |
+| 把 launchd 当 systemd | 套用 `systemctl` / `journalctl` 管理 Mac 服务 | 用 `launchctl print`、`bootstrap`、`bootout`，确认 `gui/$UID` 或 `system` 域 | 服务状态、plist、日志和登录会话实测 |
+| Docker 镜像或卷架构/性能假设错误 | 只看容器能启动，不记录 client/server/image 架构 | 分开记录三者架构；无 arm64 镜像时才用 `--platform linux/amd64`，并测试 bind mount | `docker version`、`docker image inspect`、容器内 `uname -m` |
+| 归档丢失扩展属性或符号链接 | 只看 zip 命令退出码 | 用 `ditto` 保留元数据，核对签名、权限和符号链接 | 解压后逐项验证 |
+| 把免费 macOS runner 当固定机型 | 写死 M1/M2 或固定 CPU/内存 | 只把 arm64 + Rosetta 0 当硬条件，每次记录实际芯片和系统版本 | CI 日志和性能基线 |
 
 ## 维护者避坑日志（带日期）
 
