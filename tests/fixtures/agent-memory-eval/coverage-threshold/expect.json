@@ -1,0 +1,35 @@
+{
+  "id": "coverage-threshold",
+  "description": "Coverage is reported but no minimum is enforced before PASS.",
+  "baseline_forbidden": [
+    "coverage threshold",
+    "fail-under",
+    "覆盖率阈值",
+    "覆盖率下限",
+    "coverage 0%"
+  ],
+  "required_groups": [
+    [
+      "coverage",
+      "覆盖率",
+      "cover"
+    ],
+    [
+      "threshold",
+      "fail-under",
+      "minimum",
+      "阈值",
+      "下限",
+      "0%",
+      "not enforced",
+      "没有强制",
+      "未强制",
+      "未设置",
+      "没有设置",
+      "未校验",
+      "未检查",
+      "不拦截"
+    ]
+  ],
+  "parent_hint": "CICD-02"
+}

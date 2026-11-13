@@ -66,6 +66,8 @@ git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能�
 
 > **从 1.1.x 升级**：请先删除旧的 `fullstack-health-check` 技能目录，再安装 `project-health`，避免两个技能同时存在。
 
+> **本地避坑记忆**：安装后，Agent 核实的新坑默认追加到 `PITFALLS.local.md`，首次使用时自动创建，升级时保留；后续任务开始时也会先读回该文件。用 `Copy-Item -Force` 覆盖整个目录前先备份；仓库维护者仍写 `PITFALLS.md`。
+
 技能宿主默认加载中文 `SKILL.md`。如需英文版，把 `SKILL.en.md` 复制为 `SKILL.md`；仓库保留两份文件，方便对照和更新。
 
 ## 主要用途
@@ -85,6 +87,7 @@ git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能�
 3. **双轴审查**：规范符合度（Standards）和需求符合度（Spec）分开看，避免把“代码写得丑”和“需求没做完”混在一起。
 4. **真实回归**：测试、构建、迁移、compose 配置和关键路径要实际跑，不只做静态阅读；会写文件、装依赖或启动服务时先取得同意。
 5. **证据输出**：每条问题写清 `file:line`、影响、建议、验证方式和置信度；另列“已核验无问题”和“本轮未覆盖”。
+6. **把经验留下来**：写最终报告前，Agent 会把本轮核实过的新失败机制追加到技能自己的记忆；完全重复的坑不追加，同类新机制会注明父条目。报告会写清是否新增了记忆。
 
 它还会检查“检查方法本身是否有效”，包括正反例、失败退出码、命令是否真的执行，以及检查脚本是否会假绿。
 
@@ -123,6 +126,8 @@ git clone https://github.com/Fallen-leaves089/project-health.git "<宿主技能�
 - 需要跑容器化回归时，Docker 守护进程要能启动。
 - 检查阶段默认只读；写报告前确认路径，要修代码则等用户明确指令。
 - macOS 上先读 `references/macos-pitfalls.md`，记录系统版本、shell、架构和 Rosetta 状态；不要用 Rosetta 终端的通过结果冒充原生 arm64 结果。
+- macOS 隐藏坑使用 `MAC-H01`～`MAC-H08` 共享基线；专业版与 `project-health-macos` 的专业/专用两份文档必须同步更新，不能只补一边。
+- macOS 隐藏坑使用 `MAC-H01`～`MAC-H08` 共享基线；专业版与 `project-health-macos` 的专业/专用两份文档必须同步更新，不能只补一边。
 - 需要 Windows 客户端或 Windows Server 专项排障时，先读 `references/windows-pitfalls.md`；Linux 服务器先读 `references/linux-server-pitfalls.md`，不要凭记忆试。
 
 ## 包内结构
@@ -172,6 +177,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 
 Python 版检查必需文件、UTF-8 无 BOM、Markdown 链接、脱敏自检、包内敏感模式，以及 `SKILL.md` / `SKILL.en.md` 的 frontmatter、版本和语言链接是否一致。PowerShell 版检查必需文件、BOM、链接、frontmatter、版本一致性和脱敏扫描；语言链接仅由 Python 版检查。
 
+### 可选：验证 Agent 是否会自主记录新坑
+
+默认测试只验证记录器和规则，不会调用外部 Agent。要验证真实行为，可运行：
+
+```powershell
+python -B tests\agent_memory_eval.py --codex <codex.exe> --require-scenario-match --min-passed 2
+```
+
+评测器会把技能和目标夹具复制到临时目录，提示词只要求审计，不出现“记录 / memory / pitfalls”等答案词；随后检查 Agent 是否主动写入 `PITFALLS.local.md`、条目是否匹配新场景、目标目录和基线是否保持不变。它依赖外部 Agent，结果有非确定性，因此不放进默认 CI。两个夹具（零测试假绿、覆盖率 0% 仍 PASS）都经过基线查重，确保不是现有条目。
+
 只跑脱敏扫描：
 
 ```bash
@@ -220,7 +235,7 @@ ssh-keygen -lf release-signing-key.pub
 ## 版本
 
 - 完整更新记录：[CHANGELOG.md](CHANGELOG.md)
-- 版本：1.4.0
+- 版本：1.4.2
 - 对应内部整理日期：2026-09-04
 - 公开发布整理：2026-11-04
 - 安全修复整理：2026-11-07

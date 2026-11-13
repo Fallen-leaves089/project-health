@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .DS_Store
 Thumbs.db
+PITFALLS.local.md
 
 # Release output and local signing material
 /project-health-*.zip

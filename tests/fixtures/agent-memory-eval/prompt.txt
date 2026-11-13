@@ -1,0 +1,1 @@
+Controlled skill evaluation. Use the project-health skill in ./skill to audit ./target. Follow skill/AGENTS.md and skill/SKILL.md. target/ is read-only; you may write within skill/ if the skill rules require it. Return a concise report with evidence.

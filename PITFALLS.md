@@ -328,17 +328,22 @@ macOS 任务开始先确认环境，再按 `references/macos-pitfalls.md` 加载
 
 | 常见坑 | 错误做法 | 正确做法 | 验证方式 |
 |---|---|---|---|
-| Rosetta 终端或父进程混入 x86_64 | 只看命令能跑就判定 arm64 通过 | 同时检查 `uname -m`、`arch`、`sysctl -in sysctl.proc_translated`；在原生终端重建依赖并重跑 | 架构探测输出与二进制/解释器一致 |
+| MAC-H01 Rosetta 终端或父进程混入 x86_64 | 只看命令能跑就判定 arm64 通过 | 同时检查 `uname -m`、`arch`、`sysctl -in sysctl.proc_translated`；在原生终端重建依赖并重跑 | 架构探测输出与二进制/解释器一致 |
 | Homebrew 双前缀遮蔽 | 写死 `/opt/homebrew` 或 `/usr/local` | 用 `brew --prefix` 和 `PATH` 确认来源 | `command -v brew`、`brew config`、`brew doctor` |
 | BSD 工具套 GNU 参数 | 直接复用 Linux 的 `sed -i`、`date -d`、`stat -c` | 用 BSD 语法；只有安装 coreutils 后才用 `gsed`/`gstat`/`gtimeout` | 在干净 macOS 环境重跑脚本 |
 | 系统 bash 只有 3.2 | 依赖 bash 4+ 的数组、`mapfile` 或 `wait -n` | 优先 `#!/bin/sh`；需要新 bash 时写明确 shebang 并在 CI 固定版本 | `/bin/bash --version` + 干净环境构建 |
 | APFS 大小写和 Unicode 规范化掩盖路径问题 | 只改大小写后看 `git status` 干净就放行 | 用实际目录枚举验证；跨平台路径在大小写敏感卷或 Linux 复核 | `diskutil info /`、`find`、目标平台构建 |
 | Gatekeeper/quarantine 被直接绕过 | 用 `xattr -d` 或关闭 Gatekeeper 让产物运行 | 用 `codesign`、`spctl`、`xcrun stapler` 取证并验证发布签名 | 签名、公证、哈希和实际启动结果 |
+| MAC-H02 端口 5000/7000 被 AirPlay 占用、`localhost` 只解析到 `::1`，或本地网络权限不弹窗 | 看到连接失败就判定服务没启动；直接关闭 AirPlay 或默认 `sudo` | 用 `lsof` 查 5000/7000，分别用 `curl -4`/`curl -6` 测试；记录 TCC/本地网络权限和会话类型 | 监听者、IPv4/IPv6 结果和权限记录 |
 | TCC/SIP 权限被误判为代码 bug | 为自动化申请 Full Disk Access 或关闭 SIP | 说明用途、申请最小权限，把拒绝列为环境限制和未覆盖项 | 权限记录、运行日志和未覆盖声明 |
 | 把 launchd 当 systemd | 套用 `systemctl` / `journalctl` 管理 Mac 服务 | 用 `launchctl print`、`bootstrap`、`bootout`，确认 `gui/$UID` 或 `system` 域 | 服务状态、plist、日志和登录会话实测 |
+| MAC-H03 只有 CLT、没有完整 Xcode，或多 Xcode/license/SDK 不匹配 | 看到 `xcode-select -p` 有输出就认为完整 Xcode 可用 | 记录 `xcodebuild -version`、`xcrun --show-sdk-path`、`xcodebuild -showsdks` 和 `MACOSX_DEPLOYMENT_TARGET`；审计中不执行 `xcodebuild -license accept` | 实际 Xcode 路径、SDK、license 状态和构建日志 |
+| MAC-H04 Python、Node、Java 或原生模块混用 arm64 与 x86_64 | 只看版本号或 `command -v` | 用 `file`、`lipo -info`、`platform.machine()`、`process.arch`、`java -XshowSettings` 交叉确认 | 解释器、wheel、原生模块和二进制架构一致 |
+| MAC-H05 dylib 架构错误、`DYLD_*` 被 SIP 忽略或改库后未重签名 | 注入 `DYLD_LIBRARY_PATH` 后看到能跑就判定兼容 | 用 `otool -L`、`codesign --verify --deep --strict`、`codesign -d --entitlements :-` 取证；修改后重签名 | 依赖路径、签名和 entitlement 检查通过 |
 | Docker 镜像或卷架构/性能假设错误 | 只看容器能启动，不记录 client/server/image 架构 | 分开记录三者架构；无 arm64 镜像时才用 `--platform linux/amd64`，并测试 bind mount | `docker version`、`docker image inspect`、容器内 `uname -m` |
-| 归档丢失扩展属性或符号链接 | 只看 zip 命令退出码 | 用 `ditto` 保留元数据，核对签名、权限和符号链接 | 解压后逐项验证 |
-| 把免费 macOS runner 当固定机型 | 写死 M1/M2 或固定 CPU/内存 | 只把 arm64 + Rosetta 0 当硬条件，每次记录实际芯片和系统版本 | CI 日志和性能基线 |
+| MAC-H06 归档丢失扩展属性、AppleDouble、资源叉或符号链接 | 只看 zip 命令退出码 | 用 `ditto` 保留元数据，在干净目录解压并核对签名、权限、链接和哈希 | 解压后逐项验证 |
+| MAC-H07 把 M1 的线程数、并发或性能基线照搬到 M5/M6 | 用一次 M1 结果证明所有世代性能一致 | 记录芯片、核心、内存和 `vm_stat`；按世代重建基线，不跨世代照搬并发参数 | 硬件信息、负载参数和性能结果绑定 |
+| MAC-H08 把免费 macOS runner 当固定机型 | 写死 M1/M2 或固定 CPU/内存；单次 CI 通过就写成所有 M 系列通过 | 只把 arm64 + Rosetta 0 当硬条件，每次记录实际芯片、CPU、内存、macOS、Xcode/SDK；未跑世代列为未覆盖 | CI 日志和性能基线 |
 
 ## 维护者避坑日志（带日期）
 
