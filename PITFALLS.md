@@ -360,21 +360,38 @@ macOS 任务开始先确认环境，再按 `references/macos-pitfalls.md` 加载
 
 > 迁移：2026-11-04 从旧本地技能和内部常驻避坑文本中去敏、泛化、去重后合并。
 
-- 2026-11-04 | dsh, wsl, 9p, permissions | 在 /mnt 挂载上 chmod/chown 以隔离 UID | 以为 9p 会执行 Unix 权限 | 敏感文件放 Linux 原生文件系统，或用带 metadata 的挂载视图；不要依赖 /mnt 权限位 | 以目标 UID 读取应被拒绝
-- 2026-11-04 | dsh, wsl, 9p, socket | 把 Unix socket 放在 /mnt 挂载 | 报 ENOTSUP | socket 放 /run 等 Linux 原生文件系统，数据仍可留在挂载盘 | 服务能连通
-- 2026-11-04 | dsh, wsl, 9p, copy | 在同一卷的两个挂载视图之间 cp -a | 目标与源是同一目录，递归复制自身并卡住 | 先确认 realpath/inode；需要独立存储时用不同文件系统或先打包到临时目录 | realpath/inode 对比
-- 2026-11-04 | dsh, wsl, shell, quoting | 通过 wsl.exe ... bash -lc 内联传递变量、JSON 或双引号 | Windows 参数解析先展开或吞掉引号，远端收到空值/拆开的参数 | 复杂命令写成 .sh 文件再执行；内联只传简单命令 | 变量和 JSON 完整到达
-- 2026-11-04 | dsh, wsl, mount, visibility | 看到 mountinfo 有条目就判断 /mnt/c 或 /mnt/d 可访问 | tmpfs 覆盖 /mnt 后子挂载仍显示但路径被遮蔽 | 以实际读取结果为准，不把挂载表当可用性证明 | 实际访问返回 ENOENT/空
-- 2026-11-04 | dsh, shell, pipeline, exit-code | 用 cmd | tail 后再看 $? 判断成功 | 管道返回最后一段状态，真实失败被吞 | 用 set -o pipefail 或读 ${PIPESTATUS[0]} | 失败命令能返回非零
-- 2026-11-04 | dsh, shell, tee, output | 把命令输出 tee 到尚不存在的目录 | tee 先打开文件失败，输出丢失 | 先 mkdir -p，或 tee 到已存在目录 | 输出文件存在且完整
-- 2026-11-04 | dsh, tooling, timeout, long-task | 在前台 sleep 60 秒以上等冷却或长任务 | 撞工具超时被挪到后台，白等一轮 | 用后台任务加 job_output(wait)，或不超过 30 秒的分段轮询 | 任务完成且未超时
-- 2026-11-04 | dsh, shell, background, cwd | 写 cd dir && (sleep; ...) & 做后台冷却 | 整个 cd && 子 shell 被放到后台，前台 cwd 未变 | 用 cd dir; (...) & 或显式进入子 shell | 后续相对路径正确
-- 2026-11-04 | dsh, python, http, response | 用 if response 判断 HTTP 响应 | requests.Response 在 status>=400 时为 False，403/429 被误判为无响应 | 用 response is not None，并显式检查 status_code | 4xx 被正确记录
-- 2026-11-04 | dsh, http, rate-limit, retry | 收到 429 后立即重试 | Retry-After 可能递减但惩罚未解除，重试会拖长封禁 | 停止请求，等窗口结束后再单发只读确认 | 429 后单发 200
-- 2026-11-04 | dsh, http, waf, dlp | 把所有 502 都当上游故障 | 响应侧 DLP/WAF 也会返回 502 | 先看响应体规则和审计事件，再判断是上游还是拦截 | 规则命中与响应长度一致
-- 2026-11-04 | dsh, security, sandbox, boundary | 连不上服务时用 setpriv、改 gid 或绕过网络策略 | 这是边界绕过，不是排障手段 | 停止并报告操作员，检查放行配置或目标地址 | 不修改身份和网络策略
-- 2026-11-04 | dsh, search, performance | 直接 grep -r 扫描整个项目 | 扫进 node_modules、构建缓存，几分钟不返回 | 限定 --include、目标目录或用 rg | 搜索在秒级完成
-- 2026-11-04 | dsh, credentials, permissions | 写入凭证文件后不检查权限 | 9p/Windows 写入可能把 600 变成 777，服务启动失败 | 写入后立即 chmod 600 并复核；只报权限，不读内容 | 启动无权限错误
-- 2026-11-04 | dsh, startup, token | 重启后复用旧 Web URL 或 token | 每次启动 token 都会变，旧链接失效 | 从运行时生成的 current URL 文件读取 | 新链接可连接
-- 2026-11-04 | dsh, claims, verification | 声称工具、联网或技能可用但没实测 | 凭印象回答，交付时才发现不可用 | 先跑一次最小验证，记录命令、输出和退出码 | 输出与退出码一致
+- 2026-11-04 | agent-shell, wsl, 9p, permissions | 在 /mnt 挂载上 chmod/chown 以隔离 UID | 以为 9p 会执行 Unix 权限 | 敏感文件放 Linux 原生文件系统，或用带 metadata 的挂载视图；不要依赖 /mnt 权限位 | 以目标 UID 读取应被拒绝
+- 2026-11-04 | agent-shell, wsl, 9p, socket | 把 Unix socket 放在 /mnt 挂载 | 报 ENOTSUP | socket 放 /run 等 Linux 原生文件系统，数据仍可留在挂载盘 | 服务能连通
+- 2026-11-04 | agent-shell, wsl, 9p, copy | 在同一卷的两个挂载视图之间 cp -a | 目标与源是同一目录，递归复制自身并卡住 | 先确认 realpath/inode；需要独立存储时用不同文件系统或先打包到临时目录 | realpath/inode 对比
+- 2026-11-04 | agent-shell, wsl, shell, quoting | 通过 wsl.exe ... bash -lc 内联传递变量、JSON 或双引号 | Windows 参数解析先展开或吞掉引号，远端收到空值/拆开的参数 | 复杂命令写成 .sh 文件再执行；内联只传简单命令 | 变量和 JSON 完整到达
+- 2026-11-04 | agent-shell, wsl, mount, visibility | 看到 mountinfo 有条目就判断 /mnt/c 或 /mnt/d 可访问 | tmpfs 覆盖 /mnt 后子挂载仍显示但路径被遮蔽 | 以实际读取结果为准，不把挂载表当可用性证明 | 实际访问返回 ENOENT/空
+- 2026-11-04 | agent-shell, shell, pipeline, exit-code | 用 cmd 管道接 tail 后再看 $? 判断成功 | 管道返回最后一段状态，真实失败被吞 | 用 set -o pipefail 或读 ${PIPESTATUS[0]} | 失败命令能返回非零
+- 2026-11-04 | agent-shell, shell, tee, output | 把命令输出 tee 到尚不存在的目录 | tee 先打开文件失败，输出丢失 | 先 mkdir -p，或 tee 到已存在目录 | 输出文件存在且完整
+- 2026-11-04 | agent-shell, tooling, timeout, long-task | 在前台 sleep 60 秒以上等冷却或长任务 | 撞工具超时被挪到后台，白等一轮 | 用后台任务加 job_output(wait)，或不超过 30 秒的分段轮询 | 任务完成且未超时
+- 2026-11-04 | agent-shell, shell, background, cwd | 写 cd dir && (sleep; ...) & 做后台冷却 | 整个 cd && 子 shell 被放到后台，前台 cwd 未变 | 用 cd dir; (...) & 或显式进入子 shell | 后续相对路径正确
+- 2026-11-04 | agent-shell, python, http, response | 用 if response 判断 HTTP 响应 | requests.Response 在 status>=400 时为 False，403/429 被误判为无响应 | 用 response is not None，并显式检查 status_code | 4xx 被正确记录
+- 2026-11-04 | agent-shell, http, rate-limit, retry | 收到 429 后立即重试 | Retry-After 可能递减但惩罚未解除，重试会拖长封禁 | 停止请求，等窗口结束后再单发只读确认 | 429 后单发 200
+- 2026-11-04 | agent-shell, http, waf, dlp | 把所有 502 都当上游故障 | 响应侧 DLP/WAF 也会返回 502 | 先看响应体规则和审计事件，再判断是上游还是拦截 | 规则命中与响应长度一致
+- 2026-11-04 | agent-shell, security, sandbox, boundary | 连不上服务时用 setpriv、改 gid 或绕过网络策略 | 这是边界绕过，不是排障手段 | 停止并报告操作员，检查放行配置或目标地址 | 不修改身份和网络策略
+- 2026-11-04 | agent-shell, search, performance | 直接 grep -r 扫描整个项目 | 扫进 node_modules、构建缓存，几分钟不返回 | 限定 --include、目标目录或用 rg | 搜索在秒级完成
+- 2026-11-04 | agent-shell, credentials, permissions | 写入凭证文件后不检查权限 | 9p/Windows 写入可能把 600 变成 777，服务启动失败 | 写入后立即 chmod 600 并复核；只报权限，不读内容 | 启动无权限错误
+- 2026-11-04 | agent-shell, startup, token | 重启后复用旧 Web URL 或 token | 每次启动 token 都会变，旧链接失效 | 从运行时生成的 current URL 文件读取 | 新链接可连接
+- 2026-11-04 | agent-shell, claims, verification | 声称工具、联网或技能可用但没实测 | 凭印象回答，交付时才发现不可用 | 先跑一次最小验证，记录命令、输出和退出码 | 输出与退出码一致
 2026-11-13 | testing, macos, paths | 在 macOS 上比较临时目录路径时直接比较未规范化的 Path | 把 /var 与 /private/var 当作不同目录，导致契约测试假失败 | 比较前对两边调用 resolve()，或使用 samefile；不要硬编码私有前缀 | GitHub macOS runner 上 Python 3.9/3.12 契约测试通过
+2026-11-16 | security, redaction, file-types | 扩展名白名单决定脱敏扫描范围 | 只扫描 .md/.json 等已知类型，漏掉 .env.local、.pem、.log、.ini、.cff | 默认扫描所有非二进制文件，只跳过明确二进制扩展名；空目录、不可解码、异常 NUL 和零文件 fail closed | 扫描器自检和契约测试覆盖扩展名反例、UTF-16、空目录与无效文本
+2026-11-16 | security, redaction, secrets | 只按 api_key/token/password 检查赋值密钥 | client_secret、access_token、refresh_token、private_key 等常见字段漏检 | 集中维护字段名并覆盖常见前缀/变体，长值才判定，保留占位符例外 | Python/PowerShell 自检均加入扩展字段正反例
+2026-11-16 | tooling, encoding, validation | 脱敏工具把含 NUL 的 UTF-16 文件当二进制 | 直接按 NUL 或扩展名跳过，导致 UTF-16 文本和未知文本漏扫 | 先按 BOM/UTF-16 解码，再检查异常 NUL；无法解码 fail closed | UTF-16 BOM/无 BOM 与无效文本契约测试通过
+2026-11-16 | tooling, validation, powershell | 维护 Python 与 PowerShell 双实现校验器 | 目录过滤、二进制清单、frontmatter 或六字段规则不一致，另一版仍假绿 | 共享规则表并用同样反例测试两版，语言链接差异在文档中明确 | 两版包校验器在同一临时副本上同时失败或同时通过
+2026-11-16 | tooling, memory, root-fingerprint | 记录器只凭 AGENTS.md 或 PITFALLS.md 推断技能根目录 | 任意目录可被当成安装技能，写错记忆或覆盖项目文件 | 要求真实 SKILL frontmatter、规定结构文件、字节一致的记录器；repo 范围还要求 .git | 记录器边界测试覆盖伪造根目录、记录器指纹和 repo scope
+2026-11-16 | cicd, windows, server | 用 GitHub windows-latest 代表 Windows Server | 设置 REQUIRE_WINDOWS_SERVER=1 后客户端 ProductType=1 导致工作流失败，或把客户端结果当成服务器覆盖 | 拆分客户端冒烟和自建 runner 服务器作业，用仓库变量门控，文档明确真实服务器未覆盖 | server-smoke.yml YAML 可解析；本机客户端冒烟 pass=27 skip=11 fail=0
+2026-11-16 | tooling, powershell, exec | 复制工具调用时省略或误填 shell | PowerShell 命令落入 WSL，补丁或查询不执行并出现语法错误 | 每次新建 exec 先固定 shell=powershell；失败项核对零副作用后再重跑 | 本轮两次失败均为只读或补丁未执行，PowerShell 重跑成功
+2026-11-16 | shell, testing, pipefail | Linux 冒烟检查用 head 截断 systemctl 等长输出 | run_check 启用 pipefail 后，上游收到 SIGPIPE，输出正常也返回非零并被记为失败 | 用 sed -n 继续读完输入再限行，或避免提前关闭管道 | WSL Ubuntu 24.04 冒烟由 fail=2 降为 fail=0
+2026-11-16 | docker, wsl, paths | 在 WSL 中调用 Windows Docker 客户端校验临时 compose 文件 | 把 /tmp 路径传给 Windows 客户端，客户端把它解析成 D:\tmp 并报找不到文件 | 用标准输入 docker compose -f - config，或先显式转换路径 | WSL Ubuntu 冒烟 Docker compose config 通过
+2026-11-16 | security, redaction, patterns | 扩展赋值密钥字段表时只保留带前缀的变体 | 漏掉裸 secret 字段，常见的短键名赋值无法被扫描器发现 | 保留裸 secret 匹配，并让 Python 与 PowerShell 使用同一组正反例 | 两版扫描器自检和契约测试均捕获裸 secret 赋值
+2026-11-16 | powershell, encoding, redaction | PowerShell 扫描器读取带 BOM 的文本 | BOM 分支使用宽容解码，无效字节被替换后继续扫描，无法 fail closed | BOM 和无 BOM 都使用抛错式 UTF-8/UTF-16 解码，解码失败报不可扫描 | PS5.1 与 PS7 自检均覆盖无效 BOM 反例
+2026-11-16 | powershell, paths, scanner | PowerShell 扫描器按目录名过滤文件 | 规则作用在绝对路径上，根目录自身含 build 或 dist 时会把整个包跳过 | 只在相对包路径上匹配跳过目录，保留根目录下的正常扫描 | 根目录位于 build 路径下的回归测试通过
+2026-11-16 | security, redaction, macos | 脱敏扫描器只覆盖 Windows 用户目录 | macOS 报告中的个人目录路径不会被命中，交付物可能泄露用户名 | 增加 macOS 用户目录规则，并排除占位符、Shared 和 Guest | Python 与 PowerShell 自检和契约测试均覆盖 macOS 正例
+2026-11-16 | tooling, redaction, skip-filter | 目录过滤把文件名当成目录名 | 名为 build 或 dist 的文本文件被误跳过，敏感内容漏扫 | 只检查文件的父目录部分；单文件根路径不参与目录过滤 | 名为 build 的文本文件在 Python 与 PowerShell 中均被扫描
+2026-11-16 | cicd, self-hosted, pull-request | 自建 Windows Server runner 响应 pull_request | fork PR 可能在自建服务器执行不可信代码 | 自建 runner 作业只允许 main push 或手动 dispatch，并拒绝 pull_request | server-smoke.yml 条件与契约测试均覆盖该门禁
+2026-11-16 | documentation, encoding, redaction | 文档声称脱敏扫描器支持任意无 BOM UTF-16 | 实现只在字节序明确时接受，文档范围大于实际，使用者会误判覆盖能力 | 文档明确写带 BOM 或字节序明确的无 BOM UTF-16，无法判断编码时 fail closed | Python 与 PowerShell 自检覆盖无 BOM 正例和无效文本反例，包校验通过
+2026-11-16 | encoding, redaction, utf16 | 无 BOM UTF-16 同时含 ASCII 密钥和 emoji | PowerShell 选错字节序后扫描 0 命中并显示通过，Python 则把可扫描文本误报为不可扫描 | 用零字节分布选择字节序，并修正 PowerShell 的代理对分类；证据不足时 fail closed | 两版自检和契约测试均命中 emoji 无 BOM UTF-16 中的密钥

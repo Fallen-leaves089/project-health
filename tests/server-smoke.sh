@@ -75,21 +75,21 @@ fi
 
 run_check "OS release" "cat /etc/os-release"
 run_check "kernel" "uname -a"
-run_check "systemctl version" "systemctl --version | head -n 1"
+run_check "systemctl version" "systemctl --version | sed -n '1p'"
 run_check "PID 1" "ps -p 1 -o comm="
 run_check "word size" "getconf LONG_BIT"
 optional_command "virtualization" systemd-detect-virt "systemd-detect-virt || true"
 run_check "cgroup filesystem" "stat -fc %T /sys/fs/cgroup"
 
 if [[ "$has_systemd" -eq 1 ]]; then
-    run_check "systemctl cat" "systemctl cat systemd-journald 2>/dev/null | head -n 30"
+    run_check "systemctl cat" "systemctl cat systemd-journald 2>/dev/null | sed -n '1,30p'"
     run_check "systemctl show" "systemctl show systemd-journald -p User -p Group -p WorkingDirectory -p Environment -p EnvironmentFiles -p ExecStart -p Restart -p LimitNOFILE"
     unit_file="$(mktemp /tmp/project-health-smoke.XXXXXX.service)"
     printf '%s\n' '[Unit]' 'Description=project-health smoke test' '[Service]' 'ExecStart=/bin/true' '[Install]' 'WantedBy=multi-user.target' >"$unit_file"
     run_check "systemd-analyze verify" "systemd-analyze verify '$unit_file'"
     rm -f -- "$unit_file"
-    run_check "journalctl" "journalctl -u systemd-journald -n 5 --no-pager 2>/dev/null | head -n 20"
-    run_check "systemctl status" "systemctl status systemd-journald --no-pager 2>/dev/null | head -n 20"
+    run_check "journalctl" "journalctl -u systemd-journald -n 5 --no-pager 2>/dev/null | sed -n '1,20p'"
+    run_check "systemctl status" "systemctl status systemd-journald --no-pager 2>/dev/null | sed -n '1,20p'"
 else
     skip_check "systemd service checks" "this environment does not run systemd as PID 1"
 fi
@@ -106,10 +106,10 @@ optional_command "SELinux" getenforce "getenforce || true"
 optional_command "AppArmor" aa-status "aa-status || true"
 optional_command "SELinux audit" ausearch "ausearch -m avc -ts recent 2>/dev/null | tail -n 10 || true"
 
-run_check "disk space" "df -hT | head -n 20"
-run_check "inode space" "df -i | head -n 20"
+run_check "disk space" "df -hT | sed -n '1,20p'"
+run_check "inode space" "df -i | sed -n '1,20p'"
 run_check "large directories" "du -xhd1 /var /tmp /home 2>/dev/null | sort -h | tail -n 20 || true"
-run_check "root mount" "findmnt -T / | head -n 10"
+run_check "root mount" "findmnt -T / | sed -n '1,10p'"
 optional_root "deleted open files" lsof "lsof +L1 2>/dev/null | head -n 20 || true"
 if [[ "$has_systemd" -eq 1 ]]; then
     run_check "journal disk usage" "journalctl --disk-usage"
@@ -120,7 +120,7 @@ fi
 optional_command "logrotate debug" logrotate "logrotate -d /etc/logrotate.conf 2>&1 | head -n 40 || true"
 
 run_check "shell ulimit" "ulimit -n"
-run_check "PID 1 limits" "cat /proc/1/limits | head -n 30"
+run_check "PID 1 limits" "cat /proc/1/limits | sed -n '1,30p'"
 if [[ "$has_systemd" -eq 1 ]]; then
     run_check "service limits" "systemctl show systemd-journald -p LimitNOFILE -p MemoryMax -p TasksMax"
 else
@@ -138,15 +138,15 @@ else
     skip_check "cgroup top" "systemd is not active"
 fi
 
-run_check "IP addresses" "ip addr | head -n 40"
+run_check "IP addresses" "ip addr | sed -n '1,40p'"
 run_check "routes" "ip route"
-run_check "listening sockets" "ss -ltnp 2>/dev/null | head -n 30"
-run_check "established sockets" "ss -tnp state established 2>/dev/null | head -n 30"
+run_check "listening sockets" "ss -ltnp 2>/dev/null | sed -n '1,30p'"
+run_check "established sockets" "ss -tnp state established 2>/dev/null | sed -n '1,30p'"
 optional_command "firewalld" firewall-cmd "firewall-cmd --state 2>/dev/null || true"
 optional_root "nftables" nft "nft list ruleset 2>/dev/null | head -n 30 || true"
 optional_root "iptables" iptables "iptables -S 2>/dev/null | head -n 30 || true"
 if command -v resolvectl >/dev/null 2>&1; then
-    run_check "resolver" "resolvectl status 2>/dev/null | head -n 40 || cat /etc/resolv.conf"
+    run_check "resolver" "resolvectl status 2>/dev/null | sed -n '1,40p' || cat /etc/resolv.conf"
 else
     run_check "resolver file" "cat /etc/resolv.conf"
 fi
@@ -202,13 +202,10 @@ probe_command "PostgreSQL readiness" pg_isready "pg_isready -h 127.0.0.1 -p 5432
 probe_command "MySQL readiness" mysqladmin "mysqladmin ping -h 127.0.0.1 2>/dev/null || true"
 
 probe_command "Docker info" docker "docker info 2>/dev/null | head -n 20"
-if command -v docker >/dev/null 2>&1; then
-    compose_dir="$(mktemp -d /tmp/project-health-compose.XXXXXX)"
-    printf '%s\n' 'services:' '  smoke:' '    image: alpine:3.20' '    command: ["true"]' >"$compose_dir/compose.yaml"
-    run_check "Docker compose config" "docker compose -f '$compose_dir/compose.yaml' config"
-    rm -rf -- "$compose_dir"
+if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    run_check "Docker compose config" "printf '%s\n' 'services:' '  smoke:' '    image: alpine:3.20' '    command: [\"true\"]' | docker compose -f - config"
 else
-    skip_check "Docker compose config" "docker is not installed"
+    skip_check "Docker compose config" "docker compose plugin is unavailable"
 fi
 
 printf 'RESULT pass=%d skip=%d fail=%d systemd=%d\n' "$PASS" "$SKIP" "$FAIL" "$has_systemd"

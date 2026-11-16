@@ -148,7 +148,7 @@ project-health/
 
 ## Platform support
 
-The core skill uses only Markdown and Git commands. It works on Windows 10/11, Windows Server 2019/2022+, macOS / Linux + Python 3.9+, and WSL2. On macOS it loads standing guidance for Apple Silicon / Rosetta, dual Homebrew prefixes, BSD tools, APFS, Gatekeeper/TCC, launchd, and Docker architecture. Intel Macs and Rosetta sessions can still receive a generic read-only review, but native build, signing, performance, and container-architecture conclusions are marked as uncovered. Server coverage includes Windows Server IIS, services, NTFS/SMB, AD/Kerberos, SQL Server, certificates, patching, and clusters, plus Linux systemd, permissions, SELinux/AppArmor, disk, OOM, firewall, NTP, package management, and rollback. The Python verifier uses only the standard library and needs no network access.
+The core skill uses only Markdown and Git commands. It works on Windows 10/11, Windows Server 2019/2022+, macOS / Linux + Python 3.9+, and WSL2. On macOS it loads standing guidance for Apple Silicon / Rosetta, dual Homebrew prefixes, BSD tools, APFS, Gatekeeper/TCC, launchd, and Docker architecture. Intel Macs and Rosetta sessions can still receive a generic read-only review, but native build, signing, performance, and container-architecture conclusions are marked as uncovered. Server coverage includes Windows Server IIS, services, NTFS/SMB, AD/Kerberos, SQL Server, certificates, patching, and clusters, plus Linux systemd, permissions, SELinux/AppArmor, disk, OOM, firewall, NTP, package management, and rollback. The Python verifier uses only the standard library and needs no network access. `windows-latest` in CI represents a Windows client only; a real Windows Server role check requires a self-hosted runner with the repository variable `ENABLE_WINDOWS_SERVER_SMOKE=true`; that job runs only on a main-branch push or a manual `workflow_dispatch`, never on a pull request. You can also run it manually with `REQUIRE_WINDOWS_SERVER=1`.
 
 ## Self-check
 
@@ -176,7 +176,7 @@ If Python is unavailable, use the PowerShell verifier:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 ```
 
-The Python verifier checks required files, UTF-8 without BOM, Markdown links, the redaction self-test, sensitive patterns in the package, and `SKILL.md` / `SKILL.en.md` frontmatter, version, and language links. The PowerShell verifier checks required files, BOM, links, frontmatter, version consistency, and redaction; language links are checked by the Python verifier only.
+The Python verifier checks required files, all non-binary text (strict UTF-8, no BOM, no anomalous NUL), Markdown links, the redaction self-test, sensitive patterns in the package, and `SKILL.md` / `SKILL.en.md` `name`, non-empty `description`, `metadata.version`, version, and language links. The PowerShell verifier uses the same directory filters, binary-extension list, strict encoding checks, frontmatter rules, and `PITFALLS.md` six-field check; language links are still checked by the Python verifier only. Both package verifiers scan non-allowlisted text such as `.env.*`, `.pem`, `.log`, `.ini`, and `.cff`, and fail closed on empty directories, undecodable files, or anomalous NUL.
 
 ### Optional: verify autonomous pitfall recording
 
@@ -196,6 +196,8 @@ python3 scripts/check_redaction.py --path .
 ```
 
 On Windows PowerShell, use `scripts/check-redaction.ps1`; see `SANITIZATION.en.md` for the full commands.
+
+The redaction scanner does not rely on an extension allowlist: every non-binary file is scanned, including `.env.local`, `.pem`, `.log`, `.ini`, and `.cff`; UTF-8 and UTF-16 (with BOM, or no-BOM UTF-16 whose byte order is unambiguous) are supported, and input whose encoding cannot be determined reliably fails closed. Empty directories, zero files, undecodable input, or anomalous NUL cause a failure instead of a silent pass.
 
 ## Download and signatures
 
@@ -245,10 +247,11 @@ Commercial use requires a written license from the author, but **the author is o
 ## Version
 
 - Full changelog: [CHANGELOG.md](CHANGELOG.md)
-- Version: 1.4.2
+- Version: 1.4.3
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
 - Security fix: 2026-11-07
 - Enterprise and server pitfall expansion: 2026-11-11
 - Enterprise entry and skill-routing revision: 2026-11-12
 - macOS standing pitfalls and environment gate: 2026-11-13
+- Scanner and verifier hardening: 2026-11-16

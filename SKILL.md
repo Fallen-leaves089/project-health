@@ -2,7 +2,7 @@
 name: project-health
 description: 推荐用于企业项目建设与日常维护的深度证据审计与交付验收，普通用户也可直接使用：先确认环境并查项目历史，再做规范/规格双轴审查、真实构建/迁移/容器与 macOS/Apple Silicon、Linux/Windows Server 回归，最终输出带证据位置的 P0-P3 问题清单。用户要求企业项目维护、深度审计、P0-P3、真实回归、交接验收或服务器上线检查时使用；只想做快速轻量首次体检时，也可选择 project-health-lite。
 metadata:
-  version: 1.4.2
+  version: 1.4.3
 license: PolyForm-Noncommercial-1.0.0
 ---
 
@@ -83,7 +83,8 @@ license: PolyForm-Noncommercial-1.0.0
 - **记忆范围**：既记录 Agent 自己的工具/验证坑，也记录本次核实过、可复用的项目失败模式，尤其是假绿、静默回退、不可回滚这类会跨项目复发的坑。只影响单个项目且不可复用的普通 bug 留在报告里。
 - **每次检查结束、写最终报告前做一次记忆检查**：把本次已复现或已核实的新失败模式与两份记忆对照。新的失败机制不需要用户再次提醒，直接记录。
 - **用记录器落盘**：`python scripts/record_pitfall.py --tag "..." --trigger "..." --wrong "..." --right "..." --verify "..."`；macOS 无 `python` 时用 `python3`。记录器自动选择本地或仓库记忆：在 `skills/` 目录下安装时优先本地，也可用 `--scope local|repo` 显式指定。
-- **查重规则**：完全重复不追加，只在原条目补日期、范围或证据；同一大类下的新失败机制不算重复。例如 `CICD-02` 已覆盖“跳过测试”时，“包装器吞掉退出码”或“报告文件缺失仍成功”仍是新条目，用 `--parent CICD-02` 关联。
+- **根目录指纹**：记录器要求真实技能根目录：`SKILL.md` 中 `name: project-health`、非空 `description`、`license: PolyForm-Noncommercial-1.0.0`，并存在 `AGENTS.md`、`references/report-template.md` 和与当前脚本字节一致的 `scripts/record_pitfall.py`；`--scope repo` 还要求 `.git`。只有 `AGENTS.md` / `PITFALLS.md` 的目录会被拒绝。
+- **查重规则**：完全重复不追加；日期较新时只刷新原条目日期，不覆盖范围或证据，范围与证据仍需人工补充。同一大类下的新失败机制不算重复。例如 `CICD-02` 已覆盖“跳过测试”时，“包装器吞掉退出码”或“报告文件缺失仍成功”仍是新条目，用 `--parent CICD-02` 关联。
 - **只记录已核实的工作经验**：不写未证实猜测、目标项目原文、密钥、个人信息、客户数据或绝对路径。
 - **只读边界针对目标项目**：写技能自己的记忆是允许的；未经用户同意，不写目标项目的 `PITFALLS.md`。
 - **在最终报告里写记忆结果**：`记忆：新增 N 条，重复 M 条（<文件>）` 或 `记忆：无新坑`。如果技能目录只读导致写入失败，报告待记录条目并说明失败，不中断检查。

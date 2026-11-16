@@ -7,7 +7,7 @@
 ## 来源
 
 - 内部技能整理日期：2026-09-04
-- 公开版版本：1.4.2
+- 公开版版本：1.4.3
 - 处理方式：逐段重写，不用简单查找替换；敏感段落直接删除或抽象化
 
 ## 已移除
@@ -79,11 +79,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 
 `check-redaction.ps1` 默认检查：
 
+- 扫描范围：所有非二进制文件，不使用扩展名白名单；`.env.*`、`.pem`、`.log`、`.ini`、`.cff` 等文本也会检查
+- 编码：UTF-8 和 UTF-16（带 BOM，或字节顺序明确的无 BOM UTF-16）；无法可靠判断编码时 fail closed；空目录、零文件、无法解码或异常 NUL 直接失败
 - Windows（反斜杠 / 正斜杠）与 Unix 用户目录路径
 - 私有 IPv4 地址
 - OpenAI 风格密钥、GitHub 令牌、AWS Access Key
 - PEM 私钥块
-- `api_key` / `token` / `password` 等赋值形式的长字符串（含 JSON/TOML/YAML 的引号键）
+- `api_key` / `secret` / `client_secret` / `access_token` / `refresh_token` / `private_key` / `password` 等赋值形式的长字符串（含 JSON/TOML/YAML 的引号键）
+
+Python 与 PowerShell 包校验器使用相同的目录过滤、二进制扩展名清单和严格编码规则，并检查 `description`、嵌套在 `metadata` 下的 `version` 以及 `PITFALLS.md` 的六字段格式。语言链接一致性仍只由 Python 版检查。
 
 项目专属词、客户名、内部代号不在默认规则里。需要时用 `-ExtraPatterns` 传入，例如：
 

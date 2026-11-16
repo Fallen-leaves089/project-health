@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
-    Verify the skill package: required files, UTF-8 without BOM, relative Markdown links,
-    skill frontmatter and version consistency, redaction self-test, and a clean redaction scan.
+    Verify the skill package: required files, non-binary text encoding, relative Markdown links,
+    skill frontmatter and version consistency, PITFALLS schemas, redaction self-test, and a clean scan.
 
 .DESCRIPTION
     Exit codes:
@@ -160,6 +160,9 @@ function Read-SkillFrontmatter {
     if ($fields['license'] -ne 'PolyForm-Noncommercial-1.0.0') {
         $failures.Add(('Frontmatter license mismatch in {0}: {1}' -f $Relative, $(if ($fields.ContainsKey('license')) { $fields['license'] } else { '<missing>' })))
     }
+    if ([string]::IsNullOrWhiteSpace($fields['description'])) {
+        $failures.Add(('Frontmatter description missing in {0}' -f $Relative))
+    }
     if ($versionScopes.Count -eq 0) {
         $failures.Add(('Frontmatter version missing in {0}' -f $Relative))
         return $null
@@ -189,32 +192,46 @@ if (@($skillVersions.Values | Sort-Object -Unique).Count -gt 1) {
     $failures.Add(('SKILL.md and SKILL.en.md versions do not match: {0}' -f $summary))
 }
 
-$textExtensions = @(
-    '.md', '.txt', '.ps1', '.psm1', '.json', '.yml', '.yaml', '.toml',
-    '.env', '.sh', '.cmd', '.bat', '.js', '.ts', '.py', '.fixture', '.xml', '.properties', '.pub', ''
+$binaryExtensions = @(
+    '.7z', '.a', '.avi', '.bin', '.bmp', '.class', '.dll', '.docx', '.dylib',
+    '.eot', '.exe', '.gif', '.gz', '.ico', '.jar', '.jpeg', '.jpg', '.lib',
+    '.mkv', '.mov', '.mp3', '.mp4', '.o', '.otf', '.p12', '.pdf', '.pfx',
+    '.png', '.pptx', '.pyc', '.pyo', '.rar', '.so', '.sqlite', '.sqlite3',
+    '.tar', '.tgz', '.tif', '.tiff', '.ttf', '.wav', '.webm', '.webp', '.whl',
+    '.woff', '.woff2', '.xlsx', '.zip'
 )
-$textNames = @('.gitattributes', '.gitignore', '.editorconfig', '.mailmap')
+$skipDirPattern = '(?:^|[\\/])(\.git|node_modules|bin|obj|dist|build|\.venv|__pycache__|\.vs|\.idea)(?:[\\/]|$)'
 
 $textFiles = @(
     Get-ChildItem -LiteralPath $root -Recurse -File -Force -ErrorAction Stop |
         Where-Object {
-            (($textExtensions -contains $_.Extension.ToLowerInvariant()) -or
-            ($textNames -contains $_.Name)) -and
-            ($_.FullName -notmatch '[\\/]\.git[\\/]')
+            $relativePath = $_.FullName.Substring($root.Length).TrimStart([char[]]@('\', '/'))
+            $relativeDir = [System.IO.Path]::GetDirectoryName($relativePath)
+            ($binaryExtensions -notcontains $_.Extension.ToLowerInvariant()) -and
+            ($relativeDir -notmatch $skipDirPattern)
         }
 )
 
+$utf8Strict = New-Object System.Text.UTF8Encoding($false, $true)
 foreach ($file in $textFiles) {
     $rel = $file.FullName.Substring($root.Length).TrimStart([char[]]@('\', '/'))
     $bytes = [System.IO.File]::ReadAllBytes($file.FullName)
-    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
-        $failures.Add(('UTF-8 BOM found: {0}' -f $rel))
+    if (($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) -or
+        ($bytes.Length -ge 2 -and (($bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) -or ($bytes[0] -eq 0xFE -and $bytes[1] -eq 0xFF)))) {
+        $failures.Add(('BOM found: {0}' -f $rel))
+    }
+    try {
+        $text = $utf8Strict.GetString($bytes)
+        if ($text.IndexOf([char]0) -ge 0) {
+            $failures.Add(('NUL byte in text file: {0}' -f $rel))
+        }
+    } catch {
+        $failures.Add(('Not valid UTF-8: {0}' -f $rel))
     }
 }
 
 $mdFiles = @(
-    Get-ChildItem -LiteralPath $root -Recurse -File -Filter *.md -Force -ErrorAction Stop |
-        Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' }
+    $textFiles | Where-Object { $_.Extension.ToLowerInvariant() -eq '.md' }
 )
 foreach ($md in $mdFiles) {
     $mdRel = $md.FullName.Substring($root.Length).TrimStart([char[]]@('\', '/'))
@@ -229,6 +246,22 @@ foreach ($md in $mdFiles) {
             $candidate = Join-Path $md.DirectoryName $target
             if (-not (Test-Path -LiteralPath $candidate)) {
                 $failures.Add(('Broken relative link: {0}:{1} -> {2}' -f $mdRel, $lineNo, $target))
+            }
+        }
+    }
+}
+
+$pitfallsPath = Join-Path $root 'PITFALLS.md'
+if (Test-Path -LiteralPath $pitfallsPath) {
+    $pitfallLine = 0
+    foreach ($line in [System.IO.File]::ReadAllLines($pitfallsPath, [System.Text.Encoding]::UTF8)) {
+        $pitfallLine++
+        if ($line -match '^(?:-\s+)?\d{4}-\d{2}-\d{2}\s+\|') {
+            $fields = @($line -split '\|' | ForEach-Object { $_.Trim() })
+            if ($fields.Count -ne 6) {
+                $failures.Add(('PITFALLS entry must contain exactly 6 fields: PITFALLS.md:{0}' -f $pitfallLine))
+            } elseif (@($fields | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -gt 0) {
+                $failures.Add(('PITFALLS entry fields must not be empty: PITFALLS.md:{0}' -f $pitfallLine))
             }
         }
     }
