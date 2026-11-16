@@ -31,8 +31,8 @@ if (-not (Test-Path -LiteralPath $Path)) {
     exit 2
 }
 
-$root = (Get-Item -LiteralPath $Path).FullName
-if (-not (Get-Item -LiteralPath $root).PSIsContainer) {
+$root = (Get-Item -LiteralPath $Path -Force).FullName
+if (-not (Get-Item -LiteralPath $root -Force).PSIsContainer) {
     Write-Host 'ERROR: path must be a directory.' -ForegroundColor Red
     exit 2
 }

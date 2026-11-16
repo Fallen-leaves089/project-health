@@ -176,7 +176,7 @@ function Invoke-RedactionScan {
         [switch]$Quiet
     )
 
-    $rootItem = Get-Item -LiteralPath $Root
+    $rootItem = Get-Item -LiteralPath $Root -Force
     $isSingleFile = -not $rootItem.PSIsContainer
     if ($isSingleFile) {
         $rootFull = $rootItem.DirectoryName.TrimEnd([char[]]@('\', '/'))
