@@ -5,14 +5,15 @@ The recorder is intentionally small and fail-closed:
 
 * it can only write ``PITFALLS.md`` or ``PITFALLS.local.md`` directly under
   the skill root;
-* it never rewrites history and treats an exact duplicate as a no-op;
+* it never appends an exact duplicate; a newer date refreshes the original
+  entry in place without changing its other fields;
 * it rejects separators, newlines, empty fields, and common secret or personal
   patterns before touching the file;
 * it creates ``PITFALLS.local.md`` on first use but never creates a missing
   repository ``PITFALLS.md``.
 
 Exit codes:
-    0 = appended, duplicate, or dry-run
+    0 = appended, updated, duplicate, or dry-run
     1 = validation, safety, or write error
     2 = usage error
 """
@@ -24,9 +25,10 @@ import datetime as _datetime
 import os
 import re
 import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 
 SCRIPT_PATH = Path(__file__).resolve()
@@ -40,6 +42,31 @@ PARENT_RE = re.compile(r"^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-\d{2}$")
 ENTRY_RE = re.compile(
     r"^(?:\d{4}-\d{2}-\d{2})\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+)$"
 )
+SKILL_NAME = "project-health"
+SKILL_LICENSE = "PolyForm-Noncommercial-1.0.0"
+REQUIRED_ROOT_FILES = (
+    "AGENTS.md",
+    "references/report-template.md",
+    "scripts/record_pitfall.py",
+)
+
+ASSIGNED_SECRET_FIELD = (
+    r"(?:api[_-]?key|"
+    r"(?:client|signing|encryption)[_-]?(?:secret|key|token)|"
+    r"aws[_-]?secret[_-]?access[_-]?key|"
+    r"access[_-]?key(?:[_-]?id)?|"
+    r"secret[_-]?key|private[_-]?key|secret|"
+    r"(?:access|refresh|session|auth|bearer|id)[_-]?token|"
+    r"token|password|passwd|pwd|passphrase)"
+)
+
+ASSIGNED_SECRET_RE = re.compile(
+    rf'(?i)(?<![A-Za-z0-9_])["\']?{ASSIGNED_SECRET_FIELD}'
+    r'(?![A-Za-z0-9_])["\']?\s*[:=]\s*["\']?'
+    r"(?!<|\$|\{|%|\[|REDACTED|CHANGE_ME|example|placeholder|"
+    r"null|true|false|none|\*+)"
+    r"[A-Za-z0-9_\-\.\/+=$]{12,}"
+)
 
 LOCAL_HEADER = """# 本地避坑记录 / Local Pitfalls Log
 
@@ -48,7 +75,7 @@ LOCAL_HEADER = """# 本地避坑记录 / Local Pitfalls Log
 规则：
 
 - 只记录本机使用本技能时核实过的新失败模式；不写目标项目原文、密钥、个人信息或绝对路径。
-- 先查重；完全重复不追加。同类下的新失败机制可以新增，并在触发场景里注明父条目。
+- 先查重；完全重复不追加，日期较新时只更新原条目日期。同类下的新失败机制可以新增，并在触发场景里注明父条目。
 - 只追加，不删除；升级技能时保留本文件，不覆盖。
 """
 
@@ -83,15 +110,7 @@ SENSITIVE_PATTERNS: Tuple[Tuple[str, re.Pattern[str]], ...] = (
     ),
     ("AWS access key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     ("Private key block", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
-    (
-        "Assigned secret",
-        re.compile(
-            r'(?i)["\']?\b(api[_-]?key|secret|token|password|passwd|pwd)\b["\']?'
-            r'\s*[:=]\s*["\']?'
-            r"(?!<|\$|\{|%|\[|REDACTED|CHANGE_ME|example|placeholder)"
-            r"[A-Za-z0-9_\-\.]{12,}"
-        ),
-    ),
+    ("Assigned secret", ASSIGNED_SECRET_RE),
     (
         "Private IPv4",
         re.compile(
@@ -200,12 +219,61 @@ def build_line(entry: Entry, record_date: Optional[str] = None) -> str:
     )
 
 
+def _read_frontmatter(path: Path) -> Dict[str, str]:
+    data = path.read_bytes()
+    if data.startswith(b"\xef\xbb\xbf"):
+        raise ValueError(f"SKILL.md must be UTF-8 without BOM: {path}")
+    try:
+        lines = data.decode("utf-8").splitlines()
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"SKILL.md is not valid UTF-8: {path}") from exc
+    if not lines or lines[0].strip() != "---":
+        raise ValueError("SKILL.md is missing YAML frontmatter")
+
+    fields: Dict[str, str] = {}
+    for line in lines[1:]:
+        if line.strip() == "---":
+            return fields
+        if not line or line[0].isspace():
+            continue
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        fields[key.strip()] = value.strip().strip('"').strip("'")
+    raise ValueError("SKILL.md frontmatter is not closed")
+
+
+def _validate_skill_root(root: Path) -> None:
+    skill = root / "SKILL.md"
+    if not skill.is_file():
+        raise ValueError("root does not contain SKILL.md")
+
+    fields = _read_frontmatter(skill)
+    if fields.get("name") != SKILL_NAME:
+        raise ValueError("SKILL.md name is not project-health")
+    if fields.get("license") != SKILL_LICENSE:
+        raise ValueError("SKILL.md license is not the expected project-health license")
+    if not fields.get("description", "").strip():
+        raise ValueError("SKILL.md is missing a non-empty description")
+
+    for relative in REQUIRED_ROOT_FILES:
+        if not (root / relative).is_file():
+            raise ValueError(f"root is missing structural file: {relative}")
+
+    recorder = root / "scripts" / "record_pitfall.py"
+    try:
+        same_recorder = recorder.read_bytes() == SCRIPT_PATH.read_bytes()
+    except OSError as exc:
+        raise ValueError(f"could not fingerprint the recorder: {exc}") from exc
+    if not same_recorder:
+        raise ValueError("root recorder does not match this project-health recorder")
+
+
 def _memory_path(root: Path, scope: str) -> Path:
     root = root.expanduser().resolve()
     if not root.is_dir():
         raise ValueError(f"root is not a directory: {root}")
-    if not any((root / name).is_file() for name in ("SKILL.md", "AGENTS.md", REPO_NAME)):
-        raise ValueError("root does not look like a project-health skill directory")
+    _validate_skill_root(root)
 
     if scope == "auto":
         if (root / LOCAL_NAME).is_file():
@@ -218,6 +286,8 @@ def _memory_path(root: Path, scope: str) -> Path:
             scope = "local"
     if scope not in {"repo", "local"}:
         raise ValueError("scope must be auto, repo, or local")
+    if scope == "repo" and not (root / ".git").exists():
+        raise ValueError("repository scope requires a .git entry at the skill root")
 
     path = root / (LOCAL_NAME if scope == "local" else REPO_NAME)
     resolved = path.resolve(strict=False)
@@ -232,22 +302,55 @@ def _normalise_for_compare(value: str) -> str:
     return " ".join(value.split()).casefold()
 
 
-def _is_duplicate(existing: str, line: str) -> bool:
+def _find_duplicate(existing: str, line: str) -> Optional[Tuple[int, int, str]]:
     target = ENTRY_RE.match(line)
     if target is None:
-        return False
+        return None
     target_fields = tuple(_normalise_for_compare(part) for part in target.groups())
-    for raw in existing.splitlines():
+    offset = 0
+    for raw in existing.splitlines(keepends=True):
         candidate = raw.strip()
         if candidate.startswith("- "):
             candidate = candidate[2:].strip()
         match = ENTRY_RE.match(candidate)
-        if match is None:
-            continue
-        fields = tuple(_normalise_for_compare(part) for part in match.groups())
-        if fields == target_fields:
-            return True
-    return False
+        if match is not None:
+            fields = tuple(_normalise_for_compare(part) for part in match.groups())
+            if fields == target_fields:
+                date_match = re.search(r"\d{4}-\d{2}-\d{2}", raw)
+                if date_match is not None:
+                    return (
+                        offset + date_match.start(),
+                        offset + date_match.end(),
+                        date_match.group(0),
+                    )
+        offset += len(raw)
+    return None
+
+
+def _refresh_date(path: Path, existing: str, duplicate: Tuple[int, int, str], date_text: str) -> None:
+    start, end, _ = duplicate
+    updated = existing[:start] + date_text + existing[end:]
+    temporary_name = ""
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            newline="",
+            dir=str(path.parent),
+            prefix=f".{path.name}.",
+            delete=False,
+        ) as handle:
+            temporary_name = handle.name
+            handle.write(updated)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_name, path)
+    finally:
+        if temporary_name:
+            try:
+                Path(temporary_name).unlink(missing_ok=True)
+            except OSError:
+                pass
 
 
 def _read_existing(path: Path) -> str:
@@ -291,7 +394,13 @@ def record(
     line = build_line(entry, record_date)
     path = _memory_path(root, scope)
     existing = _read_existing(path)
-    if _is_duplicate(existing, line):
+    duplicate = _find_duplicate(existing, line)
+    if duplicate is not None:
+        if line[:10] > duplicate[2]:
+            if dry_run:
+                return RecordResult(status="dry-run", path=path, line=line)
+            _refresh_date(path, existing, duplicate, line[:10])
+            return RecordResult(status="updated", path=path, line=line)
         return RecordResult(status="duplicate", path=path)
     if dry_run:
         return RecordResult(status="dry-run", path=path, line=line)
@@ -328,7 +437,19 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _configure_stdio() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(errors="backslashreplace")
+        except (OSError, ValueError):
+            pass
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
+    _configure_stdio()
     args = parse_args(argv if argv is not None else sys.argv[1:])
     entry = Entry(
         tag=args.tag,
@@ -354,7 +475,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 1
 
     print(f"{result.status.upper()}: {result.path}")
-    if result.line:
+    if result.status == "dry-run" and result.line:
         print(result.line)
     return 0
 

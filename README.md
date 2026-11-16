@@ -148,7 +148,7 @@ project-health/
 
 ## 平台支持
 
-核心技能只依赖 Markdown 和 Git 命令；Windows 10/11、Windows Server 2019/2022+、macOS / Linux + Python 3.9+、WSL2 都可使用。macOS 会常驻加载 Apple Silicon / Rosetta、Homebrew 双前缀、BSD 工具、APFS、Gatekeeper/TCC、launchd 和 Docker 架构避坑；Intel Mac 或 Rosetta 会话仍可做通用只读检查，但原生构建、签名、性能和容器架构结论会标为未覆盖。服务器专项覆盖 Windows Server 的 IIS、服务、NTFS/SMB、AD/Kerberos、SQL Server、证书、补丁和集群，以及 Linux 的 systemd、权限、SELinux/AppArmor、磁盘、OOM、防火墙、NTP、包管理和回滚。Python 自检只用标准库，不需要联网。
+核心技能只依赖 Markdown 和 Git 命令；Windows 10/11、Windows Server 2019/2022+、macOS / Linux + Python 3.9+、WSL2 都可使用。macOS 会常驻加载 Apple Silicon / Rosetta、Homebrew 双前缀、BSD 工具、APFS、Gatekeeper/TCC、launchd 和 Docker 架构避坑；Intel Mac 或 Rosetta 会话仍可做通用只读检查，但原生构建、签名、性能和容器架构结论会标为未覆盖。服务器专项覆盖 Windows Server 的 IIS、服务、NTFS/SMB、AD/Kerberos、SQL Server、证书、补丁和集群，以及 Linux 的 systemd、权限、SELinux/AppArmor、磁盘、OOM、防火墙、NTP、包管理和回滚。Python 自检只用标准库，不需要联网。CI 的 `windows-latest` 只代表 Windows 客户端；真实 Windows Server 角色检查需在自建 runner 设置仓库变量 `ENABLE_WINDOWS_SERVER_SMOKE=true`，该作业只允许 main 分支 push 或手动 `workflow_dispatch`，不接受 `pull_request`（包括 fork PR）；也可按 `REQUIRE_WINDOWS_SERVER=1` 手动运行。
 
 ## 自检
 
@@ -176,7 +176,7 @@ python -B -m unittest discover -s tests -p "test_*.py"
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 ```
 
-Python 版检查必需文件、UTF-8 无 BOM、Markdown 链接、脱敏自检、包内敏感模式，以及 `SKILL.md` / `SKILL.en.md` 的 frontmatter、版本和语言链接是否一致。PowerShell 版检查必需文件、BOM、链接、frontmatter、版本一致性和脱敏扫描；语言链接仅由 Python 版检查。
+Python 版检查必需文件、所有非二进制文本（严格 UTF-8、无 BOM、无异常 NUL）、Markdown 链接、脱敏自检、包内敏感模式，以及 `SKILL.md` / `SKILL.en.md` 的 `name`、非空 `description`、`metadata.version`、版本和语言链接是否一致。PowerShell 版使用相同的目录过滤、二进制扩展名清单、严格编码检查、frontmatter 与 `PITFALLS.md` 六字段规则；语言链接仍只由 Python 版检查。两版包校验器都会扫描 `.env.*`、`.pem`、`.log`、`.ini`、`.cff` 等非白名单文本，并对空目录、不可解码文件或异常 NUL fail closed。
 
 ### 可选：验证 Agent 是否会自主记录新坑
 
@@ -196,6 +196,8 @@ python3 scripts/check_redaction.py --path .
 ```
 
 Windows PowerShell 版使用 `scripts/check-redaction.ps1`；完整命令见 `SANITIZATION.md`。
+
+脱敏扫描器不依赖扩展名白名单：所有非二进制文件都会扫描，包括 `.env.local`、`.pem`、`.log`、`.ini`、`.cff`；UTF-8 和 UTF-16（带 BOM，或字节顺序明确的无 BOM UTF-16）都可读取，无法可靠判断编码时 fail closed。空目录、零文件、无法解码或含异常 NUL 的输入会直接失败，不会静默放行。
 
 ## 下载与签名
 
@@ -245,10 +247,11 @@ ssh-keygen -lf release-signing-key.pub
 ## 版本
 
 - 完整更新记录：[CHANGELOG.md](CHANGELOG.md)
-- 版本：1.4.2
+- 版本：1.4.3
 - 对应内部整理日期：2026-09-04
 - 公开发布整理：2026-11-04
 - 安全修复整理：2026-11-07
 - 企业级与服务器避坑扩充：2026-11-11
 - 企业入口与技能路由修订：2026-11-12
 - macOS 常驻避坑与环境门禁：2026-11-13
+- 扫描与校验一致性加固：2026-11-16

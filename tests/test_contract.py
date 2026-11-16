@@ -16,7 +16,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "malicious-target"
 FIXTURE = FIXTURE_DIR / "malicious-agents.fixture"
-EXPECTED_VERSION = "1.4.2"
+EXPECTED_VERSION = "1.4.3"
+EXPECTED_RELEASE_DATE = "2026-11-16"
 
 
 def read_text(relative: str) -> str:
@@ -173,9 +174,12 @@ class UntrustedTargetContractTests(unittest.TestCase):
             read_text("SANITIZATION.en.md"),
         )
         self.assertIn(
-            f"## {EXPECTED_VERSION} - 2026-11-13",
+            f"## {EXPECTED_VERSION} - {EXPECTED_RELEASE_DATE}",
             read_text("CHANGELOG.md"),
         )
+        citation = read_text("CITATION.cff")
+        self.assertIn(f'version: "{EXPECTED_VERSION}"', citation)
+        self.assertIn(f'date-released: "{EXPECTED_RELEASE_DATE}"', citation)
 
     def test_enterprise_positioning_is_consistent(self) -> None:
         chinese = read_text("SKILL.md")
@@ -259,6 +263,8 @@ class UntrustedTargetContractTests(unittest.TestCase):
                 "记忆：新增",
                 "同一大类下的新失败机制",
                 "记忆范围",
+                "根目录指纹",
+                "只刷新原条目日期",
             ),
             "SKILL.en.md": (
                 "PITFALLS.local.md",
@@ -266,12 +272,16 @@ class UntrustedTargetContractTests(unittest.TestCase):
                 "Memory: appended",
                 "not a duplicate",
                 "Scope",
+                "Root fingerprint",
+                "refreshes only",
             ),
             "AGENTS.md": (
                 "PITFALLS.local.md",
                 "scripts/record_pitfall.py",
                 "记忆：新增",
                 "同一大类下的新失败机制",
+                "根目录指纹",
+                "只刷新原条目日期",
             ),
             "README.md": ("PITFALLS.local.md", "本地避坑记忆", "agent_memory_eval"),
             "README.en.md": ("PITFALLS.local.md", "Local pitfall memory", "agent_memory_eval"),
@@ -291,6 +301,25 @@ class UntrustedTargetContractTests(unittest.TestCase):
             for required in ("scripts/record_pitfall.py", "tests/test_record_pitfall.py"):
                 with self.subTest(verifier=relative, required=required):
                     self.assertIn(required, verifier)
+
+    def test_report_templates_include_memory_result(self) -> None:
+        expectations = {
+            "references/report-template.md": (
+                "## 记忆结果",
+                "记忆：新增",
+                "PITFALLS.local.md",
+            ),
+            "references/report-template.en.md": (
+                "## Memory result",
+                "Memory: appended",
+                "PITFALLS.local.md",
+            ),
+        }
+        for relative, phrases in expectations.items():
+            content = read_text(relative)
+            for phrase in phrases:
+                with self.subTest(relative=relative, phrase=phrase):
+                    self.assertIn(phrase, content)
 
     def test_agent_memory_eval_is_optional_and_scenarios_are_unseen(self) -> None:
         prompt = read_text("tests/fixtures/agent-memory-eval/prompt.txt").casefold()
@@ -414,10 +443,20 @@ class UntrustedTargetContractTests(unittest.TestCase):
             "systemd-analyze verify",
             "firewall-cmd",
             "docker compose",
+            "docker compose -f - config",
+            "docker compose version",
             "mysqladmin",
         ):
             with self.subTest(platform="linux", phrase=phrase):
                 self.assertIn(phrase, linux)
+
+        fragile_head_lines = [
+            line.strip()
+            for line in linux.splitlines()
+            if "run_check " in line and "| head" in line and "|| true" not in line
+        ]
+        self.assertEqual(fragile_head_lines, [])
+        self.assertNotIn("compose_dir", linux)
 
         windows = read_text("tests/server-smoke.ps1")
         for phrase in (
@@ -433,12 +472,556 @@ class UntrustedTargetContractTests(unittest.TestCase):
         workflow = read_text(".github/workflows/server-smoke.yml")
         for phrase in (
             "ubuntu-24.04",
+            "Windows client / windows-latest",
             "windows-latest",
             "bash tests/server-smoke.sh",
             r".\tests\server-smoke.ps1",
+            "ENABLE_WINDOWS_SERVER_SMOKE",
+            "windows-server",
         ):
             with self.subTest(workflow="server-smoke", phrase=phrase):
                 self.assertIn(phrase, workflow)
+
+        client_job = workflow.split("windows-server:", 1)[0]
+        self.assertNotIn("REQUIRE_WINDOWS_SERVER", client_job)
+        server_job = workflow.split("windows-server:", 1)[1]
+        for phrase in (
+            "github.event_name == 'workflow_dispatch'",
+            "github.event_name == 'push'",
+            "github.ref == 'refs/heads/main'",
+        ):
+            with self.subTest(workflow="windows-server", phrase=phrase):
+                self.assertIn(phrase, server_job)
+        self.assertNotIn("github.event_name == 'pull_request'", server_job)
+
+
+class ScannerAndVerifierRegressionTests(unittest.TestCase):
+    @staticmethod
+    def _powershell():
+        return shutil.which("pwsh") or shutil.which("powershell")
+
+    def _run_powershell(self, arguments):
+        shell = self._powershell()
+        if shell is None:
+            self.skipTest("PowerShell is not installed")
+        base = [shell, "-NoProfile"]
+        if Path(shell).name.lower() == "powershell.exe":
+            base += ["-ExecutionPolicy", "Bypass"]
+        return subprocess.run(
+            base + arguments,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+
+    @staticmethod
+    def _copy_package(temp_dir: str) -> Path:
+        target = Path(temp_dir) / "project-health"
+        shutil.copytree(
+            ROOT,
+            target,
+            ignore=shutil.ignore_patterns(".git", "__pycache__", ".venv"),
+        )
+        return target
+
+    def test_scanner_covers_prefixed_secrets_text_types_and_utf16(self) -> None:
+        sample_value = "abcdefghijklmnopqrstuvwxyz"
+        with tempfile.TemporaryDirectory(prefix="project-health-scanner-") as temp_dir:
+            root = Path(temp_dir)
+            fixtures = {
+                ".env.local": "API_KEY=" + sample_value + "\n",
+                "server.pem": "-----BEGIN " + "PRIVATE KEY-----\n",
+                "notes.log": "access_token=" + sample_value + "\n",
+                "config.ini": "refresh_token=" + sample_value + "\n",
+                "citation.cff": "client_secret=" + sample_value + "\n",
+                "secret.txt": "secret=" + sample_value + "\n",
+                "macos-path.txt": "Path: /" + "Users/example-user/private\n",
+            }
+            for name, content in fixtures.items():
+                (root / name).write_text(content, encoding="utf-8")
+            (root / "utf16-notes.txt").write_text(
+                "password=" + sample_value + "\n",
+                encoding="utf-16",
+            )
+            (root / "utf16-no-bom.txt").write_bytes(
+                ("password=" + sample_value + "\n").encode("utf-16-le")
+            )
+            (root / "utf16-no-bom-emoji.txt").write_bytes(
+                ("password=" + sample_value + chr(0x1F512) + "\n").encode("utf-16-le")
+            )
+
+            python_result = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(ROOT / "scripts" / "check_redaction.py"),
+                    "--path",
+                    str(root),
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertNotEqual(python_result.returncode, 0)
+            python_output = python_result.stdout + python_result.stderr
+            for name in fixtures:
+                with self.subTest(name=name):
+                    self.assertIn(name, python_output)
+            self.assertIn("utf16-notes.txt", python_output)
+            self.assertIn("utf16-no-bom.txt", python_output)
+            self.assertIn("utf16-no-bom.txt:1", python_output)
+            self.assertIn("utf16-no-bom-emoji.txt:1", python_output)
+            self.assertIn("utf16-no-bom-emoji.txt", python_output)
+
+            ps_result = self._run_powershell(
+                ["-File", str(ROOT / "scripts" / "check-redaction.ps1"), "-Path", str(root)]
+            )
+            self.assertNotEqual(ps_result.returncode, 0)
+            ps_output = ps_result.stdout + ps_result.stderr
+            for name in fixtures:
+                with self.subTest(tool="PowerShell", name=name):
+                    self.assertIn(name, ps_output)
+            self.assertIn("utf16-notes.txt", ps_output)
+            self.assertIn("utf16-no-bom.txt", ps_output)
+            self.assertIn("utf16-no-bom.txt:1", ps_output)
+            self.assertIn("utf16-no-bom-emoji.txt:1", ps_output)
+            self.assertIn("utf16-no-bom-emoji.txt", ps_output)
+
+    def test_scanner_fails_closed_on_empty_or_invalid_text(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="project-health-scanner-") as temp_dir:
+            empty = Path(temp_dir) / "empty"
+            empty.mkdir()
+            python_empty = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(ROOT / "scripts" / "check_redaction.py"),
+                    "--path",
+                    str(empty),
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertNotEqual(python_empty.returncode, 0)
+            self.assertIn("no scannable", python_empty.stderr)
+
+            invalid = Path(temp_dir) / "bad.txt"
+            invalid.write_bytes(b"\xff\x80not-text")
+            python_invalid = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(ROOT / "scripts" / "check_redaction.py"),
+                    "--path",
+                    str(invalid),
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertNotEqual(python_invalid.returncode, 0)
+            self.assertIn("unscannable", python_invalid.stderr)
+
+            invalid_bom = Path(temp_dir) / "bad-bom.txt"
+            invalid_bom.write_bytes(b"\xef\xbb\xbf\xff")
+            python_invalid_bom = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(ROOT / "scripts" / "check_redaction.py"),
+                    "--path",
+                    str(invalid_bom),
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertNotEqual(python_invalid_bom.returncode, 0)
+            self.assertIn("unscannable", python_invalid_bom.stderr)
+
+            nul_text = Path(temp_dir) / "nul.txt"
+            nul_text.write_bytes(b"prefix\x00suffix\n")
+            python_nul = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(ROOT / "scripts" / "check_redaction.py"),
+                    "--path",
+                    str(nul_text),
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertNotEqual(python_nul.returncode, 0)
+            self.assertIn("anomalous NUL", python_nul.stderr)
+
+            ps_empty = self._run_powershell(
+                ["-File", str(ROOT / "scripts" / "check-redaction.ps1"), "-Path", str(empty)]
+            )
+            self.assertNotEqual(ps_empty.returncode, 0)
+            self.assertIn("no scannable", ps_empty.stdout + ps_empty.stderr)
+
+            ps_invalid = self._run_powershell(
+                ["-File", str(ROOT / "scripts" / "check-redaction.ps1"), "-Path", str(invalid)]
+            )
+            self.assertNotEqual(ps_invalid.returncode, 0)
+            self.assertIn("unscannable", ps_invalid.stdout + ps_invalid.stderr)
+
+            ps_invalid_bom = self._run_powershell(
+                ["-File", str(ROOT / "scripts" / "check-redaction.ps1"), "-Path", str(invalid_bom)]
+            )
+            self.assertNotEqual(ps_invalid_bom.returncode, 0)
+            self.assertIn("unscannable", ps_invalid_bom.stdout + ps_invalid_bom.stderr)
+
+            ps_nul = self._run_powershell(
+                ["-File", str(ROOT / "scripts" / "check-redaction.ps1"), "-Path", str(nul_text)]
+            )
+            self.assertNotEqual(ps_nul.returncode, 0)
+            self.assertIn("anomalous NUL", ps_nul.stdout + ps_nul.stderr)
+
+    def test_scanner_scans_root_below_skipped_directory_name(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="project-health-scanner-") as temp_dir:
+            root = Path(temp_dir) / "build" / "package"
+            root.mkdir(parents=True)
+            (root / "clean.txt").write_text("clean text\n", encoding="utf-8")
+
+            python_result = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(ROOT / "scripts" / "check_redaction.py"),
+                    "--path",
+                    str(root),
+                    "--quiet",
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertEqual(python_result.returncode, 0, python_result.stdout + python_result.stderr)
+            self.assertIn("Scanned 1 file(s)", python_result.stdout)
+
+            ps_result = self._run_powershell(
+                ["-File", str(ROOT / "scripts" / "check-redaction.ps1"), "-Path", str(root), "-Quiet"]
+            )
+            self.assertEqual(ps_result.returncode, 0, ps_result.stdout + ps_result.stderr)
+            self.assertIn("Scanned 1 file(s)", ps_result.stdout + ps_result.stderr)
+
+    def test_scanner_scans_file_named_like_skipped_directory(self) -> None:
+        sample_value = "abcdefghijklmnopqrstuvwxyz"
+        with tempfile.TemporaryDirectory(prefix="project-health-scanner-") as temp_dir:
+            root = Path(temp_dir) / "skip-name"
+            root.mkdir()
+            (root / "build").write_text(
+                "password=" + sample_value + "\n",
+                encoding="utf-8",
+            )
+
+            python_result = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(ROOT / "scripts" / "check_redaction.py"),
+                    "--path",
+                    str(root),
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertNotEqual(
+                python_result.returncode,
+                0,
+                python_result.stdout + python_result.stderr,
+            )
+            self.assertIn("build", python_result.stdout + python_result.stderr)
+
+            ps_result = self._run_powershell(
+                ["-File", str(ROOT / "scripts" / "check-redaction.ps1"), "-Path", str(root)]
+            )
+            self.assertNotEqual(
+                ps_result.returncode,
+                0,
+                ps_result.stdout + ps_result.stderr,
+            )
+            self.assertIn("build", ps_result.stdout + ps_result.stderr)
+
+    def test_package_verifiers_reject_missing_description_and_flat_version(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="project-health-verifier-") as temp_dir:
+            target = self._copy_package(temp_dir)
+            for relative in ("SKILL.md", "SKILL.en.md"):
+                path = target / relative
+                content = path.read_text(encoding="utf-8")
+                content = re.sub(r"(?m)^description:.*\n", "", content, count=1)
+                content = content.replace(
+                    f"  version: {EXPECTED_VERSION}",
+                    f"version: {EXPECTED_VERSION}",
+                    1,
+                )
+                with path.open("w", encoding="utf-8", newline="\n") as handle:
+                    handle.write(content)
+
+            python_result = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(ROOT / "scripts" / "verify_package.py"),
+                    "--path",
+                    str(target),
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertNotEqual(python_result.returncode, 0)
+            python_output = python_result.stdout + python_result.stderr
+            self.assertIn("description missing", python_output)
+            self.assertIn("nested under metadata", python_output)
+
+            ps_result = self._run_powershell(
+                [
+                    "-File",
+                    str(target / "scripts" / "verify-package.ps1"),
+                    "-Path",
+                    str(target),
+                ]
+            )
+            self.assertNotEqual(ps_result.returncode, 0)
+            ps_output = ps_result.stdout + ps_result.stderr
+            self.assertIn("description missing", ps_output)
+            self.assertIn("nested under metadata", ps_output)
+
+    def test_package_verifiers_reject_invalid_cff_and_powershell_skips_venv(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="project-health-verifier-") as temp_dir:
+            target = self._copy_package(temp_dir)
+            venv = target / ".venv"
+            venv.mkdir()
+            (venv / "bad.md").write_text("[broken](missing.md)\n", encoding="utf-8")
+
+            clean_ps = self._run_powershell(
+                [
+                    "-File",
+                    str(target / "scripts" / "verify-package.ps1"),
+                    "-Path",
+                    str(target),
+                ]
+            )
+            self.assertEqual(
+                clean_ps.returncode,
+                0,
+                msg=clean_ps.stdout + clean_ps.stderr,
+            )
+
+            (target / "CITATION.cff").write_bytes(b"\xff\x80not-text")
+            python_result = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(ROOT / "scripts" / "verify_package.py"),
+                    "--path",
+                    str(target),
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertNotEqual(python_result.returncode, 0)
+            self.assertIn(
+                "Not valid UTF-8",
+                python_result.stdout + python_result.stderr,
+            )
+
+            ps_invalid = self._run_powershell(
+                [
+                    "-File",
+                    str(target / "scripts" / "verify-package.ps1"),
+                    "-Path",
+                    str(target),
+                ]
+            )
+            self.assertNotEqual(ps_invalid.returncode, 0)
+            self.assertIn(
+                "Not valid UTF-8",
+                ps_invalid.stdout + ps_invalid.stderr,
+            )
+
+    def test_package_verifiers_scan_files_named_like_skipped_directories(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="project-health-verifier-") as temp_dir:
+            target = self._copy_package(temp_dir)
+            (target / "build").write_bytes(b"prefix\x00suffix\n")
+
+            python_result = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(ROOT / "scripts" / "verify_package.py"),
+                    "--path",
+                    str(target),
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertNotEqual(python_result.returncode, 0)
+            self.assertIn(
+                "NUL byte in text file: build",
+                python_result.stdout + python_result.stderr,
+            )
+
+            ps_result = self._run_powershell(
+                [
+                    "-File",
+                    str(target / "scripts" / "verify-package.ps1"),
+                    "-Path",
+                    str(target),
+                ]
+            )
+            self.assertNotEqual(ps_result.returncode, 0)
+            self.assertIn(
+                "NUL byte in text file: build",
+                ps_result.stdout + ps_result.stderr,
+            )
+
+    def test_package_verifiers_reject_malformed_pitfall_entries(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="project-health-verifier-") as temp_dir:
+            target = self._copy_package(temp_dir)
+            pitfalls = target / "PITFALLS.md"
+            original_lines = pitfalls.read_text(encoding="utf-8").splitlines()
+            for prefix in ("- ", ""):
+                with self.subTest(prefix=prefix):
+                    lines = list(original_lines)
+                    indexes = [
+                        index
+                        for index, line in enumerate(lines)
+                        if re.match(r"^(?:-\s+)?\d{4}-\d{2}-\d{2}\s+\|", line)
+                    ]
+                    if not indexes:
+                        self.fail("no dated PITFALLS entry found")
+                    index = indexes[0]
+                    lines[index] = re.sub(r"^(?:-\s+)?", prefix, lines[index]) + " | extra"
+                    with pitfalls.open("w", encoding="utf-8", newline="\n") as handle:
+                        handle.write("\n".join(lines) + "\n")
+
+                    python_result = subprocess.run(
+                        [
+                            sys.executable,
+                            "-B",
+                            str(ROOT / "scripts" / "verify_package.py"),
+                            "--path",
+                            str(target),
+                        ],
+                        cwd=ROOT,
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        errors="replace",
+                        check=False,
+                    )
+                    self.assertNotEqual(python_result.returncode, 0)
+                    self.assertIn(
+                        "exactly 6 fields",
+                        python_result.stdout + python_result.stderr,
+                    )
+
+                    ps_result = self._run_powershell(
+                        [
+                            "-File",
+                            str(target / "scripts" / "verify-package.ps1"),
+                            "-Path",
+                            str(target),
+                        ]
+                    )
+                    self.assertNotEqual(ps_result.returncode, 0)
+                    self.assertIn(
+                        "exactly 6 fields",
+                        ps_result.stdout + ps_result.stderr,
+                    )
+
+    def test_package_verifiers_reject_empty_pitfall_fields(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="project-health-verifier-") as temp_dir:
+            target = self._copy_package(temp_dir)
+            pitfalls = target / "PITFALLS.md"
+            lines = pitfalls.read_text(encoding="utf-8").splitlines()
+            for index, line in enumerate(lines):
+                if re.match(r"^(?:-\s+)?\d{4}-\d{2}-\d{2}\s+\|", line):
+                    fields = line.split("|")
+                    fields[3] = " "
+                    lines[index] = "|".join(fields)
+                    break
+            else:
+                self.fail("no dated PITFALLS entry found")
+            with pitfalls.open("w", encoding="utf-8", newline="\n") as handle:
+                handle.write("\n".join(lines) + "\n")
+
+            python_result = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(ROOT / "scripts" / "verify_package.py"),
+                    "--path",
+                    str(target),
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertNotEqual(python_result.returncode, 0)
+            self.assertIn(
+                "fields must not be empty",
+                python_result.stdout + python_result.stderr,
+            )
+
+            ps_result = self._run_powershell(
+                [
+                    "-File",
+                    str(target / "scripts" / "verify-package.ps1"),
+                    "-Path",
+                    str(target),
+                ]
+            )
+            self.assertNotEqual(ps_result.returncode, 0)
+            self.assertIn(
+                "fields must not be empty",
+                ps_result.stdout + ps_result.stderr,
+            )
 
 
 if __name__ == "__main__":

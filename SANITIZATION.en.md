@@ -7,7 +7,7 @@ This document records what changed from the internal edition to the public editi
 ## Source
 
 - Internal skill compilation date: 2026-09-04
-- Public package version: 1.4.2
+- Public package version: 1.4.3
 - Method: rewrite section by section instead of find-and-replace; delete or abstract sensitive passages
 
 ## Removed
@@ -74,11 +74,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 
 The scanners check for:
 
+- Scope: every non-binary file, without an extension allowlist; text such as `.env.*`, `.pem`, `.log`, `.ini`, and `.cff` is included
+- Encoding: UTF-8 and UTF-16 (with BOM, or no-BOM UTF-16 whose byte order is unambiguous); input whose encoding cannot be determined reliably fails closed; empty directories, zero files, undecodable input, or anomalous NUL fail closed
 - Windows (backslash or forward slash) and Unix home paths
 - private IPv4 addresses
 - OpenAI-style keys, GitHub tokens, and AWS access keys
 - PEM private-key blocks
-- long values assigned to `api_key`, `token`, `password`, and similar names, including quoted JSON/TOML/YAML keys
+- long values assigned to `api_key`, `secret`, `client_secret`, `access_token`, `refresh_token`, `private_key`, `password`, and similar names, including quoted JSON/TOML/YAML keys
+
+The Python and PowerShell package verifiers use the same directory filters, binary-extension list, and strict encoding rules, and check `description`, a `version` nested under `metadata`, and the six-field format of `PITFALLS.md`. Language-link consistency is still checked by the Python verifier only.
 
 Project-specific words, client names, and internal code names are not in the default rules. Pass them explicitly:
 

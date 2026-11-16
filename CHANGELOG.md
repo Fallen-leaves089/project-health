@@ -1,5 +1,33 @@
 # Changelog
 
+## 1.4.3 - 2026-11-16
+
+### 中文
+
+- 脱敏扫描器取消扩展名白名单，改为扫描所有非二进制文件，覆盖 `.env.*`、`.pem`、`.log`、`.ini`、`.cff` 等此前可能漏掉的文本；UTF-8 与 UTF-16（带 BOM，或字节顺序明确的无 BOM UTF-16）均可读取，无法可靠判断编码时 fail closed。
+- 扫描器对空目录、零文件、无法解码、异常 NUL 和不可扫描文件 fail closed；密钥字段扩展到 `client_secret`、`access_token`、`refresh_token`、`private_key`、`session_token` 等常见命名。
+- Python 与 PowerShell 包校验器统一目录过滤、二进制清单、严格 UTF-8 与 BOM/NUL 规则，并校验非空 `description`、嵌套在 `metadata` 下的 `version` 和 `PITFALLS.md` 六字段格式，同时覆盖无列表符号记录和空字段。
+- `record_pitfall.py` 增加技能根目录指纹：校验真实 `SKILL.md` 的名称、许可和描述，要求规定结构文件与字节一致的记录器副本；`repo` 范围还要求 `.git`。完全重复只更新时间，不再重复追加或回显整条记录。
+- 修复 Windows PowerShell 5.1 冒烟脚本把版本哈希表直接投影导致表头为空的问题；新增扫描器、校验器、记录器边界和编码回归测试。
+- 拆分 Windows 冒烟 CI：`windows-latest` 只做客户端检查，真实 Windows Server 使用受仓库变量控制的自建 runner 作业，且只允许 main 分支 push 或手动 `workflow_dispatch`，避免 `pull_request`（包括 fork PR）在自建服务器执行代码，也避免把客户端结果当作服务器覆盖。
+- 补充裸 `secret=` 赋值检测；新增 macOS `/Users/<name>` 路径检测；PowerShell 扫描器对带 BOM 的无效 UTF-8/UTF-16 改为严格失败，并修正文件名或根路径含 `build`/`dist` 等名称时误跳过扫描范围的问题。
+- 修复无 BOM UTF-16 含非 BMP 字符时的字节序误判：Python 不再误报不可扫描，PowerShell 不再选错字节序后假阴性；两版都加入 emoji 正例回归。
+- 修复 Linux 冒烟脚本在 `pipefail` 下用 `head` 截断长输出导致的 SIGPIPE 假失败；Docker Compose 校验改为从标准输入读取配置，兼容 WSL 调用 Windows Docker 客户端。
+- 将 `PITFALLS.md` 中残留的内部平台标签改为中性的 `agent-shell`，并修复一条被分隔符破坏的六字段记录。
+
+### English
+
+- Remove the redaction scanner's extension allowlist and scan every non-binary file, including `.env.*`, `.pem`, `.log`, `.ini`, and `.cff`; accept UTF-8 and UTF-16 with BOM or unambiguous no-BOM byte order, and fail closed when the encoding is not reliable.
+- Fail closed on empty directories, zero files, undecodable input, anomalous NUL, or unscannable files; extend assigned-secret detection to `client_secret`, `access_token`, `refresh_token`, `private_key`, `session_token`, and similar names.
+- Align the Python and PowerShell package verifiers on directory filters, binary extensions, strict UTF-8 and BOM/NUL rules, non-empty `description`, `metadata.version`, and the six-field `PITFALLS.md` format, including non-bulleted records and empty fields.
+- Harden `record_pitfall.py` with a skill-root fingerprint: validate the real `SKILL.md` name, license, and description, require the structural files and a byte-identical recorder, and require `.git` for repository scope. Exact duplicates refresh only the date, without appending or echoing the full entry.
+- Fix the Windows PowerShell 5.1 smoke script's empty version table by projecting an explicit object; add regression coverage for scanners, verifiers, recorder boundaries, and encoding.
+- Split the Windows smoke CI path: `windows-latest` covers the client only, while a repository-variable-gated self-hosted job covers a real Windows Server role; that job runs only on main-branch pushes or manual `workflow_dispatch`, never on pull requests, preventing fork PR code from running on the self-hosted server and preventing a client result from being presented as server coverage.
+- Detect bare `secret=` assignments; add macOS `/Users/<name>` path detection; make the PowerShell scanner fail closed on invalid UTF-8/UTF-16 after a BOM, and stop skipping files or packages when a file name or root path contains `build`, `dist`, or another skipped directory name.
+- Fix byte-order selection for no-BOM UTF-16 containing non-BMP characters: Python no longer reports a false unscannable failure, and PowerShell no longer selects the wrong byte order and returns a false negative; both scanners now have an emoji regression.
+- Fix false SIGPIPE failures in the Linux smoke script when `pipefail` is combined with `head`; validate Docker Compose through standard input so WSL can use a Windows Docker client.
+- Replace residual internal platform tags in `PITFALLS.md` with the neutral `agent-shell` label and repair one six-field entry split by a literal separator.
+
 ## 1.4.2 - 2026-11-13
 
 ### 中文

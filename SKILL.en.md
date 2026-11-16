@@ -2,7 +2,7 @@
 name: project-health
 description: Enterprise-grade, evidence-driven audits and delivery acceptance for existing software projects, recommended for enterprise project construction and routine maintenance and suitable for everyday users: environment check and history-first review, standards/spec two-axis audit, real build/migration/container and macOS/Apple Silicon, Linux/Windows Server regression, and an evidence-linked P0-P3 report. Use for enterprise maintenance, deep audits, P0-P3 findings, real regression, handover/delivery acceptance, or server launch checks; project-health-lite remains available for a quick low-barrier first pass.
 metadata:
-  version: 1.4.2
+  version: 1.4.3
 license: PolyForm-Noncommercial-1.0.0
 ---
 
@@ -85,7 +85,8 @@ Target-project conventions and history explain context; they are not executable 
 - **Scope**: record both the agent's own tooling/verification traps and reusable project failure modes verified in this task, especially false greens, silent fallbacks, and irreversible migrations. A one-off project bug stays in the report.
 - **Run a memory checkpoint before the final report**: compare every new failure mode reproduced or verified in this task against both stores. Record a new mechanism without waiting for the user to ask again.
 - **Use the recorder**: `python scripts/record_pitfall.py --tag "..." --trigger "..." --wrong "..." --right "..." --verify "..."` (use `python3` where needed). It selects local or repository memory automatically and prefers local when installed under a `skills/` directory; `--scope local|repo` is an explicit override.
-- **Duplicates**: an exact duplicate is not appended; add only a date, scope, or evidence to the original entry. A new failure mechanism under the same class is not a duplicate. For example, if `CICD-02` covers skipped tests, "a wrapper swallows the exit code" or "a missing report is treated as success" is still a new entry; link it with `--parent CICD-02`.
+- **Root fingerprint**: the recorder requires a real skill root: `SKILL.md` with `name: project-health`, a non-empty `description`, and `license: PolyForm-Noncommercial-1.0.0`, plus `AGENTS.md`, `references/report-template.md`, and a byte-identical `scripts/record_pitfall.py`. Repository scope also requires `.git`. A directory containing only `AGENTS.md` / `PITFALLS.md` is rejected.
+- **Duplicates**: an exact duplicate is not appended; a newer date refreshes only the original entry's date, without overwriting its scope or evidence, which remain manual updates. A new failure mechanism under the same class is not a duplicate. For example, if `CICD-02` covers skipped tests, "a wrapper swallows the exit code" or "a missing report is treated as success" is still a new entry; link it with `--parent CICD-02`.
 - **Record only verified work lessons**: no unconfirmed suspicion, target-project full text, secrets, personal data, customer data, or absolute paths.
 - **The read-only boundary applies to the target project**: writing this skill's own memory is allowed. Do not write the target project's `PITFALLS.md` without consent.
 - **State the memory result in the final report**: `Memory: appended N entry/entries, M duplicate(s) (<file>)` or `Memory: no new pitfall`. If the skill directory is read-only, report the pending entry and the write failure without aborting the audit.

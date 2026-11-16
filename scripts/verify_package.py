@@ -3,9 +3,10 @@
 
 Checks:
   * required files and bilingual companions are present
-  * text files are UTF-8 without BOM
+  * non-binary text files are UTF-8 without BOM or anomalous NUL
   * relative Markdown links resolve
   * both SKILL frontmatters share the expected name, version, and license
+  * PITFALLS.md dated entries use six non-empty fields
   * language links are present in the README and SKILL files
   * the redaction scanner passes its self-test and a package scan
 
@@ -29,30 +30,60 @@ SCRIPT_PATH = Path(__file__).resolve()
 DEFAULT_ROOT = SCRIPT_PATH.parent.parent
 SCANNER = SCRIPT_PATH.parent / "check_redaction.py"
 
-TEXT_EXTENSIONS = {
-    ".md",
-    ".txt",
-    ".ps1",
-    ".psm1",
-    ".json",
-    ".yml",
-    ".yaml",
-    ".toml",
-    ".env",
-    ".sh",
-    ".cmd",
-    ".bat",
-    ".js",
-    ".ts",
-    ".py",
-    ".fixture",
-    ".xml",
-    ".properties",
-    ".pub",
-    "",
+SKIP_DIRS = {".git", "node_modules", "bin", "obj", "dist", "build", ".venv", "__pycache__", ".vs", ".idea"}
+
+BINARY_EXTENSIONS = {
+    ".7z",
+    ".a",
+    ".avi",
+    ".bin",
+    ".bmp",
+    ".class",
+    ".dll",
+    ".docx",
+    ".dylib",
+    ".eot",
+    ".exe",
+    ".gif",
+    ".gz",
+    ".ico",
+    ".jar",
+    ".jpeg",
+    ".jpg",
+    ".lib",
+    ".mkv",
+    ".mov",
+    ".mp3",
+    ".mp4",
+    ".o",
+    ".otf",
+    ".p12",
+    ".pdf",
+    ".pfx",
+    ".png",
+    ".pptx",
+    ".pyc",
+    ".pyo",
+    ".rar",
+    ".so",
+    ".sqlite",
+    ".sqlite3",
+    ".tar",
+    ".tgz",
+    ".tif",
+    ".tiff",
+    ".ttf",
+    ".wav",
+    ".webm",
+    ".webp",
+    ".whl",
+    ".woff",
+    ".woff2",
+    ".xlsx",
+    ".zip",
 }
 
-SKIP_DIRS = {".git", "node_modules", "bin", "obj", "dist", "build", ".venv", "__pycache__", ".vs", ".idea"}
+PITFALL_ENTRY_RE = re.compile(r"^(?:-\s+)?\d{4}-\d{2}-\d{2}\s+\|")
 
 REQUIRED_FILES = [
     "SKILL.md",
@@ -125,15 +156,15 @@ LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 
 
 def _is_text_file(path: Path) -> bool:
-    return path.suffix.lower() in TEXT_EXTENSIONS
+    return path.suffix.lower() not in BINARY_EXTENSIONS
 
 
 def _iter_text_files(root: Path) -> Iterable[Path]:
     for path in sorted(root.rglob("*")):
         if not path.is_file():
             continue
-        relative_parts = path.relative_to(root).parts
-        if any(part in SKIP_DIRS for part in relative_parts):
+        relative_parent_parts = path.relative_to(root).parent.parts
+        if any(part.casefold() in SKIP_DIRS for part in relative_parent_parts):
             continue
         if _is_text_file(path):
             yield path
@@ -143,19 +174,43 @@ def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
-def _read_frontmatter(path: Path) -> Dict[str, str]:
+def _unquote(value: str) -> str:
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        return value[1:-1]
+    return value
+
+
+def _read_frontmatter(path: Path) -> Tuple[Dict[str, str], Dict[str, str]]:
     lines = _read_text(path).splitlines()
     if not lines or lines[0].strip() != "---":
-        return {}
+        return {}, {}
 
     fields: Dict[str, str] = {}
+    metadata: Dict[str, str] = {}
+    in_metadata = False
+    metadata_indent = -1
+    closed = False
     for line in lines[1:]:
         if line.strip() == "---":
-            return fields
-        if ":" in line:
-            key, value = line.split(":", 1)
-            fields[key.strip()] = value.strip()
-    return {}
+            closed = True
+            break
+        if not line.strip() or line.lstrip().startswith("#") or ":" not in line:
+            continue
+
+        indent = len(line) - len(line.lstrip(" "))
+        key, value = line.split(":", 1)
+        key = key.strip()
+        value = _unquote(value)
+        if indent == 0:
+            fields[key] = value
+            in_metadata = key == "metadata" and not value
+            metadata_indent = indent
+        elif in_metadata and indent > metadata_indent:
+            metadata[key] = value
+        else:
+            in_metadata = False
+    return (fields, metadata) if closed else ({}, {})
 
 
 def _check_encoding(files: Iterable[Path], root: Path) -> List[str]:
@@ -163,12 +218,15 @@ def _check_encoding(files: Iterable[Path], root: Path) -> List[str]:
     for path in files:
         relative = path.relative_to(root).as_posix()
         data = path.read_bytes()
-        if data.startswith(b"\xef\xbb\xbf"):
-            failures.append(f"UTF-8 BOM found: {relative}")
+        if data.startswith((b"\xef\xbb\xbf", b"\xff\xfe", b"\xfe\xff")):
+            failures.append(f"BOM found: {relative}")
         try:
-            data.decode("utf-8")
+            text = data.decode("utf-8")
         except UnicodeDecodeError:
             failures.append(f"Not valid UTF-8: {relative}")
+        else:
+            if "\x00" in text:
+                failures.append(f"NUL byte in text file: {relative}")
     return failures
 
 
@@ -219,7 +277,7 @@ def _check_frontmatter(root: Path) -> List[str]:
         path = root / relative
         if not path.exists():
             continue
-        fields = _read_frontmatter(path)
+        fields, metadata = _read_frontmatter(path)
         if not fields:
             failures.append(f"Missing or invalid frontmatter: {relative}")
             continue
@@ -229,7 +287,12 @@ def _check_frontmatter(root: Path) -> List[str]:
             failures.append(
                 f"Frontmatter license mismatch in {relative}: {fields.get('license', '<missing>')}"
             )
-        version = fields.get("version", "")
+        if not fields.get("description", "").strip():
+            failures.append(f"Frontmatter description missing in {relative}")
+        if "version" in fields:
+            failures.append(f"Frontmatter version must be nested under metadata in {relative}")
+            continue
+        version = metadata.get("version", "")
         if not re.fullmatch(r"\d+\.\d+\.\d+", version):
             failures.append(f"Frontmatter version missing or invalid in {relative}: {version or '<missing>'}")
         else:
@@ -240,6 +303,26 @@ def _check_frontmatter(root: Path) -> List[str]:
             f"{name}={version}" for name, version in sorted(versions.items())
         ))
 
+    return failures
+
+
+def _check_pitfall_format(root: Path) -> List[str]:
+    failures: List[str] = []
+    path = root / "PITFALLS.md"
+    if not path.is_file():
+        return failures
+    for line_number, line in enumerate(_read_text(path).splitlines(), start=1):
+        if not PITFALL_ENTRY_RE.match(line):
+            continue
+        fields = [part.strip() for part in line.split("|")]
+        if len(fields) != 6:
+            failures.append(
+                f"PITFALLS entry must contain exactly 6 fields: PITFALLS.md:{line_number}"
+            )
+        elif any(not field for field in fields):
+            failures.append(
+                f"PITFALLS entry fields must not be empty: PITFALLS.md:{line_number}"
+            )
     return failures
 
 
@@ -313,6 +396,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     failures.extend(link_failures)
     failures.extend(_check_frontmatter(root))
     failures.extend(_check_language_links(root))
+    failures.extend(_check_pitfall_format(root))
 
     scanner_failures, _ = _run_scanner(root)
     failures.extend(scanner_failures)

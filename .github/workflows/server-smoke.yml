@@ -36,9 +36,27 @@ jobs:
           REQUIRE_SYSTEMD: "1"
         run: bash tests/server-smoke.sh
 
-  windows:
-    name: Windows Server / windows-latest
+  windows-client:
+    name: Windows client / windows-latest
     runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run Windows client read-only checks
+        shell: powershell
+        run: .\tests\server-smoke.ps1
+
+  windows-server:
+    name: Windows Server / self-hosted
+    if: >-
+      ${{ vars.ENABLE_WINDOWS_SERVER_SMOKE == 'true' &&
+          (github.event_name == 'workflow_dispatch' ||
+           (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}
+    runs-on: [self-hosted, Windows, X64, windows-server]
     timeout-minutes: 10
     steps:
       - name: Check out repository

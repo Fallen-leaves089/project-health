@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import importlib.util
+import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -38,7 +40,20 @@ def _write(path: Path, text: str) -> None:
 def _root(temp_dir: str, repo: bool = False) -> Path:
     root = Path(temp_dir) / "skill"
     root.mkdir()
-    _write(root / "SKILL.md", "# test skill\n")
+    _write(
+        root / "SKILL.md",
+        "---\n"
+        "name: project-health\n"
+        "description: recorder test fixture\n"
+        "metadata:\n"
+        "  version: 1.4.3\n"
+        "license: PolyForm-Noncommercial-1.0.0\n"
+        "---\n",
+    )
+    _write(root / "AGENTS.md", "# test agents\n")
+    _write(root / "references" / "report-template.md", "# report\n")
+    (root / "scripts").mkdir()
+    shutil.copyfile(SCRIPT, root / "scripts" / "record_pitfall.py")
     if repo:
         (root / ".git").mkdir()
         _write(root / "PITFALLS.md", "# maintainer log\n\n")
@@ -86,6 +101,40 @@ class RecordPitfallTests(unittest.TestCase):
             self.assertEqual(second.status, "duplicate")
             text = second.path.read_text(encoding="utf-8")
             self.assertEqual(text.count("2026-11-13 |"), 1)
+
+    def test_newer_duplicate_updates_only_the_date(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-pitfall-") as temp_dir:
+            root = _root(temp_dir)
+            first = RECORDER.record(root, _entry(), record_date="2026-11-15")
+            second = RECORDER.record(root, _entry(), record_date="2026-11-16")
+
+            self.assertEqual(first.status, "appended")
+            self.assertEqual(second.status, "updated")
+            text = second.path.read_text(encoding="utf-8")
+            self.assertEqual(text.count("testing, false-green"), 1)
+            self.assertIn("2026-11-16 | testing, false-green |", text)
+            self.assertNotIn("2026-11-15 | testing, false-green |", text)
+
+            older = RECORDER.record(root, _entry(), record_date="2026-11-14")
+            self.assertEqual(older.status, "duplicate")
+            self.assertIn("2026-11-16 | testing, false-green |", text)
+
+    def test_dry_run_reports_newer_duplicate_without_writing(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-pitfall-") as temp_dir:
+            root = _root(temp_dir)
+            RECORDER.record(root, _entry(), record_date="2026-11-15")
+            memory = root / "PITFALLS.local.md"
+            before = memory.read_bytes()
+
+            result = RECORDER.record(
+                root,
+                _entry(),
+                record_date="2026-11-16",
+                dry_run=True,
+            )
+
+            self.assertEqual(result.status, "dry-run")
+            self.assertEqual(memory.read_bytes(), before)
 
     def test_new_mechanism_under_same_class_uses_parent(self) -> None:
         with tempfile.TemporaryDirectory(prefix="record-pitfall-") as temp_dir:
@@ -162,7 +211,20 @@ class RecordPitfallTests(unittest.TestCase):
             skills.mkdir()
             root = skills / "project-health"
             root.mkdir()
-            _write(root / "SKILL.md", "# installed skill\n")
+            _write(
+                root / "SKILL.md",
+                "---\n"
+                "name: project-health\n"
+                "description: installed skill fixture\n"
+                "metadata:\n"
+                "  version: 1.4.3\n"
+                "license: PolyForm-Noncommercial-1.0.0\n"
+                "---\n",
+            )
+            _write(root / "AGENTS.md", "# installed agents\n")
+            _write(root / "references" / "report-template.md", "# report\n")
+            (root / "scripts").mkdir()
+            shutil.copyfile(SCRIPT, root / "scripts" / "record_pitfall.py")
             (root / ".git").mkdir()
             _write(root / "PITFALLS.md", "# baseline\n\n")
 
@@ -201,6 +263,11 @@ class RecordPitfallTests(unittest.TestCase):
             "AKIA" + "A" * 16,
             "-----BEGIN " + "RSA PRIVATE KEY-----",
             "password=" + "abcdefghijklmnop",
+            "secret=" + "abcdefghijklmnop",
+            "client_secret=" + "abcdefghijklmnop",
+            "access_token=" + "abcdefghijklmnop",
+            "refresh_token=" + "abcdefghijklmnop",
+            "private_key=" + "abcdefghijklmnop",
             "192" + ".168.1.10",
             "person" + "@" + "example.com",
         ]
@@ -225,6 +292,42 @@ class RecordPitfallTests(unittest.TestCase):
             root = Path(temp_dir)
             with self.assertRaises(ValueError):
                 RECORDER.record(root, _entry(), record_date="2026-11-13")
+
+    def test_agents_and_pitfalls_alone_are_not_a_skill_root(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-pitfall-") as temp_dir:
+            root = Path(temp_dir) / "target-repo"
+            root.mkdir()
+            _write(root / "AGENTS.md", "# target\n")
+            _write(root / "PITFALLS.md", "# target memory\n\n")
+            with self.assertRaises(ValueError):
+                RECORDER.record(root, _entry(), record_date="2026-11-13")
+
+    def test_fake_skill_frontmatter_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-pitfall-") as temp_dir:
+            root = _root(temp_dir)
+            _write(root / "SKILL.md", "---\nname: other-skill\n---\n")
+            with self.assertRaises(ValueError):
+                RECORDER.record(root, _entry(), record_date="2026-11-13")
+
+    def test_recorder_fingerprint_mismatch_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-pitfall-") as temp_dir:
+            root = _root(temp_dir)
+            recorder = root / "scripts" / "record_pitfall.py"
+            _write(recorder, recorder.read_text(encoding="utf-8") + "\n# changed\n")
+            with self.assertRaises(ValueError):
+                RECORDER.record(root, _entry(), record_date="2026-11-13")
+
+    def test_repo_scope_requires_git(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-pitfall-") as temp_dir:
+            root = _root(temp_dir)
+            _write(root / "PITFALLS.md", "# target memory\n\n")
+            with self.assertRaises(ValueError):
+                RECORDER.record(
+                    root,
+                    _entry(),
+                    scope="repo",
+                    record_date="2026-11-13",
+                )
 
     def test_cli_exit_codes(self) -> None:
         with tempfile.TemporaryDirectory(prefix="record-pitfall-") as temp_dir:
@@ -275,6 +378,41 @@ class RecordPitfallTests(unittest.TestCase):
                 check=False,
             )
             self.assertEqual(usage.returncode, 2, msg=usage.stdout + usage.stderr)
+
+    def test_non_utf8_console_does_not_turn_a_write_into_failure(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-pitfall-") as temp_dir:
+            root = _root(temp_dir)
+            env = os.environ.copy()
+            env["PYTHONIOENCODING"] = "cp936"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(SCRIPT),
+                    "--root",
+                    str(root),
+                    "--date",
+                    "2026-11-13",
+                    "--tag",
+                    "testing, unicode",
+                    "--trigger",
+                    "console fixture 😀",
+                    "--wrong",
+                    "the write succeeds before display fails",
+                    "--right",
+                    "use a lossy safe display encoding",
+                    "--verify",
+                    "exit code is zero and the file contains the entry",
+                ],
+                cwd=ROOT,
+                env=env,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+            memory = root / "PITFALLS.local.md"
+            self.assertIn("console fixture 😀", memory.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

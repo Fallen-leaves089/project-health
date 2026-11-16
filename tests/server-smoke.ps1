@@ -81,7 +81,14 @@ Invoke-Check 'OS information' {
 }
 Write-Output "Windows Server: $isServer"
 Invoke-Check 'PowerShell version' {
-    $PSVersionTable | Select-Object PSVersion, PSEdition
+    $edition = 'Desktop'
+    if ($PSVersionTable.PSEdition) {
+        $edition = [string]$PSVersionTable.PSEdition
+    }
+    [pscustomobject]@{
+        PSVersion = $PSVersionTable.PSVersion.ToString()
+        PSEdition = $edition
+    }
 }
 Invoke-Check 'running services' {
     Get-Service | Where-Object Status -eq 'Running' | Select-Object -First 15 Name, DisplayName

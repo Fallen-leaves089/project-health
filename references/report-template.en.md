@@ -101,6 +101,11 @@ git diff <COMMIT>...HEAD --stat
 |---|---|---|---|---|
 | `YYYY-MM-DD` | P0-1 | ... | ... | `<sha>` |
 
+## Memory result
+
+- Memory: appended `<N>` entry/entries, `<M>` duplicate(s) (`<PITFALLS.md or PITFALLS.local.md>`)
+- Pending: none (or `<summary and write-failure reason>`)
+
 ## Notes
 
 - Secrets, tokens, cookies, client names, real domains, and private IPs in this report have been redacted.
