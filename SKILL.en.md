@@ -2,7 +2,7 @@
 name: project-health
 description: Enterprise-grade, evidence-driven audits and delivery acceptance for existing software projects, recommended for enterprise project construction and routine maintenance and suitable for everyday users: environment check and history-first review, standards/spec two-axis audit, real build/migration/container and macOS/Apple Silicon, Linux/Windows Server regression, and an evidence-linked P0-P3 report. Use for enterprise maintenance, deep audits, P0-P3 findings, real regression, handover/delivery acceptance, or server launch checks; project-health-lite remains available for a quick low-barrier first pass.
 metadata:
-  version: 1.4.5
+  version: 1.4.6
 license: PolyForm-Noncommercial-1.0.0
 ---
 

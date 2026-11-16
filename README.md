@@ -140,6 +140,7 @@ project-health/
 ├── CITATION.cff                         # 引用元数据（含 ORCID）
 ├── AGENTS.md                            # 常驻规则（任务边界与避坑纪律）
 ├── PITFALLS.md                          # 企业级避坑基线 + 维护者避坑日志
+├── commercial/                           # 商业许可、监护人授权、订单表与证书模板
 ├── references/                           # 平台命令、macOS/Apple Silicon 坑、Windows/Win Server 坑、Linux 服务器坑、验证手册、报告模板
 ├── scripts/                              # 跨平台自检与脱敏扫描
 ├── tests/                                # 契约测试、验收场景和恶意目标夹具
@@ -244,12 +245,14 @@ ssh-keygen -lf release-signing-key.pub
 
 商业使用需要作者书面授权，但**可以和作者商量**。如需商业化，可以联系 `chenshuidelaye@qq.com`；授权方式、范围和费用按实际使用场景协商，见 `COMMERCIAL.md`。
 
+商业许可的协议、订单表、授权证书和监护人授权模板见 [commercial/README.md](commercial/README.md)。
+
 > GitHub 的许可证识别列表不包含 PolyForm，因此仓库页面可能显示 `NOASSERTION / Other`。这不代表没有许可证；以仓库中的 `LICENSE` 英文原文为准。
 
 ## 版本
 
 - 完整更新记录：[CHANGELOG.md](CHANGELOG.md)
-- 版本：1.4.5
+- 版本：1.4.6
 - 对应内部整理日期：2026-09-04
 - 公开发布整理：2026-11-04
 - 安全修复整理：2026-11-07
@@ -259,3 +262,4 @@ ssh-keygen -lf release-signing-key.pub
 - 扫描与校验一致性加固：2026-11-16
 - 托管 Windows Server 验收修正：2026-11-16
 - 覆盖边界与未测试项：2026-11-16
+- 商业许可模板包：2026-11-16

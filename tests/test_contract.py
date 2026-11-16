@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "malicious-target"
 FIXTURE = FIXTURE_DIR / "malicious-agents.fixture"
-EXPECTED_VERSION = "1.4.5"
+EXPECTED_VERSION = "1.4.6"
 EXPECTED_RELEASE_DATE = "2026-11-16"
 
 
@@ -479,6 +479,19 @@ class UntrustedTargetContractTests(unittest.TestCase):
             "references/macos-pitfalls.en.md",
             "references/linux-server-pitfalls.md",
             "references/linux-server-pitfalls.en.md",
+            "commercial/README.md",
+            "commercial/README.en.md",
+            "commercial/guardian-authorization.template.md",
+            "commercial/guardian-authorization.template.en.md",
+            "commercial/commercial-license-agreement.template.md",
+            "commercial/commercial-license-agreement.template.en.md",
+            "commercial/order-form.template.md",
+            "commercial/order-form.template.en.md",
+            "commercial/license-certificate.template.md",
+            "commercial/license-certificate.template.en.md",
+            "commercial/first-reply-email.template.md",
+            "commercial/first-reply-email.template.en.md",
+            "commercial/license-registry.template.csv",
         )
         for relative in ("scripts/verify_package.py", "scripts/verify-package.ps1"):
             verifier = read_text(relative)
