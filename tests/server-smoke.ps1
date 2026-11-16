@@ -113,6 +113,10 @@ if (Get-Module -ListAvailable -Name WebAdministration) {
             Select-Object -First 5
     }
 } else {
+    if ($env:REQUIRE_IIS -eq '1') {
+        Write-Output 'FAIL This validation run requires IIS WebAdministration, but the module is not installed.'
+        exit 1
+    }
     Skip-Check 'IIS websites and pools' 'WebAdministration module is not installed'
 }
 Invoke-ExternalCheck 'netsh HTTP SSL bindings' 'netsh.exe' @('http', 'show', 'sslcert')

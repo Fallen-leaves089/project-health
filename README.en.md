@@ -148,7 +148,7 @@ project-health/
 
 ## Platform support
 
-The core skill uses only Markdown and Git commands. It works on Windows 10/11, Windows Server 2019/2022+, macOS / Linux + Python 3.9+, and WSL2. On macOS it loads standing guidance for Apple Silicon / Rosetta, dual Homebrew prefixes, BSD tools, APFS, Gatekeeper/TCC, launchd, and Docker architecture. Intel Macs and Rosetta sessions can still receive a generic read-only review, but native build, signing, performance, and container-architecture conclusions are marked as uncovered. Server coverage includes Windows Server IIS, services, NTFS/SMB, AD/Kerberos, SQL Server, certificates, patching, and clusters, plus Linux systemd, permissions, SELinux/AppArmor, disk, OOM, firewall, NTP, package management, and rollback. The Python verifier uses only the standard library and needs no network access. `windows-latest` in CI represents a Windows client only; a real Windows Server role check requires a self-hosted runner with the repository variable `ENABLE_WINDOWS_SERVER_SMOKE=true`; that job runs only on a main-branch push or a manual `workflow_dispatch`, never on a pull request. You can also run it manually with `REQUIRE_WINDOWS_SERVER=1`.
+The core skill uses only Markdown and Git commands. It works on Windows 10/11, Windows Server 2019/2022+, macOS / Linux + Python 3.9+, and WSL2. On macOS it loads standing guidance for Apple Silicon / Rosetta, dual Homebrew prefixes, BSD tools, APFS, Gatekeeper/TCC, launchd, and Docker architecture. Intel Macs and Rosetta sessions can still receive a generic read-only review, but native build, signing, performance, and container-architecture conclusions are marked as uncovered. Server coverage includes Windows Server IIS, services, NTFS/SMB, AD/Kerberos, SQL Server, certificates, patching, and clusters, plus Linux systemd, permissions, SELinux/AppArmor, disk, OOM, firewall, NTP, package management, and rollback. The Python verifier uses only the standard library and needs no network access. `windows-latest` in CI provides Windows Server 2025; the hosted job enforces a Server OS and IIS and covers services, IIS, SMB, firewall, SQL tooling, certificates, patching, and scheduled tasks. A self-hosted runner with the repository variable `ENABLE_WINDOWS_SERVER_SMOKE=true` is needed only for domain/GPO/SPN, WinRM listener, and failover-cluster checks absent from the hosted image; that job runs only on a main-branch push or a manual `workflow_dispatch`, never on a pull request. You can also run the server checks manually with `REQUIRE_WINDOWS_SERVER=1`.
 
 ## Self-check
 
@@ -247,7 +247,7 @@ Commercial use requires a written license from the author, but **the author is o
 ## Version
 
 - Full changelog: [CHANGELOG.md](CHANGELOG.md)
-- Version: 1.4.3
+- Version: 1.4.4
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
 - Security fix: 2026-11-07
@@ -255,3 +255,4 @@ Commercial use requires a written license from the author, but **the author is o
 - Enterprise entry and skill-routing revision: 2026-11-12
 - macOS standing pitfalls and environment gate: 2026-11-13
 - Scanner and verifier hardening: 2026-11-16
+- Hosted Windows Server validation correction: 2026-11-16
