@@ -25,6 +25,7 @@ The guardian confirms authority, as the author's legal representative, to handle
 - sign commercial license agreements and necessary amendments;
 - grant non-exclusive commercial-use rights within the agreed scope;
 - collect fees, issue invoices or receipts, and handle related taxes;
+- handle cross-border payments, tax forms, foreign-exchange, and bank due-diligence requirements;
 - deliver the authorized version, certificate, and updates;
 - handle renewals, termination, and breach communications;
 - keep the contracts and transaction records needed for these matters.
@@ -35,6 +36,8 @@ The guardian confirms authority, as the author's legal representative, to handle
 - The guardian may not grant rights beyond the signed order form and commercial license agreement.
 - Exclusive rights, copyright assignment, white-labeling, resale, large long-term contracts, or other material dispositions require separate consent from the author when legally capable and separate legal advice.
 - The contract, invoice, license certificate, and payment account must use the same contracting party.
+- In cross-border transactions, the guardian may provide a redacted copy of this authorization to the customer or its advisers; identity documents, bank details, and similar sensitive material should be shared only through a secure due-diligence channel.
+- If the customer requires notarization, certified translation, or an apostille, the guardian will cooperate; feasibility and cost are confirmed separately.
 
 ## 5. Records and termination
 

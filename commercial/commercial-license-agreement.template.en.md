@@ -55,6 +55,10 @@ The Licensee must not:
 
 5.3 Late payment may incur the late fee stated in the Order Form, and the Licensor may suspend delivery or the license until payment is received.
 
+5.4 If the Licensee's jurisdiction requires withholding, unless the Order Form says otherwise, the Licensee will gross up the payment so the Licensor receives the full license fee stated in the Order Form and will provide tax receipts to the Licensor.
+
+5.5 The Order Form controls the currency, exchange-rate source, bank charges, and intermediary deductions. If not stated, each party bears its own sending or receiving bank charges.
+
 ## 6. Intellectual property
 
 6.1 The author retains copyright and all other intellectual-property rights in the Work. This Agreement grants only the rights expressly stated in Section 2; it does not assign copyright.
@@ -70,6 +74,10 @@ The Licensee must not:
 7.2 The Work is provided "as is." To the maximum extent permitted by law, the Licensor disclaims all express or implied warranties, including merchantability, fitness for a particular purpose, non-infringement, freedom from errors, and uninterrupted operation.
 
 7.3 The Work is an audit and decision-support tool, not legal, financial, security, or compliance advice. The Licensee is responsible for its use and business decisions.
+
+7.4 Each party will comply with applicable anti-corruption, export-control, and sanctions laws. The Licensor may suspend or terminate performance if the transaction would violate those laws, involve a sanctioned party, or involve a restricted end use. The Licensor does not represent that the Work has any particular export classification or is approved for any restricted use.
+
+7.5 If the Work or the license involves personal data, the parties will enter a separate data processing agreement (DPA) and comply with applicable data-protection laws, including GDPR/UK GDPR where applicable. This Agreement is not itself a DPA.
 
 ## 8. Limitation of liability
 
@@ -100,6 +108,12 @@ The Licensee must not:
 10.5 This Agreement is governed by the laws of [COUNTRY/REGION]. Disputes will be submitted to [COURT OR ARBITRATION BODY].
 
 10.6 The parties may sign by electronic signature, scanned copy, or an agreed e-signature platform. Electronic signatures have the same effect as handwritten signatures unless mandatory law provides otherwise.
+
+10.7 This Agreement may be executed in English and Chinese. The controlling language is [English/Chinese]; the other language is for convenience. If the Order Form specifies a different controlling language, the Order Form controls.
+
+10.8 Notices must be sent to the addresses and emails in the Order Form. Email is effective when sent successfully without a bounce, unless mandatory law requires otherwise.
+
+10.9 In case of conflict, the order of precedence is this Agreement, the Order Form, then the certificate. The certificate is a summary and grants no additional rights, except where the Order Form expressly states that a term prevails.
 
 ## 11. Signatures
 

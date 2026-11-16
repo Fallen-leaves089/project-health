@@ -10,6 +10,7 @@ Issue date: [YYYY-MM-DD]
 | Licensor | [GUARDIAN NAME, as legal representative] or [SOLE PROPRIETORSHIP/COMPANY LEGAL NAME] |
 | Author/copyright owner | [AUTHOR LEGAL NAME] |
 | Licensee | [CUSTOMER LEGAL NAME] |
+| Licensee country/region | [COUNTRY/REGION] |
 | Work | project-health |
 | Authorized version | [version / commit / release date] |
 | License type | [internal use / product embedding / SaaS / client delivery / paid training / white-label] |
@@ -18,6 +19,7 @@ Issue date: [YYYY-MM-DD]
 | Updates and support | [as stated in the Order Form] |
 | Agreement | [Commercial License Agreement reference] |
 | Order Form | [Order Form reference] |
+| Controlling language | [English/Chinese; as stated in the Order Form] |
 
 ## License statement
 
@@ -33,6 +35,10 @@ Licensor signature: ____________________
 
 Name/title: ____________________
 
+Signatory capacity: [legal representative / sole-proprietor operator / authorized company officer] ____________________
+
 Date: ____________________
 
 > This certificate summarizes the Commercial License Agreement. If it conflicts with the Agreement or Order Form, the signed Agreement and Order Form control.
+
+> For cross-border transactions, this certificate may be issued in English alone. If a translation is also provided, the controlling language is stated in the Order Form.

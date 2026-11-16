@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "malicious-target"
 FIXTURE = FIXTURE_DIR / "malicious-agents.fixture"
-EXPECTED_VERSION = "1.4.6"
+EXPECTED_VERSION = "1.4.7"
 EXPECTED_RELEASE_DATE = "2026-11-16"
 
 
@@ -504,6 +504,115 @@ class UntrustedTargetContractTests(unittest.TestCase):
             'python -B -m unittest discover -s tests -p "test_*.py"',
             workflow,
         )
+
+    def test_commercial_templates_cover_international_customers(self) -> None:
+        chinese_expectations = {
+            "commercial/README.md": (
+                "## 国际客户",
+                "以英文版为准",
+                "W-8BEN",
+                "W-8BEN-E",
+                "预扣税",
+                "出口管制",
+                "制裁",
+                "数据保护",
+                "控制语言",
+            ),
+            "commercial/order-form.template.md": (
+                "被授权方国家/地区",
+                "被授权方税号/VAT/GST",
+                "W-8BEN",
+                "预扣税",
+                "gross-up",
+                "国际客户与合规",
+                "控制语言",
+                "出口管制/制裁确认",
+            ),
+            "commercial/commercial-license-agreement.template.md": (
+                "gross-up",
+                "反商业贿赂",
+                "出口管制",
+                "制裁",
+                "数据处理协议（DPA）",
+                "控制语言",
+                "通知应发送至",
+            ),
+            "commercial/license-certificate.template.md": (
+                "被授权方国家/地区",
+                "控制语言",
+                "签署人权限",
+                "跨境交易",
+            ),
+            "commercial/first-reply-email.template.md": (
+                "税号/VAT/GST",
+                "W-8BEN",
+                "DPA",
+                "出口管制",
+                "控制语言",
+            ),
+            "commercial/guardian-authorization.template.md": (
+                "跨境付款",
+                "外汇",
+                "脱敏",
+                "认证翻译",
+            ),
+        }
+        english_expectations = {
+            "commercial/README.en.md": (
+                "## International customers",
+                "English template as the controlling version",
+                "W-8BEN",
+                "W-8BEN-E",
+                "withholding",
+                "export control",
+                "sanctions",
+                "data protection",
+                "Controlling language",
+            ),
+            "commercial/order-form.template.en.md": (
+                "Licensee country/region",
+                "Licensee tax ID/VAT/GST",
+                "W-8BEN",
+                "Withholding tax treatment",
+                "grosses up",
+                "International customer and compliance",
+                "Controlling language",
+                "Export-control/sanctions confirmation",
+            ),
+            "commercial/commercial-license-agreement.template.en.md": (
+                "gross up",
+                "anti-corruption",
+                "export-control",
+                "sanctions",
+                "data processing agreement (DPA)",
+                "controlling language",
+                "Notices must be sent",
+            ),
+            "commercial/license-certificate.template.en.md": (
+                "Licensee country/region",
+                "Controlling language",
+                "Signatory capacity",
+                "cross-border",
+            ),
+            "commercial/first-reply-email.template.en.md": (
+                "tax ID/VAT/GST",
+                "W-8BEN",
+                "DPA",
+                "export-control",
+                "controlling language",
+            ),
+            "commercial/guardian-authorization.template.en.md": (
+                "cross-border payments",
+                "foreign-exchange",
+                "redacted",
+                "certified translation",
+            ),
+        }
+        for relative, phrases in {**chinese_expectations, **english_expectations}.items():
+            content = read_text(relative)
+            for phrase in phrases:
+                with self.subTest(relative=relative, phrase=phrase):
+                    self.assertIn(phrase, content)
 
     def test_server_smoke_checks_cover_both_platforms(self) -> None:
         linux = read_text("tests/server-smoke.sh")

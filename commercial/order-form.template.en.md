@@ -10,9 +10,14 @@ Agreement reference: `[Commercial License Agreement reference]`
 | Field | Value |
 |---|---|
 | Licensee legal name | [CUSTOMER LEGAL NAME] |
+| Licensee country/region | [COUNTRY/REGION] |
 | Registered/principal address | [ADDRESS] |
+| Licensee tax ID/VAT/GST | [tax ID; write "none" if not applicable] |
 | Contact/email | [NAME / private email] |
+| Billing contact/email | [NAME / private email] |
+| Licensee signatory name/title | [NAME / TITLE] |
 | Licensor | [GUARDIAN NAME, as legal representative] or [SOLE PROPRIETORSHIP/COMPANY LEGAL NAME] |
+| Licensor legal form/registered location/tax ID | [individual / sole proprietorship / company; location; tax ID] |
 | Author | [AUTHOR LEGAL NAME] |
 | Guardianship/entity authority document | [guardian-authorization reference / business registration reference] |
 
@@ -51,16 +56,32 @@ Agreement reference: `[Commercial License Agreement reference]`
 | License fee | [AMOUNT] [CURRENCY] |
 | Tax treatment | [inclusive / exclusive; rate] |
 | Payment milestone | [after signature / before delivery / other] |
-| Payment method | [bank transfer / merchant payment / other] |
+| Payment method | [SWIFT transfer / Wise / PayPal / merchant payment / other] |
 | Payee | [must match Licensor] |
-| Invoice/receipt type | [VAT invoice / receipt / other] |
+| Invoice/receipt type | [commercial invoice / receipt / VAT invoice / other; only what can actually be issued] |
+| Bank charges borne by | [Licensor / Licensee / each party bears its own] |
+| Withholding tax treatment | [Licensee bears and grosses up / treaty rate / other] |
+| Tax form | [W-8BEN / W-8BEN-E / none / other] |
 | Late-payment terms | [as stated in the Agreement or specify] |
 
-## 5. Special terms
+## 5. International customer and compliance
+
+| Field | Value |
+|---|---|
+| Controlling language | [English / Chinese / bilingual; which language controls if they conflict] |
+| Governing law | [COUNTRY/REGION] |
+| Dispute resolution | [court or arbitration body; seat and rules] |
+| Notice address/email | [legal notice address and email] |
+| Export-control/sanctions confirmation | [both parties confirm no sanctioned party or restricted end use; describe exceptions] |
+| Personal data involved | [yes/no; if yes, separate DPA required] |
+| Customer vendor-onboarding requirements | [none / vendor forms, insurance, security review, etc.] |
+| Other cross-border requirements | [foreign exchange, bank, purchase order, e-signature platform, etc.] |
+
+## 6. Special terms
 
 [State any restrictions, deliverables, acceptance criteria, or other special terms. Write "None" if not applicable.]
 
-## 6. Signatures
+## 7. Signatures
 
 Licensor: ____________________
 

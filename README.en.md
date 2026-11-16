@@ -252,7 +252,7 @@ Use the [commercial license templates](commercial/README.en.md) for the agreemen
 ## Version
 
 - Full changelog: [CHANGELOG.md](CHANGELOG.md)
-- Version: 1.4.6
+- Version: 1.4.7
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
 - Security fix: 2026-11-07
@@ -263,3 +263,4 @@ Use the [commercial license templates](commercial/README.en.md) for the agreemen
 - Hosted Windows Server validation correction: 2026-11-16
 - Coverage boundaries and untested items: 2026-11-16
 - Commercial license template pack: 2026-11-16
+- International commercial terms: 2026-11-16

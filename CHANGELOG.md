@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.4.7 - 2026-11-16
+
+### 中文
+
+- 商业许可模板包新增国际客户章节，明确跨境合同默认以英文版为准，中文版供作者和监护人内部审阅。
+- 订单表补充客户国家/地区、税号/VAT/GST、签署人、币种、预扣税/gross-up、W-8BEN/W-8BEN-E、银行手续费、付款方式、商业发票、控制语言、管辖、出口管制/制裁、DPA 和供应商准入字段。
+- 商业许可协议补充预扣税 gross-up、银行费用、反商业贿赂、出口管制/制裁、数据保护、通知、语言优先级和协议/订单表/证书的冲突顺序。
+- 授权证书补充被授权方国家/地区、控制语言和签署人权限；首次回复邮件和监护人授权补充跨境付款、外汇、税务表格、脱敏授权文件和认证翻译要求。
+- 模板不构成 DPA、税务、外汇、出口管制或制裁合规意见；首份跨境合同仍需律师和会计师按中国及目标国规则审阅。
+
+### English
+
+- Add an international-customer section to the commercial template pack. Cross-border contracts default to the English version; the Chinese version is for the author and guardian.
+- Extend the Order Form with customer country/region, tax ID/VAT/GST, signatory, currency, withholding/gross-up, W-8BEN/W-8BEN-E, bank charges, payment method, commercial invoice, controlling language, governing law, export-control/sanctions, DPA, and vendor-onboarding fields.
+- Extend the Agreement with withholding gross-up, bank charges, anti-corruption, export-control/sanctions, data protection, notices, language precedence, and the order of precedence among the Agreement, Order Form, and certificate.
+- Extend the certificate with licensee country/region, controlling language, and signatory capacity; extend the first-reply email and guardian authorization with cross-border payment, foreign-exchange, tax-form, redacted-authorization, and certified-translation requirements.
+- The templates are not DPA, tax, foreign-exchange, export-control, or sanctions advice. A lawyer and accountant must review the first cross-border contract under Chinese and target-country rules.
+
 ## 1.4.6 - 2026-11-16
 
 ### 中文
