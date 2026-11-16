@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.4.6 - 2026-11-16
+
+### 中文
+
+- 新增 `commercial/` 商业许可模板包：监护人授权、商业许可协议、订单表、授权证书、首次回复邮件和许可证登记表。
+- 明确未成年作者的商业授权由监护人作为法定代理人办理；若监护人已有经营主体，可使用该主体签约，但必须保持合同、收款、发票和证书主体一致。
+- 授权证书模板从 Markdown 源文件导出为 PDF；PDF 适合签署、盖章、数字签名和采购归档，JPG/PNG 不作为唯一证书格式。
+- 同步 `COMMERCIAL`、README、包校验必需文件列表和契约测试；模板明确标注不是法律意见，首份合同仍需律师审阅。
+
+### English
+
+- Add a `commercial/` template pack for guardian authorization, the commercial license agreement, order form, license certificate, first-reply email, and license register.
+- Clarify that a minor author's commercial license is handled by the guardian as legal representative; a guardian-operated entity may sign if the authority chain is documented, while the contract, payee, invoice, and certificate must use the same party.
+- Export the certificate template from Markdown to PDF for signature, stamping, digital signatures, and procurement archiving; JPG/PNG is not the primary certificate format.
+- Sync `COMMERCIAL`, the READMEs, package-verifier required files, and contract tests. The templates are not legal advice; have a lawyer review the first contract.
+
 ## 1.4.5 - 2026-11-16
 
 ### 中文

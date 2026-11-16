@@ -6,6 +6,12 @@ This work is licensed under the **PolyForm Noncommercial License 1.0.0** and is 
 
 If you want to use this work or a modified version for a commercial purpose, you need written permission from the author first. The author is open to discussion; you do not need a complete proposal in your first message.
 
+## Templates and issuance
+
+For a minor author, the commercial license is handled by the guardian acting as legal representative. If the guardian already operates a business, that entity may sign through a documented authority chain. Use the [commercial license template pack](commercial/README.en.md), which includes guardian authorization, a license agreement, an order form, a certificate, a first-reply email, and a license register.
+
+Use PDF for the customer-facing certificate. Keep the repository templates in Markdown for review and version control. The templates are not legal advice; have a lawyer review the first contract for the contracting party and local rules.
+
 ## Cases worth discussing first
 
 - Internal production use inside a company

@@ -140,6 +140,7 @@ project-health/
 ├── CITATION.cff                         # citation metadata (includes ORCID)
 ├── AGENTS.md                            # standing rules (task boundaries and pitfall discipline)
 ├── PITFALLS.md                          # enterprise pitfall baseline + maintainer pitfall log
+├── commercial/                           # commercial license, guardian authorization, order, and certificate templates
 ├── references/                           # platform commands, macOS/Apple Silicon traps, Windows/Win Server traps, Linux server traps, verification, reports
 ├── scripts/                              # cross-platform verification and redaction scanners
 ├── tests/                                # contract tests, acceptance cases, malicious-target fixtures
@@ -244,12 +245,14 @@ This work is licensed under the **PolyForm Noncommercial License 1.0.0**. The En
 
 Commercial use requires a written license from the author, but **the author is open to discussing it**. For commercial licensing, contact `chenshuidelaye@qq.com`; terms and scope are negotiable. See `COMMERCIAL.en.md`.
 
+Use the [commercial license templates](commercial/README.en.md) for the agreement, order form, certificate, and guardian authorization.
+
 > GitHub's license detector does not list PolyForm, so the repository page may show `NOASSERTION / Other`. That does not mean the package is unlicensed; the `LICENSE` text controls.
 
 ## Version
 
 - Full changelog: [CHANGELOG.md](CHANGELOG.md)
-- Version: 1.4.5
+- Version: 1.4.6
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
 - Security fix: 2026-11-07
@@ -259,3 +262,4 @@ Commercial use requires a written license from the author, but **the author is o
 - Scanner and verifier hardening: 2026-11-16
 - Hosted Windows Server validation correction: 2026-11-16
 - Coverage boundaries and untested items: 2026-11-16
+- Commercial license template pack: 2026-11-16
