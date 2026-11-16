@@ -146,7 +146,45 @@
 - 反例：关键变量为空字符串，启动必须失败。
 - 注意：空字符串不一定会触发框架默认值；不要假设“空串会回落”。
 
-## 10. 收尾
+## 10. 覆盖边界与未测试项
+
+> 截至 **2026-11-16 / 1.4.5**。这是当前验收边界，不是已知缺陷清单。只有实际执行并核对了结果的项才算“已测试”；`SKIP`、工具不存在、作业被跳过，或只验证了工具的帮助/枚举能力，都必须标为“未测试 / 未覆盖”。未测试不代表功能有 bug，也不得在报告里写成通过。
+
+### 10.1 当前公开证据
+
+| 环境 | 实际结果 | 证据 |
+|---|---|---|
+| GitHub Actions `Verify package` | Ubuntu 24.04、`macos-latest`、Windows Server 2025 的 Python 3.9/3.12 全部成功；Windows 还执行了 PowerShell 5.1/7 包校验 | [run 43792286318](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286318) |
+| GitHub Actions `Verify server playbooks` | Linux `pass=61 skip=7 fail=0 systemd=1`；托管 Windows Server `Windows Server: True`、`pass=33 skip=6 fail=0`；自建 roles 作业 `skipped` | [run 43792286327](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286327) |
+| 本地 Windows 11 | Python 3.10/3.14.2 各 53 项测试通过；Python 与 PowerShell 包校验通过 | 维护者本地运行，不是公开 CI |
+| Ubuntu 24.04 容器 | Python 3.9/3.12 各 52 项测试、11 项跳过；运行于 1.4.4 之前，未对 1.4.5 重跑 | 维护者历史记录 |
+
+### 10.2 未测试或未覆盖
+
+| 范围 | 当前已知证据 | 为什么未测试 | 补测所需环境 |
+|---|---|---|---|
+| Windows Server 2019/2022 | 只在 Windows Server 2025 上执行了服务器冒烟 | 托管 `windows-latest` 不提供 2019/2022 | 对应版本的真实 VM 或 runner |
+| Windows 10 | 本地为 Windows 11；云端 `windows-latest` 是 Server 2025 | 没有 Windows 10 环境 | Windows 10 真机/VM，使用 PowerShell 5.1 复跑 |
+| 域控、AD、Kerberos、GPO、SPN | `klist.exe` 返回非零；域控查询、GPO、SPN 均被跳过 | runner 未加入域，也没有域账号 | 已加入域的 Windows 主机、可达域控和只读测试账号 |
+| WinRM 监听器 | `winrm` 不存在；自建 roles 作业被跳过 | 托管镜像没有 `winrm`，自建 runner 未配置 | 启用 WinRM 的 Windows Server runner，只读枚举监听器和 `Test-WSMan` |
+| 故障转移集群 | `FailoverClusters` 模块不存在，集群检查被跳过 | 托管镜像没有集群模块或集群节点 | 安装了故障转移集群功能的 Windows Server 节点 |
+| SQL Server 实例实际连接和查询 | 只执行了 `sqlcmd -?` 帮助；没有连接实例或查询数据库 | 没有可用 SQL Server 实例和只读凭据 | 测试实例、只读登录，执行版本查询和最小健康查询 |
+| IIS 端到端 HTTP/TLS 请求 | 已枚举 IIS 网站和应用池；没有请求实际站点或验证证书握手 | 托管镜像没有可用的业务站点/证书 | 目标 IIS 站点、测试证书和只读 HTTP/TLS 探针 |
+| Linux SELinux | `getenforce`、`ausearch` 不存在，检查被跳过 | Ubuntu 托管镜像没有对应工具/策略环境 | 启用 SELinux 的 RHEL、Rocky、Alma、Fedora 等主机 |
+| Linux firewalld | `firewall-cmd` 不存在，检查被跳过 | Ubuntu 托管镜像没有 firewalld | 使用 firewalld 的 Linux 主机 |
+| Linux dnf/RPM 包管理 | `dnf`、`needs-restarting` 不存在，检查被跳过 | 当前是 apt 环境 | Fedora、RHEL、Rocky 或 Alma Linux 主机 |
+| Linux SSH 目录和授权文件权限 | CI 服务用户的 `$HOME/.ssh` 不存在，相关检查被跳过 | CI runner 没有服务用户的 SSH 配置 | 目标服务器上真实服务用户的 `.ssh` 和 `authorized_keys` |
+| 原生 macOS 系统行为 | CI 只做了包校验和契约测试；未验证原生 arm64、Rosetta、Gatekeeper/TCC、launchd、APFS | macOS runner 不等同于目标 Mac，也没有执行系统级场景 | 原生 Apple Silicon Mac、Intel/Rosetta 会话和对应系统测试计划 |
+| Python 3.11/3.13 | CI 矩阵只有 3.9/3.12；3.14 只有本机 Windows 结果 | 未加入矩阵，也未在独立环境复跑 | 在 3.11/3.13 上运行完整测试和包校验，或扩充 CI 矩阵 |
+| Agent 自主记忆评测 | `tests/agent_memory_eval.py` 是可选评测，本轮没有调用真实 Codex | 依赖外部 Agent，结果有非确定性 | 在受控环境显式运行，并记录模型、提示词和结果 |
+
+### 10.3 门禁边界
+
+- 当前 `main` 的必需检查只有六个 `Verify package` 矩阵作业（Ubuntu、macOS、Windows × Python 3.9/3.12），并且启用了严格状态检查和管理员同样受约束。
+- `Verify server playbooks` 受路径过滤，且没有加入 required checks；它的自建 roles 作业还可能显示 `skipped`。因此 PR 全绿不能单独证明服务器冒烟已经执行。
+- 遇到上表环境时，报告中引用对应的未覆盖原因和补测条件；补测完成后更新本节日期、版本和实际证据，不要把历史跳过结果继续当作当前结果。
+
+## 11. 收尾
 
 - 原复现不再出现；
 - 回归测试通过，或接缝缺失已记录；

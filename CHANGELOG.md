@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.4.5 - 2026-11-16
+
+### 中文
+
+- 在 `references/verification-playbook.md` / `.en.md` 新增“覆盖边界与未测试项”：记录当前云端公开证据、未覆盖环境、未测试原因和补测条件。
+- 明确区分 `SKIP`、工具缺失、作业跳过与“已通过”；当前未覆盖 Windows Server 2019/2022、Windows 10、域控/AD/Kerberos/GPO/SPN、WinRM、故障转移集群、SQL 实例查询、IIS HTTP/TLS、SELinux、firewalld、dnf/RPM、SSH 权限、原生 macOS 行为、Python 3.11/3.13 和 Agent 自主记忆评测。
+- 记录服务器冒烟当前不是必需检查：分支保护只要求六个 `Verify package` 矩阵作业，`Verify server playbooks` 受路径过滤且自建 roles 作业可能被跳过；PR 全绿不能替代服务器实测。
+- 同步版本、README 入口、SKILL 报告提示、变更日志和契约测试；本次仅补验收边界，不改变检查流程或许可证。
+
+### English
+
+- Add "Coverage boundaries and untested items" to `references/verification-playbook.md` / `.en.md`, recording the current public evidence, uncovered environments, reasons, and closing conditions.
+- Distinguish `SKIP`, missing tools, and skipped jobs from "passed"; current gaps include Windows Server 2019/2022, Windows 10, domain/AD/Kerberos/GPO/SPN, WinRM, failover clusters, SQL instance queries, IIS HTTP/TLS, SELinux, firewalld, dnf/RPM, SSH permissions, native macOS behavior, Python 3.11/3.13, and the autonomous agent-memory evaluation.
+- Record that server smoke is not currently a required check: branch protection requires only the six `Verify package` matrix jobs, while `Verify server playbooks` is path-filtered and its self-hosted roles job may be skipped. A green pull request is not a substitute for server evidence.
+- Sync the version, README entry points, SKILL report guidance, changelog, and contract tests. This release only records acceptance boundaries; it does not change the review workflow or license.
+
 ## 1.4.4 - 2026-11-16
 
 ### 中文
