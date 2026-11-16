@@ -152,6 +152,8 @@ The core skill uses only Markdown and Git commands. It works on Windows 10/11, W
 
 ## Self-check
 
+Current tested and untested boundaries are documented in [Coverage boundaries and untested items](references/verification-playbook.en.md#10-coverage-boundaries-and-untested-items). Platform support does not imply every version and system behavior has been exercised.
+
 From the package root:
 
 ```bash
@@ -247,7 +249,7 @@ Commercial use requires a written license from the author, but **the author is o
 ## Version
 
 - Full changelog: [CHANGELOG.md](CHANGELOG.md)
-- Version: 1.4.4
+- Version: 1.4.5
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
 - Security fix: 2026-11-07
@@ -256,3 +258,4 @@ Commercial use requires a written license from the author, but **the author is o
 - macOS standing pitfalls and environment gate: 2026-11-13
 - Scanner and verifier hardening: 2026-11-16
 - Hosted Windows Server validation correction: 2026-11-16
+- Coverage boundaries and untested items: 2026-11-16

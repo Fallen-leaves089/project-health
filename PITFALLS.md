@@ -395,3 +395,4 @@ macOS 任务开始先确认环境，再按 `references/macos-pitfalls.md` 加载
 2026-11-16 | cicd, self-hosted, pull-request | 自建 Windows Server runner 响应 pull_request | fork PR 可能在自建服务器执行不可信代码 | 自建 runner 作业只允许 main push 或手动 dispatch，并拒绝 pull_request | server-smoke.yml 条件与契约测试均覆盖该门禁
 2026-11-16 | documentation, encoding, redaction | 文档声称脱敏扫描器支持任意无 BOM UTF-16 | 实现只在字节序明确时接受，文档范围大于实际，使用者会误判覆盖能力 | 文档明确写带 BOM 或字节序明确的无 BOM UTF-16，无法判断编码时 fail closed | Python 与 PowerShell 自检覆盖无 BOM 正例和无效文本反例，包校验通过
 2026-11-16 | encoding, redaction, utf16 | 无 BOM UTF-16 同时含 ASCII 密钥和 emoji | PowerShell 选错字节序后扫描 0 命中并显示通过，Python 则把可扫描文本误报为不可扫描 | 用零字节分布选择字节序，并修正 PowerShell 的代理对分类；证据不足时 fail closed | 两版自检和契约测试均命中 emoji 无 BOM UTF-16 中的密钥
+2026-11-16 | docs, redaction, paths | 在验收文档中写 CI 运行器的真实绝对家目录 | 脱敏扫描按 Unix 家目录规则判为个人信息，包校验失败 | 用 $HOME 或 <service-user-home> 表示位置，保留“目录不存在”的事实而不写实际用户名 | Python 与 PowerShell 包校验均为 0 命中

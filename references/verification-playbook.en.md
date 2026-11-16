@@ -146,7 +146,45 @@ Choose the negative case carefully:
 - Negative: a critical variable is an empty string; startup must fail.
 - Note: an empty string does not always trigger a framework default. Do not assume it falls back.
 
-## 10. Wrap-up
+## 10. Coverage boundaries and untested items
+
+> As of **2026-11-16 / 1.4.5**. This is the current acceptance boundary, not a list of known defects. A result counts as "tested" only when the check was actually executed and its result was inspected. A `SKIP`, a missing tool, a skipped job, or a check that only verified a tool's help or enumeration output must be classified as **untested / uncovered**. Untested does not mean broken, and it must never be reported as passed.
+
+### 10.1 Current public evidence
+
+| Environment | Actual result | Evidence |
+|---|---|---|
+| GitHub Actions `Verify package` | Ubuntu 24.04, `macos-latest`, and Windows Server 2025 all passed on Python 3.9 and 3.12; Windows also ran the PowerShell 5.1 and 7 package verifiers | [run 43792286318](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286318) |
+| GitHub Actions `Verify server playbooks` | Linux `pass=61 skip=7 fail=0 systemd=1`; hosted Windows Server `Windows Server: True` and `pass=33 skip=6 fail=0`; the self-hosted roles job was `skipped` | [run 43792286327](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286327) |
+| Local Windows 11 | Python 3.10 and 3.14.2 each passed 53 tests; Python and PowerShell package verification passed | Maintainer-local run, not public CI |
+| Ubuntu 24.04 containers | Python 3.9 and 3.12 each passed 52 tests with 11 skips; run before 1.4.4 and not rerun for 1.4.5 | Maintainer historical record |
+
+### 10.2 Untested or uncovered
+
+| Scope | Current evidence | Why it is untested | Environment needed to close it |
+|---|---|---|---|
+| Windows Server 2019/2022 | Server smoke ran only on Windows Server 2025 | Hosted `windows-latest` does not provide 2019/2022 | A real VM or runner with the target version |
+| Windows 10 | The local machine is Windows 11; hosted `windows-latest` is Server 2025 | No Windows 10 environment | A Windows 10 machine/VM, rerun with PowerShell 5.1 |
+| Domain controller, AD, Kerberos, GPO, SPN | `klist.exe` returned nonzero; domain controller, GPO, and SPN checks were skipped | The runner is not domain-joined and has no domain account | A domain-joined Windows host, reachable domain controller, and read-only test account |
+| WinRM listener | `winrm` is absent; the self-hosted roles job was skipped | The hosted image lacks `winrm` and no self-hosted runner is configured | A Windows Server runner with WinRM enabled, read-only listener enumeration and `Test-WSMan` |
+| Failover cluster | The `FailoverClusters` module is absent; cluster checks were skipped | The hosted image has no cluster module or cluster node | A Windows Server node with the failover-cluster feature installed |
+| SQL Server instance connection and query | Only `sqlcmd -?` help ran; no instance was connected and no query was executed | No SQL Server instance or read-only credential is available | A test instance and read-only login, with a version query and minimal health query |
+| IIS end-to-end HTTP/TLS request | IIS websites and application pools were enumerated; no real site request or certificate handshake was made | The hosted image has no business site or usable certificate | A target IIS site, a test certificate, and a read-only HTTP/TLS probe |
+| Linux SELinux | `getenforce` and `ausearch` are absent; the checks were skipped | The Ubuntu hosted image lacks the tooling/policy environment | A host with SELinux enabled, such as RHEL, Rocky, Alma, or Fedora |
+| Linux firewalld | `firewall-cmd` is absent; the check was skipped | The Ubuntu hosted image does not use firewalld | A Linux host using firewalld |
+| Linux dnf/RPM package management | `dnf` and `needs-restarting` are absent; the checks were skipped | The current image uses apt | A Fedora, RHEL, Rocky, or Alma Linux host |
+| Linux SSH directory and authorized-file permissions | The CI service user's `$HOME/.ssh` is absent; the checks were skipped | The CI runner has no service-user SSH configuration | The target server's real service-user `.ssh` and `authorized_keys` |
+| Native macOS system behavior | CI ran package and contract tests only; native arm64, Rosetta, Gatekeeper/TCC, launchd, and APFS behavior were not exercised | A macOS runner is not the target Mac and did not run system-level scenarios | An Apple Silicon Mac, an Intel/Rosetta session, and the corresponding system test plan |
+| Python 3.11/3.13 | The CI matrix covers only 3.9/3.12; 3.14 has only a local Windows result | Not in the matrix and not rerun in an independent environment | Run the full tests and package verification on 3.11/3.13, or add them to the CI matrix |
+| Agent autonomous memory evaluation | `tests/agent_memory_eval.py` is optional and was not run against a real Codex agent this round | It depends on an external non-deterministic agent | Run it explicitly in a controlled environment and record the model, prompt, and results |
+
+### 10.3 Gate boundaries
+
+- The current `main` required checks are only the six `Verify package` matrix jobs (Ubuntu, macOS, and Windows, each on Python 3.9 and 3.12), with strict status checks and administrators enforced too.
+- `Verify server playbooks` is path-filtered and is not a required check; its self-hosted roles job can also report `skipped`. A green pull request therefore does not by itself prove that server smoke ran.
+- When a report reaches one of the rows above, cite the untested reason and the closing condition. After a rerun, update the date, version, and actual evidence; do not keep using a historical skip as the current result.
+
+## 11. Wrap-up
 
 - the original reproduction no longer occurs;
 - regression tests pass, or the missing seam is recorded;

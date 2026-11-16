@@ -152,6 +152,8 @@ project-health/
 
 ## 自检
 
+本次实际测试范围与未覆盖环境见 [覆盖边界与未测试项](references/verification-playbook.md#10-覆盖边界与未测试项)；平台“支持”不等于所有版本和系统行为都已实测。
+
 在包根目录运行：
 
 ```bash
@@ -247,7 +249,7 @@ ssh-keygen -lf release-signing-key.pub
 ## 版本
 
 - 完整更新记录：[CHANGELOG.md](CHANGELOG.md)
-- 版本：1.4.4
+- 版本：1.4.5
 - 对应内部整理日期：2026-09-04
 - 公开发布整理：2026-11-04
 - 安全修复整理：2026-11-07
@@ -256,3 +258,4 @@ ssh-keygen -lf release-signing-key.pub
 - macOS 常驻避坑与环境门禁：2026-11-13
 - 扫描与校验一致性加固：2026-11-16
 - 托管 Windows Server 验收修正：2026-11-16
+- 覆盖边界与未测试项：2026-11-16

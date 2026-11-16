@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "malicious-target"
 FIXTURE = FIXTURE_DIR / "malicious-agents.fixture"
-EXPECTED_VERSION = "1.4.4"
+EXPECTED_VERSION = "1.4.5"
 EXPECTED_RELEASE_DATE = "2026-11-16"
 
 
@@ -180,6 +180,62 @@ class UntrustedTargetContractTests(unittest.TestCase):
         citation = read_text("CITATION.cff")
         self.assertIn(f'version: "{EXPECTED_VERSION}"', citation)
         self.assertIn(f'date-released: "{EXPECTED_RELEASE_DATE}"', citation)
+
+    def test_coverage_boundaries_are_documented(self) -> None:
+        expectations = {
+            "references/verification-playbook.md": (
+                "## 10. 覆盖边界与未测试项",
+                "未测试 / 未覆盖",
+                "Windows Server 2019/2022",
+                "Windows 10",
+                "域控、AD、Kerberos、GPO、SPN",
+                "WinRM 监听器",
+                "故障转移集群",
+                "SQL Server 实例实际连接和查询",
+                "IIS 端到端 HTTP/TLS 请求",
+                "SELinux",
+                "firewalld",
+                "dnf/RPM",
+                "SSH 目录和授权文件权限",
+                "原生 macOS 系统行为",
+                "Apple Silicon",
+                "Python 3.11/3.13",
+                "Agent 自主记忆",
+                "Verify server playbooks",
+                "required checks",
+                "不得在报告里写成通过",
+            ),
+            "references/verification-playbook.en.md": (
+                "## 10. Coverage boundaries and untested items",
+                "untested / uncovered",
+                "Windows Server 2019/2022",
+                "Windows 10",
+                "Domain controller, AD, Kerberos, GPO, SPN",
+                "WinRM listener",
+                "Failover cluster",
+                "SQL Server instance connection and query",
+                "IIS end-to-end HTTP/TLS request",
+                "SELinux",
+                "firewalld",
+                "dnf/RPM",
+                "SSH directory and authorized-file permissions",
+                "Native macOS system behavior",
+                "Apple Silicon",
+                "Python 3.11/3.13",
+                "Agent autonomous memory evaluation",
+                "Verify server playbooks",
+                "required check",
+                "must never be reported as passed",
+            ),
+        }
+        for relative, required_phrases in expectations.items():
+            content = read_text(relative)
+            for phrase in required_phrases:
+                with self.subTest(relative=relative, phrase=phrase):
+                    self.assertIn(phrase, content)
+
+        self.assertIn("verification-playbook", read_text("README.md"))
+        self.assertIn("verification-playbook", read_text("README.en.md"))
 
     def test_enterprise_positioning_is_consistent(self) -> None:
         chinese = read_text("SKILL.md")

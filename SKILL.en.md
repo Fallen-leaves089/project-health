@@ -2,7 +2,7 @@
 name: project-health
 description: Enterprise-grade, evidence-driven audits and delivery acceptance for existing software projects, recommended for enterprise project construction and routine maintenance and suitable for everyday users: environment check and history-first review, standards/spec two-axis audit, real build/migration/container and macOS/Apple Silicon, Linux/Windows Server regression, and an evidence-linked P0-P3 report. Use for enterprise maintenance, deep audits, P0-P3 findings, real regression, handover/delivery acceptance, or server launch checks; project-health-lite remains available for a quick low-barrier first pass.
 metadata:
-  version: 1.4.4
+  version: 1.4.5
 license: PolyForm-Noncommercial-1.0.0
 ---
 
@@ -157,7 +157,7 @@ For every item, include **evidence location (`file:line`) + impact + recommendat
 
 Add separate sections for "verified OK" and "not covered in this round". Do not pretend to have full coverage.
 
-Report template: `references/report-template.en.md`.
+Report template: `references/report-template.en.md`; current coverage boundaries and untested items are in section 10 of `references/verification-playbook.en.md`.
 
 ### 6. Fix only after an explicit instruction
 
