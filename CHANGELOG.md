@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.4 - 2026-11-16
+
+### 中文
+
+- 修正 Windows CI 覆盖判断：GitHub 托管的 `windows-latest` 实际为 Windows Server 2025。托管作业现在强制校验 Server OS 和 IIS，避免把服务器结果误标为客户端覆盖，也避免 IIS 检查缺失时静默跳过。
+- 保留受仓库变量控制的自建 runner 作业，仅用于域控/GPO/SPN、WinRM 监听器和故障转移集群等托管环境缺失的专项；该作业继续只允许 main 分支 push 或手动 `workflow_dispatch`，不接受 `pull_request`。
+
+### English
+
+- Correct the Windows CI coverage assumption: GitHub-hosted `windows-latest` is Windows Server 2025. The hosted job now requires a Server OS and IIS, preventing server results from being mislabeled as client-only coverage or IIS checks from being silently skipped.
+- Keep the repository-variable-gated self-hosted job only for domain/GPO/SPN, WinRM listener, and failover-cluster checks that the hosted image cannot provide. That job still runs only on main-branch pushes or manual `workflow_dispatch`, never on pull requests.
+
 ## 1.4.3 - 2026-11-16
 
 ### 中文

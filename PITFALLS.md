@@ -383,7 +383,7 @@ macOS 任务开始先确认环境，再按 `references/macos-pitfalls.md` 加载
 2026-11-16 | tooling, encoding, validation | 脱敏工具把含 NUL 的 UTF-16 文件当二进制 | 直接按 NUL 或扩展名跳过，导致 UTF-16 文本和未知文本漏扫 | 先按 BOM/UTF-16 解码，再检查异常 NUL；无法解码 fail closed | UTF-16 BOM/无 BOM 与无效文本契约测试通过
 2026-11-16 | tooling, validation, powershell | 维护 Python 与 PowerShell 双实现校验器 | 目录过滤、二进制清单、frontmatter 或六字段规则不一致，另一版仍假绿 | 共享规则表并用同样反例测试两版，语言链接差异在文档中明确 | 两版包校验器在同一临时副本上同时失败或同时通过
 2026-11-16 | tooling, memory, root-fingerprint | 记录器只凭 AGENTS.md 或 PITFALLS.md 推断技能根目录 | 任意目录可被当成安装技能，写错记忆或覆盖项目文件 | 要求真实 SKILL frontmatter、规定结构文件、字节一致的记录器；repo 范围还要求 .git | 记录器边界测试覆盖伪造根目录、记录器指纹和 repo scope
-2026-11-16 | cicd, windows, server | 用 GitHub windows-latest 代表 Windows Server | 设置 REQUIRE_WINDOWS_SERVER=1 后客户端 ProductType=1 导致工作流失败，或把客户端结果当成服务器覆盖 | 拆分客户端冒烟和自建 runner 服务器作业，用仓库变量门控，文档明确真实服务器未覆盖 | server-smoke.yml YAML 可解析；本机客户端冒烟 pass=27 skip=11 fail=0
+2026-11-16 | cicd, windows, server | [已修正] 判断 GitHub windows-latest 的系统类型 | 旧记录误以为它是 Windows 客户端；云端日志实际显示 Windows Server 2025 Datacenter、ProductType=3 | 托管作业强制 REQUIRE_WINDOWS_SERVER=1 与 REQUIRE_IIS=1；自建 runner 只保留域/集群/WinRM 专项 | 云端 windows-latest 作业显示 Windows Server: True，IIS 检查执行且成功
 2026-11-16 | tooling, powershell, exec | 复制工具调用时省略或误填 shell | PowerShell 命令落入 WSL，补丁或查询不执行并出现语法错误 | 每次新建 exec 先固定 shell=powershell；失败项核对零副作用后再重跑 | 本轮两次失败均为只读或补丁未执行，PowerShell 重跑成功
 2026-11-16 | shell, testing, pipefail | Linux 冒烟检查用 head 截断 systemctl 等长输出 | run_check 启用 pipefail 后，上游收到 SIGPIPE，输出正常也返回非零并被记为失败 | 用 sed -n 继续读完输入再限行，或避免提前关闭管道 | WSL Ubuntu 24.04 冒烟由 fail=2 降为 fail=0
 2026-11-16 | docker, wsl, paths | 在 WSL 中调用 Windows Docker 客户端校验临时 compose 文件 | 把 /tmp 路径传给 Windows 客户端，客户端把它解析成 D:\tmp 并报找不到文件 | 用标准输入 docker compose -f - config，或先显式转换路径 | WSL Ubuntu 冒烟 Docker compose config 通过

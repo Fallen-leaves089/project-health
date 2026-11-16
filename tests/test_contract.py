@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "malicious-target"
 FIXTURE = FIXTURE_DIR / "malicious-agents.fixture"
-EXPECTED_VERSION = "1.4.3"
+EXPECTED_VERSION = "1.4.4"
 EXPECTED_RELEASE_DATE = "2026-11-16"
 
 
@@ -461,6 +461,7 @@ class UntrustedTargetContractTests(unittest.TestCase):
         windows = read_text("tests/server-smoke.ps1")
         for phrase in (
             "REQUIRE_WINDOWS_SERVER",
+            "REQUIRE_IIS",
             "Get-WindowsFeature",
             "Get-NetFirewallProfile",
             "Get-ClusterNode",
@@ -472,8 +473,10 @@ class UntrustedTargetContractTests(unittest.TestCase):
         workflow = read_text(".github/workflows/server-smoke.yml")
         for phrase in (
             "ubuntu-24.04",
-            "Windows client / windows-latest",
+            "Windows Server / windows-latest (hosted)",
             "windows-latest",
+            "REQUIRE_WINDOWS_SERVER",
+            "REQUIRE_IIS",
             "bash tests/server-smoke.sh",
             r".\tests\server-smoke.ps1",
             "ENABLE_WINDOWS_SERVER_SMOKE",
@@ -481,14 +484,36 @@ class UntrustedTargetContractTests(unittest.TestCase):
         ):
             with self.subTest(workflow="server-smoke", phrase=phrase):
                 self.assertIn(phrase, workflow)
+        self.assertNotIn("Windows client", workflow)
 
-        client_job = workflow.split("windows-server:", 1)[0]
-        self.assertNotIn("REQUIRE_WINDOWS_SERVER", client_job)
-        server_job = workflow.split("windows-server:", 1)[1]
+        readme_zh = read_text("README.md")
+        self.assertIn("`windows-latest` 实际提供 Windows Server 2025", readme_zh)
+        self.assertIn("托管作业会强制校验 Server OS 与 IIS", readme_zh)
+        self.assertNotIn("`windows-latest` 只代表 Windows 客户端", readme_zh)
+
+        readme_en = read_text("README.en.md")
+        self.assertIn("`windows-latest` in CI provides Windows Server 2025", readme_en)
+        self.assertIn("the hosted job enforces a Server OS and IIS", readme_en)
+        self.assertNotIn("represents a Windows client only", readme_en)
+
+        hosted_job = workflow.split("windows-server-hosted:", 1)[1].split(
+            "windows-server-self-hosted:", 1
+        )[0]
+        for phrase in (
+            'REQUIRE_WINDOWS_SERVER: "1"',
+            'REQUIRE_IIS: "1"',
+            "Run Windows Server baseline checks",
+        ):
+            with self.subTest(workflow="windows-server-hosted", phrase=phrase):
+                self.assertIn(phrase, hosted_job)
+        self.assertNotIn("ENABLE_WINDOWS_SERVER_SMOKE", hosted_job)
+
+        server_job = workflow.split("windows-server-self-hosted:", 1)[1]
         for phrase in (
             "github.event_name == 'workflow_dispatch'",
             "github.event_name == 'push'",
             "github.ref == 'refs/heads/main'",
+            "runs-on: [self-hosted, Windows, X64, windows-server]",
         ):
             with self.subTest(workflow="windows-server", phrase=phrase):
                 self.assertIn(phrase, server_job)

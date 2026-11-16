@@ -36,8 +36,8 @@ jobs:
           REQUIRE_SYSTEMD: "1"
         run: bash tests/server-smoke.sh
 
-  windows-client:
-    name: Windows client / windows-latest
+  windows-server-hosted:
+    name: Windows Server / windows-latest (hosted)
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
@@ -46,12 +46,15 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Run Windows client read-only checks
+      - name: Run Windows Server baseline checks
         shell: powershell
+        env:
+          REQUIRE_WINDOWS_SERVER: "1"
+          REQUIRE_IIS: "1"
         run: .\tests\server-smoke.ps1
 
-  windows-server:
-    name: Windows Server / self-hosted
+  windows-server-self-hosted:
+    name: Windows Server / self-hosted roles
     if: >-
       ${{ vars.ENABLE_WINDOWS_SERVER_SMOKE == 'true' &&
           (github.event_name == 'workflow_dispatch' ||
