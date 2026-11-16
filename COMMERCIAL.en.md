@@ -12,6 +12,8 @@ For a minor author, the commercial license is handled by the guardian acting as 
 
 Use PDF for the customer-facing certificate. Keep the repository templates in Markdown for review and version control. The templates are not legal advice; have a lawyer review the first contract for the contracting party and local rules.
 
+For customers outside China, the English template is the default controlling version. Confirm currency, withholding tax, W-8BEN/W-8BEN-E, contracting entity, payment account, and export-control/sanctions requirements separately; see the [international customer checklist](commercial/README.en.md).
+
 ## Cases worth discussing first
 
 - Internal production use inside a company

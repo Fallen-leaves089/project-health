@@ -252,7 +252,7 @@ ssh-keygen -lf release-signing-key.pub
 ## 版本
 
 - 完整更新记录：[CHANGELOG.md](CHANGELOG.md)
-- 版本：1.4.6
+- 版本：1.4.7
 - 对应内部整理日期：2026-09-04
 - 公开发布整理：2026-11-04
 - 安全修复整理：2026-11-07
@@ -263,3 +263,4 @@ ssh-keygen -lf release-signing-key.pub
 - 托管 Windows Server 验收修正：2026-11-16
 - 覆盖边界与未测试项：2026-11-16
 - 商业许可模板包：2026-11-16
+- 商业许可国际客户条款：2026-11-16
