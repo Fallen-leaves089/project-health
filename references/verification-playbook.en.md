@@ -148,7 +148,7 @@ Choose the negative case carefully:
 
 ## 10. Coverage boundaries and untested items
 
-> As of **2026-11-16 / 1.4.7**. This is the current acceptance boundary, not a list of known defects. A result counts as "tested" only when the check was actually executed and its result was inspected. A `SKIP`, a missing tool, a skipped job, or a check that only verified a tool's help or enumeration output must be classified as **untested / uncovered**. Untested does not mean broken, and it must never be reported as passed.
+> As of **2026-11-18 / 1.4.8**. This is the current acceptance boundary, not a list of known defects. A result counts as "tested" only when the check was actually executed and its result was inspected. A `SKIP`, a missing tool, a skipped job, or a check that only verified a tool's help or enumeration output must be classified as **untested / uncovered**. Untested does not mean broken, and it must never be reported as passed. A green package verifier, contract suite, or CI run also does not prove that real agent behavior has been validated.
 
 ### 10.1 Current public evidence
 

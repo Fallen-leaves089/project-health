@@ -181,9 +181,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 
 Python 版检查必需文件、所有非二进制文本（严格 UTF-8、无 BOM、无异常 NUL）、Markdown 链接、脱敏自检、包内敏感模式，以及 `SKILL.md` / `SKILL.en.md` 的 `name`、非空 `description`、`metadata.version`、版本和语言链接是否一致。PowerShell 版使用相同的目录过滤、二进制扩展名清单、严格编码检查、frontmatter 与 `PITFALLS.md` 六字段规则；语言链接仍只由 Python 版检查。两版包校验器都会扫描 `.env.*`、`.pem`、`.log`、`.ini`、`.cff` 等非白名单文本，并对空目录、不可解码文件或异常 NUL fail closed。
 
+### 验证边界：确定性检查不等于 Agent 行为验证
+
+`scripts/verify_package.py`、契约测试和默认 CI 只验证包结构、脚本、规则和文档契约，不调用真实 Agent；全部通过只说明包与确定性契约自洽，不等于 Agent 行为已验证。真实行为需要单独评测，并记录模型、宿主、权限模式、日期、结果、证据和未覆盖项；这类结果依赖模型版本、系统提示、工具集和采样，不进入默认 CI，也不作为发布闸门。
+
 ### 可选：验证 Agent 是否会自主记录新坑
 
-默认测试只验证记录器和规则，不会调用外部 Agent。要验证真实行为，可运行：
+要验证真实行为，可运行：
 
 ```powershell
 python -B tests\agent_memory_eval.py --codex <codex.exe> --require-scenario-match --min-passed 2
@@ -252,7 +256,7 @@ ssh-keygen -lf release-signing-key.pub
 ## 版本
 
 - 完整更新记录：[CHANGELOG.md](CHANGELOG.md)
-- 版本：1.4.7
+- 版本：1.4.8
 - 对应内部整理日期：2026-09-04
 - 公开发布整理：2026-11-04
 - 安全修复整理：2026-11-07
@@ -262,5 +266,6 @@ ssh-keygen -lf release-signing-key.pub
 - 扫描与校验一致性加固：2026-11-16
 - 托管 Windows Server 验收修正：2026-11-16
 - 覆盖边界与未测试项：2026-11-16
+- 验证边界与发布整理：2026-11-18
 - 商业许可模板包：2026-11-16
 - 商业许可国际客户条款：2026-11-16
