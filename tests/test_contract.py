@@ -16,8 +16,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "malicious-target"
 FIXTURE = FIXTURE_DIR / "malicious-agents.fixture"
-EXPECTED_VERSION = "1.4.7"
-EXPECTED_RELEASE_DATE = "2026-11-16"
+EXPECTED_VERSION = "1.4.8"
+EXPECTED_RELEASE_DATE = "2026-11-18"
 
 
 def read_text(relative: str) -> str:
@@ -180,6 +180,37 @@ class UntrustedTargetContractTests(unittest.TestCase):
         citation = read_text("CITATION.cff")
         self.assertIn(f'version: "{EXPECTED_VERSION}"', citation)
         self.assertIn(f'date-released: "{EXPECTED_RELEASE_DATE}"', citation)
+
+    def test_validation_boundary_is_explicit(self) -> None:
+        expectations = {
+            "README.md": (
+                "不调用真实 Agent",
+                "不等于 Agent 行为已验证",
+                "不进入默认 CI",
+                "不作为发布闸门",
+            ),
+            "README.en.md": (
+                "do not call a real agent",
+                "does not mean agent behavior is validated",
+                "not part of default CI",
+                "not a release gate",
+            ),
+            "SKILL.md": (
+                "确定性检查不等于行为验证",
+                "未调用真实 Agent",
+                "未覆盖项",
+            ),
+            "SKILL.en.md": (
+                "Deterministic checks are not behavior validation",
+                "Without a real agent run",
+                "uncovered scope",
+            ),
+        }
+        for relative, markers in expectations.items():
+            content = read_text(relative)
+            for marker in markers:
+                with self.subTest(relative=relative, marker=marker):
+                    self.assertIn(marker, content)
 
     def test_coverage_boundaries_are_documented(self) -> None:
         expectations = {

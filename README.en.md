@@ -181,9 +181,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 
 The Python verifier checks required files, all non-binary text (strict UTF-8, no BOM, no anomalous NUL), Markdown links, the redaction self-test, sensitive patterns in the package, and `SKILL.md` / `SKILL.en.md` `name`, non-empty `description`, `metadata.version`, version, and language links. The PowerShell verifier uses the same directory filters, binary-extension list, strict encoding checks, frontmatter rules, and `PITFALLS.md` six-field check; language links are still checked by the Python verifier only. Both package verifiers scan non-allowlisted text such as `.env.*`, `.pem`, `.log`, `.ini`, and `.cff`, and fail closed on empty directories, undecodable files, or anomalous NUL.
 
+### Validation boundary: deterministic checks are not agent behavior validation
+
+`scripts/verify_package.py`, the contract suite, and default CI verify only the package structure, scripts, rules, and documentation contracts; they do not call a real agent. Passing them only shows that the package and deterministic contracts are self-consistent; it does not mean agent behavior is validated. Real behavior requires a separate evaluation that records the model, host, permission mode, date, result, evidence, and uncovered scope. Such results depend on model versions, system prompts, tools, and sampling; they are not part of default CI and are not a release gate.
+
 ### Optional: verify autonomous pitfall recording
 
-The default tests validate the recorder and rules without calling an external agent. To test real behavior:
+To test real behavior:
 
 ```powershell
 python -B tests\agent_memory_eval.py --codex <codex.exe> --require-scenario-match --min-passed 2
@@ -252,7 +256,7 @@ Use the [commercial license templates](commercial/README.en.md) for the agreemen
 ## Version
 
 - Full changelog: [CHANGELOG.md](CHANGELOG.md)
-- Version: 1.4.7
+- Version: 1.4.8
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
 - Security fix: 2026-11-07
@@ -262,5 +266,6 @@ Use the [commercial license templates](commercial/README.en.md) for the agreemen
 - Scanner and verifier hardening: 2026-11-16
 - Hosted Windows Server validation correction: 2026-11-16
 - Coverage boundaries and untested items: 2026-11-16
+- Validation boundary and release preparation: 2026-11-18
 - Commercial license template pack: 2026-11-16
 - International commercial terms: 2026-11-16

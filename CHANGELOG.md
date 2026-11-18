@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.4.8 - 2026-11-18
+
+### 中文
+
+- 明确区分包校验、契约测试、CI 与真实 Agent 行为验证；确定性检查全绿不再作为行为验证证据。
+- 在 `SKILL`、`SKILL.en`、README、验证 playbook 和验证纪律中写明：真实行为评测必须记录模型、宿主、权限模式、日期、结果、证据和未覆盖项，且不进入默认 CI 或发布闸门。
+- 同步版本、CITATION、脱敏说明和契约测试；本次不运行真实 Agent 行为评测，1.4.3-1.4.7 的已有变更一并进入发布包。
+
+### English
+
+- Separate package checks, contract tests, and CI from real agent behavior validation; a deterministic green run is no longer evidence that behavior is validated.
+- State in `SKILL`, `SKILL.en`, the READMEs, the verification playbooks, and the verification discipline that real behavior evaluation must record the model, host, permission mode, date, result, evidence, and uncovered scope, and is not part of default CI or a release gate.
+- Sync versions, CITATION, sanitization notes, and contract tests. This release does not run a real agent behavior evaluation; the existing 1.4.3-1.4.7 changes are included in the package.
+
 ## 1.4.7 - 2026-11-16
 
 ### 中文

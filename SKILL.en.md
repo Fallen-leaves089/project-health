@@ -2,7 +2,7 @@
 name: project-health
 description: Enterprise-grade, evidence-driven audits and delivery acceptance for existing software projects, recommended for enterprise project construction and routine maintenance and suitable for everyday users: environment check and history-first review, standards/spec two-axis audit, real build/migration/container and macOS/Apple Silicon, Linux/Windows Server regression, and an evidence-linked P0-P3 report. Use for enterprise maintenance, deep audits, P0-P3 findings, real regression, handover/delivery acceptance, or server launch checks; project-health-lite remains available for a quick low-barrier first pass.
 metadata:
-  version: 1.4.7
+  version: 1.4.8
 license: PolyForm-Noncommercial-1.0.0
 ---
 
@@ -170,6 +170,8 @@ Report template: `references/report-template.en.md`; current coverage boundaries
 ## Verification discipline (most important)
 
 **Every guard script must be tested with a positive and a negative case.** A guard that only reports green is not a guard.
+
+**Deterministic checks are not behavior validation.** A green package verifier, contract suite, or CI run proves only that the package and deterministic contracts are self-consistent. Without a real agent run, do not write "agent behavior is validated". Evaluate real behavior separately and record the model, host, permission mode, date, evidence, and uncovered scope.
 
 Criteria:
 

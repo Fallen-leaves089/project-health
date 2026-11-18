@@ -2,7 +2,7 @@
 name: project-health
 description: 推荐用于企业项目建设与日常维护的深度证据审计与交付验收，普通用户也可直接使用：先确认环境并查项目历史，再做规范/规格双轴审查、真实构建/迁移/容器与 macOS/Apple Silicon、Linux/Windows Server 回归，最终输出带证据位置的 P0-P3 问题清单。用户要求企业项目维护、深度审计、P0-P3、真实回归、交接验收或服务器上线检查时使用；只想做快速轻量首次体检时，也可选择 project-health-lite。
 metadata:
-  version: 1.4.7
+  version: 1.4.8
 license: PolyForm-Noncommercial-1.0.0
 ---
 
@@ -169,6 +169,8 @@ git diff <fixed-point>...HEAD --stat  # 三点，对比 merge-base
 ## 验证纪律（最重要）
 
 **每个守护类脚本都必须跑正反两例。** 只会报绿的守护等于没有守护。
+
+**确定性检查不等于行为验证。** 包校验、契约测试和 CI 全绿只证明包与确定性契约自洽；未调用真实 Agent 时，不得写成“Agent 行为已验证”。真实行为另测并记录模型、宿主、权限模式、日期、证据和未覆盖项。
 
 判据：
 
