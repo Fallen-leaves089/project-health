@@ -185,6 +185,10 @@ Python 版检查必需文件、所有非二进制文本（严格 UTF-8、无 BOM
 
 `scripts/verify_package.py`、契约测试和默认 CI 只验证包结构、脚本、规则和文档契约，不调用真实 Agent；全部通过只说明包与确定性契约自洽，不等于 Agent 行为已验证。真实行为需要单独评测，并记录模型、宿主、权限模式、日期、结果、证据和未覆盖项；这类结果依赖模型版本、系统提示、工具集和采样，不进入默认 CI，也不作为发布闸门。
 
+### 真实 Agent 行为观察
+
+- 2026-11-23：`project-health` 1.4.8 在 WSL 的 DeepSeek Harness 0.2.0-rc.2、`deepseek-flash`、`reasoning=max` 下完成一次长上下文漂移观察。会话经历 6 次自动压缩、累计 19,969,040 token；压缩后重新读取了目录、文档、源码和 Git 状态，HEAD 与原基准一致，工作区保持 clean。该结果等级为 `observed`，不是 `validated`，且没有执行测试、构建或部署。证据见 [`tests/agent-evals/dsh-deepseek-flash-d7-2026-11-23.md`](tests/agent-evals/dsh-deepseek-flash-d7-2026-11-23.md)，决策链见 [`tests/agent-evals/dsh-deepseek-flash-d7-decision-path-2026-11-23.md`](tests/agent-evals/dsh-deepseek-flash-d7-decision-path-2026-11-23.md)。
+
 ### 可选：验证 Agent 是否会自主记录新坑
 
 要验证真实行为，可运行：

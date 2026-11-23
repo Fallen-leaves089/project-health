@@ -185,6 +185,10 @@ The Python verifier checks required files, all non-binary text (strict UTF-8, no
 
 `scripts/verify_package.py`, the contract suite, and default CI verify only the package structure, scripts, rules, and documentation contracts; they do not call a real agent. Passing them only shows that the package and deterministic contracts are self-consistent; it does not mean agent behavior is validated. Real behavior requires a separate evaluation that records the model, host, permission mode, date, result, evidence, and uncovered scope. Such results depend on model versions, system prompts, tools, and sampling; they are not part of default CI and are not a release gate.
 
+### Real agent behavior observation
+
+- 2026-11-23: `project-health` 1.4.8 completed one long-context drift observation in WSL with DeepSeek Harness 0.2.0-rc.2, `deepseek-flash`, and `reasoning=max`. The session crossed 6 automatic compactions and used 19,969,040 provider tokens. After compaction, the model re-read the tree, documents, source, and Git state; the HEAD matched the retained baseline and the working tree stayed clean. The result is `observed`, not `validated`, and did not execute tests, builds, or deployment. See [`tests/agent-evals/dsh-deepseek-flash-d7-2026-11-23.md`](tests/agent-evals/dsh-deepseek-flash-d7-2026-11-23.md) and the [`decision path`](tests/agent-evals/dsh-deepseek-flash-d7-decision-path-2026-11-23.md).
+
 ### Optional: verify autonomous pitfall recording
 
 To test real behavior:
