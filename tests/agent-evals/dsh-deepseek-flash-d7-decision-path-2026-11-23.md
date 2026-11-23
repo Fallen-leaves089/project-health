@@ -149,8 +149,22 @@ are not included. `DSH_HOME`, `test-workspace`, and `test-cache` are placeholder
   indivisible messages still failed at the third block. The patch fixed the
   density estimate, but not DSH's range handling for that indivisible-message
   edge case.
-- Consequence: the patched estimator passes the representative 3M regression,
-  while the remaining compaction-selection limitation is recorded as uncovered.
+- Consequence: the patched estimator passes the representative 3M regression;
+  the remaining indivisible-message path becomes the next repair.
+
+### DP-13: Fix The Indivisible-Message Path
+
+- User request: continue until the remaining large-message defect is handled.
+- Decision: patch three layers together:
+  1. preserve every surface node from the current open turn;
+  2. use `max(totalTokens, surfaceTokens)` for pressure decisions;
+  3. pre-compact in headless before admitting a resumed task above 70% of the
+     model window.
+- Evidence: six consecutive 1M-character messages completed with 5,764,276
+  provider tokens, five automatic compactions, and zero compaction or overflow
+  errors.
+- Consequence: the previously reproducible third/fourth-turn overflow no longer
+  occurs in the reviewed headless scenario.
 
 ## Final State
 
@@ -162,8 +176,8 @@ are not included. `DSH_HOME`, `test-workspace`, and `test-cache` are placeholder
 - Restore comparison: 41 entries, 0 differences.
 - Token-meter patch: applied locally and reproducible from the ecosystem script.
 - Post-patch 3M regression: passed with zero compaction and overflow errors.
-- Indivisible 1M-character message sequence: still limited by compaction range
-  selection; not claimed fixed.
+- Indivisible 1M-character message sequence: passed with zero compaction and
+  overflow errors after the three-layer repair.
 - Repository changes: committed separately in the main project and ecosystem
   adapter after final verification.
 

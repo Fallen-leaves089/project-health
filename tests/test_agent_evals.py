@@ -45,7 +45,7 @@ class AgentEvaluationRecordTests(unittest.TestCase):
 
     def test_decision_path_is_complete_and_sanitized(self) -> None:
         text = read_text(DECISION_PATH)
-        for index in range(1, 13):
+        for index in range(1, 14):
             self.assertIn(f"### DP-{index:02d}:", text)
         for marker in (
             "Fallen-leaves089/project-health",
@@ -53,6 +53,7 @@ class AgentEvaluationRecordTests(unittest.TestCase):
             "DeepSeek Harness",
             "500,004",
             "16,788,836",
+            "5,764,276",
             "41 entries, 0 differences",
         ):
             self.assertIn(marker, text)
