@@ -87,7 +87,7 @@ It applies to services, web and mobile clients, database migrations, containeriz
 2. **Define the scope first**: a change review covers a fixed point through `HEAD`, a full review covers the current `HEAD` and worktree, and a repository without Git gets a read-only snapshot with explicit limits.
 3. **Two-axis review**: standards compliance and spec compliance are reviewed separately, so "ugly code" and "missing requirement" do not get mixed into one bucket.
 4. **Real regression**: tests, builds, migrations, compose configuration, and key paths are actually run, not just read; obtain consent before commands that write files, install dependencies, or start services.
-5. **Evidence output**: every finding includes `file:line`, impact, recommendation, verification method, and confidence; the report also lists "verified clean" areas and "not covered this round".
+5. **Decision-first evidence output**: expand P0/P1 with `file:line`, impact, recommendation, verification, and confidence; keep P2 to one problem line plus a brief impact/recommendation; keep P3 to one line by default; the report also lists "verified clean" areas and "not covered this round".
 6. **Keep the lesson**: before the final report, the agent appends verified new failure mechanisms to the skill's own memory. Exact duplicates are not appended; a new mechanism under the same class cites the parent entry. The report states whether anything was recorded.
 
 It also checks whether the verification method itself is valid: positive and negative cases, failure exit codes, whether commands actually ran, and whether a guard script can produce a false green.
