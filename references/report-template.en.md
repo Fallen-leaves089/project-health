@@ -28,6 +28,8 @@
 - Overall decision: `ready to deploy / deploy after P0 and P1 are fixed / not ready`
 - One-line risk: `...`
 
+> Reading priority: expand P0/P1 fully; keep P2 to one problem line plus a brief impact/recommendation; keep P3 to one line. Expand a secondary item only when it changes the release, handover, or rollback decision.
+
 ## P0 Will break on deployment day
 
 | ID | Location | Problem | Impact | Recommendation | Verification | Confidence | Status |
@@ -42,15 +44,17 @@
 
 ## P2 Recommended before deployment
 
-| ID | Location | Problem | Impact | Recommendation | Verification | Confidence | Status |
-|---|---|---|---|---|---|---|---|
-| P2-1 | `file:line` | ... | ... | ... | ... | verified / observed / inferred | Open |
+| ID | Location | Problem + impact | Minimum recommendation | Confidence | Status |
+|---|---|---|---|---|---|
+| P2-1 | `file:line` | One sentence covering problem and impact | One-sentence recommendation | verified / observed / inferred | Open |
 
 ## P3 Hygiene and maintainability
 
 | ID | Location | Problem | Recommendation | Confidence | Status |
 |---|---|---|---|---|---|
 | P3-1 | `file:line` | ... | ... | verified / observed / inferred | Open |
+
+> Keep P3 to one line by default; do not write long explanations for low-impact hygiene items.
 
 ## Verified with no issue
 

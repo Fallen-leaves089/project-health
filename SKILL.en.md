@@ -153,7 +153,14 @@ If a build fails, decide whether it is an **environment problem** or a **code pr
 
 Use this order: **three actions to take now (at most 3) -> one-line decision -> P0-P3 details and technical evidence**. For non-technical readers, explain impact and next steps before commands and code locations.
 
-For every item, include **evidence location (`file:line`) + impact + recommendation + verification method + confidence**. Use `verified / observed / inferred`; never present an inference as established fact.
+**Emphasize the decision-critical issues and keep secondary findings brief.** Do not give every item equal space:
+
+- **P0/P1: full detail** with evidence location, impact, recommendation, verification method, and confidence.
+- **P2: concise** as one problem line plus one sentence covering impact or recommendation; omit long derivations that do not affect the decision.
+- **P3: one line by default**, with the location and minimum recommendation.
+- Expand a secondary item only when it changes the release, handover, or rollback decision.
+
+Use `verified / observed / inferred`; never present an inference as established fact.
 
 Add separate sections for "verified OK" and "not covered in this round". Do not pretend to have full coverage.
 

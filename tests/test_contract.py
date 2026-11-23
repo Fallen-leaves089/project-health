@@ -286,6 +286,30 @@ class UntrustedTargetContractTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, english)
 
+    def test_output_emphasizes_primary_findings(self) -> None:
+        chinese = read_text("SKILL.md")
+        for phrase in (
+            "强调重点，次要问题简写",
+            "P0/P1 完整展开",
+            "P2 简写",
+            "P3 默认只列一行",
+        ):
+            self.assertIn(phrase, chinese)
+
+        english = read_text("SKILL.en.md")
+        for phrase in (
+            "Emphasize the decision-critical issues",
+            "P0/P1: full detail",
+            "P2: concise",
+            "P3: one line by default",
+        ):
+            self.assertIn(phrase, english)
+
+        for relative in ("references/report-template.md", "references/report-template.en.md"):
+            template = read_text(relative)
+            self.assertIn("P2", template)
+            self.assertIn("P3", template)
+
     def test_pitfalls_cover_enterprise_and_server_domains(self) -> None:
         pitfalls = read_text("PITFALLS.md")
         for phrase in (
