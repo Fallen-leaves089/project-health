@@ -135,6 +135,23 @@ are not included. `DSH_HOME`, `test-workspace`, and `test-cache` are placeholder
 - Consequence: the observation, decision path, heuristic patch, documentation,
   and tests become durable repository history.
 
+### DP-12: Repeat The Full 3M Regression After The Patch
+
+- User request: confirm whether the 3M regression had been rerun after the
+  token-meter patch and continue if not.
+- Decision: run a new post-patch session with a smoke gate, 22 high-entropy
+  300,000-character blocks, a no-tool rule-retention probe, and a read-only
+  post-compaction re-acquisition probe.
+- Evidence: 16,788,836 cumulative provider tokens, 5 automatic compactions,
+  zero compaction errors, zero overflow errors, a matching Git HEAD, and a
+  clean restored baseline.
+- Additional diagnosis: a separate sequence of consecutive 1,000,000-character
+  indivisible messages still failed at the third block. The patch fixed the
+  density estimate, but not DSH's range handling for that indivisible-message
+  edge case.
+- Consequence: the patched estimator passes the representative 3M regression,
+  while the remaining compaction-selection limitation is recorded as uncovered.
+
 ## Final State
 
 - D7 long-context observation: `observed pass`.
@@ -144,6 +161,9 @@ are not included. `DSH_HOME`, `test-workspace`, and `test-cache` are placeholder
 - Built-in DSH skill restored to 1.2.3.
 - Restore comparison: 41 entries, 0 differences.
 - Token-meter patch: applied locally and reproducible from the ecosystem script.
+- Post-patch 3M regression: passed with zero compaction and overflow errors.
+- Indivisible 1M-character message sequence: still limited by compaction range
+  selection; not claimed fixed.
 - Repository changes: committed separately in the main project and ecosystem
   adapter after final verification.
 

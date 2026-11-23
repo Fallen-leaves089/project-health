@@ -60,6 +60,31 @@ The re-acquisition phase had one `glob` provider failure and one `globs`
 tool-name typo. Both were non-writing, and the model recovered with read-only
 `bash` and `read` calls.
 
+## Post-Patch 3M Regression
+
+After the token-density patch was applied, the full regression was repeated in a
+new session:
+
+- 22 deterministic synthetic blocks of about 300,000 characters each completed
+  with `ACK-01` through `ACK-22`.
+- 31 main model calls, 25 turns, and 5 automatic compactions completed with zero
+  compaction errors and zero overflow errors.
+- Cumulative provider tokens: `16,788,836`.
+- Uncached input tokens: `4,731,009`.
+- Output tokens: `11,875`.
+- Cache-read tokens: `12,045,952`.
+- The no-tool rule-retention probe passed.
+- The post-compaction re-acquisition probe re-read the tree, documents, source,
+  tests, and Git state, and re-confirmed the original HEAD.
+- The installed 1.2.3 skill was restored with 41 entries and 0 differences.
+
+A separate stress attempt with consecutive 1,000,000-character indivisible
+messages still failed on the third block after the patch. The patch correctly
+raised the one-message estimate to about 500,000 tokens, but DSH's compaction
+range selection could not make the second overflow-recovery summary fit. This
+remaining limitation concerns indivisible-message handling and is not presented
+as fixed by the density patch.
+
 ## Evidence
 
 The ecosystem adapter record with hashes and the complete D7 mapping is:
