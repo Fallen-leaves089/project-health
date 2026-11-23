@@ -188,7 +188,7 @@ The Python verifier checks required files, all non-binary text (strict UTF-8, no
 ### Real agent behavior observation
 
 - 2026-11-23: `project-health` 1.4.8 completed one long-context drift observation in WSL with DeepSeek Harness 0.2.0-rc.2, `deepseek-flash`, and `reasoning=max`. The session crossed 6 automatic compactions and used 19,969,040 provider tokens. After compaction, the model re-read the tree, documents, source, and Git state; the HEAD matched the retained baseline and the working tree stayed clean. The result is `observed`, not `validated`, and did not execute tests, builds, or deployment. See [`tests/agent-evals/dsh-deepseek-flash-d7-2026-11-23.md`](tests/agent-evals/dsh-deepseek-flash-d7-2026-11-23.md) and the [`decision path`](tests/agent-evals/dsh-deepseek-flash-d7-decision-path-2026-11-23.md).
-- A separate post-patch session then completed 22 blocks of 300k characters for the 3M regression: 16,788,836 provider tokens, 5 automatic compactions, zero compaction and overflow errors, and a successful post-compaction re-acquisition against the retained Git baseline. Consecutive indivisible 1M-character messages remain limited by DSH compaction range selection and are not recorded as fixed.
+- A separate post-patch session then completed 22 blocks of 300k characters for the 3M regression: 16,788,836 provider tokens, 5 automatic compactions, zero compaction and overflow errors, and a successful post-compaction re-acquisition against the retained Git baseline. Three companion fixes then handled consecutive indivisible 1M-character messages: six blocks used 5,764,276 provider tokens with five compactions and zero compaction or overflow errors.
 
 ### Optional: verify autonomous pitfall recording
 

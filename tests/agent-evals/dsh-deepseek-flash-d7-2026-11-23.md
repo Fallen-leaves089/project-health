@@ -79,11 +79,11 @@ new session:
 - The installed 1.2.3 skill was restored with 41 entries and 0 differences.
 
 A separate stress attempt with consecutive 1,000,000-character indivisible
-messages still failed on the third block after the patch. The patch correctly
-raised the one-message estimate to about 500,000 tokens, but DSH's compaction
-range selection could not make the second overflow-recovery summary fit. This
-remaining limitation concerns indivisible-message handling and is not presented
-as fixed by the density patch.
+messages initially failed after the density patch. Three companion fixes then
+preserved every surface node in the current open turn, combined anchored and
+surface pressure, and added headless pre-admission compaction. The final
+six-block regression completed with 5,764,276 provider tokens, five automatic
+compactions, and zero compaction or overflow errors.
 
 ## Evidence
 
