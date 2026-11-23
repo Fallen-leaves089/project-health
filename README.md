@@ -188,6 +188,7 @@ Python 版检查必需文件、所有非二进制文本（严格 UTF-8、无 BOM
 ### 真实 Agent 行为观察
 
 - 2026-11-23：`project-health` 1.4.8 在 WSL 的 DeepSeek Harness 0.2.0-rc.2、`deepseek-flash`、`reasoning=max` 下完成一次长上下文漂移观察。会话经历 6 次自动压缩、累计 19,969,040 token；压缩后重新读取了目录、文档、源码和 Git 状态，HEAD 与原基准一致，工作区保持 clean。该结果等级为 `observed`，不是 `validated`，且没有执行测试、构建或部署。证据见 [`tests/agent-evals/dsh-deepseek-flash-d7-2026-11-23.md`](tests/agent-evals/dsh-deepseek-flash-d7-2026-11-23.md)，决策链见 [`tests/agent-evals/dsh-deepseek-flash-d7-decision-path-2026-11-23.md`](tests/agent-evals/dsh-deepseek-flash-d7-decision-path-2026-11-23.md)。
+- 同日，在 token-meter 高熵/CJK 估算补丁后另起 session 完成 22 个 300k 字符块的 3M 回归：累计 16,788,836 token，5 次自动压缩，压缩与溢出错误均为 0，压缩后复取证再次确认 Git 基准。连续 1M 字符的不可分割消息仍存在 DSH 压缩范围选择限制，记录中未把它写成已修复。
 
 ### 可选：验证 Agent 是否会自主记录新坑
 

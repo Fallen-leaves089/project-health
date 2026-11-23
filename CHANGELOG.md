@@ -6,12 +6,14 @@
 
 - 新增 DeepSeek Harness 0.2.0-rc.2 + `deepseek-flash` 的长上下文行为观察：6 次自动压缩、累计 19,969,040 token，压缩后重新读取目录和 Git 基准并确认 HEAD 未漂移。该记录等级为 `observed`，不是 `validated`；测试、构建和部署仍未执行。
 - 新增从 3M 测试请求到启发式修复的决策链，记录对象映射、冒烟门禁、复取证、恢复和脱敏边界。
+- 在 token-meter 估算补丁后完成第二轮 3M 回归：22 个高熵块、16,788,836 token、5 次自动压缩、零压缩/溢出错误；连续 1M 字符不可分割消息的限制仍保留为未覆盖。
 - 新增 `tests/agent-evals/` 行为证据入口和契约检查，继续把确定性包校验与真实 Agent 行为验证分开。
 
 ### English
 
 - Add a long-context behavior observation for DeepSeek Harness 0.2.0-rc.2 with `deepseek-flash`: 6 automatic compactions and 19,969,040 cumulative provider tokens, followed by post-compaction re-reads that confirmed the retained Git baseline. The record is `observed`, not `validated`; tests, builds, and deployment were not executed.
 - Add the decision path from the 3M test request through the heuristic fix, covering object mapping, smoke gates, re-acquisition, restoration, and sanitization boundaries.
+- Complete a second 3M regression after the token-meter patch: 22 high-entropy blocks, 16,788,836 tokens, 5 automatic compactions, and zero compaction/overflow errors; the indivisible 1M-character message limitation remains explicitly uncovered.
 - Add the `tests/agent-evals/` evidence entry point and contract checks while keeping deterministic package validation separate from real agent behavior validation.
 
 ## 1.4.8 - 2026-11-18
