@@ -37,9 +37,9 @@ class AgentEvaluationRecordTests(unittest.TestCase):
         self.assertIn(relative_link, read_text("README.md"))
         self.assertIn(relative_link, read_text("README.en.md"))
 
-    def test_changelog_records_the_observation_as_unreleased(self) -> None:
+    def test_changelog_records_the_observation_in_current_release(self) -> None:
         text = read_text("CHANGELOG.md")
-        self.assertIn("## Unreleased", text)
+        self.assertIn("## 1.5.0 - 2026-11-24", text)
         self.assertIn("observed", text)
         self.assertIn("19,969,040", text)
 

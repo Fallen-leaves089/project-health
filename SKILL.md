@@ -2,7 +2,7 @@
 name: project-health
 description: 推荐用于企业项目建设与日常维护的深度证据审计与交付验收，普通用户也可直接使用：先确认环境并查项目历史，再做规范/规格双轴审查、真实构建/迁移/容器与 macOS/Apple Silicon、Linux/Windows Server 回归，最终输出带证据位置的 P0-P3 问题清单。用户要求企业项目维护、深度审计、P0-P3、真实回归、交接验收或服务器上线检查时使用；只想做快速轻量首次体检时，也可选择 project-health-lite。
 metadata:
-  version: 1.4.8
+  version: 1.5.0
 license: PolyForm-Noncommercial-1.0.0
 ---
 

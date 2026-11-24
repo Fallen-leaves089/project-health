@@ -64,7 +64,7 @@ def _root(temp_dir: str, repo: bool = False) -> Path:
         "name: project-health\n"
         "description: structure recorder fixture\n"
         "metadata:\n"
-        "  version: 1.4.8\n"
+        "  version: 1.5.0\n"
         "license: PolyForm-Noncommercial-1.0.0\n"
         "---\n",
     )
