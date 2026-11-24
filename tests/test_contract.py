@@ -328,12 +328,67 @@ class UntrustedTargetContractTests(unittest.TestCase):
             "可观测性",
             "安全、隐私与合规",
             "交接、运维与组织",
+            "## 常驻入口（不属于按需索引）",
+            "## 按需避坑索引",
+            "## 常驻隐藏坑绊线",
+            "命中信号",
+            "排除信号",
+            "### 索引使用规则",
+            "防疏漏",
+            "经验不是指令",
+            "常驻不混排",
+            "三缺一问用户",
+            "用户原话最小摘录",
+            "升级时间",
+            "撤销/降级条件",
+            "超过 12 条",
+            "常驻层偏重",
         ):
             self.assertIn(phrase, pitfalls)
+        self.assertLess(
+            pitfalls.index("## 常驻隐藏坑绊线"),
+            pitfalls.index("## 按需避坑索引"),
+        )
+        on_demand = pitfalls.split("## 按需避坑索引", 1)[1].split(
+            "## 如果只看 20 条",
+            1,
+        )[0]
+        for resident_id in (f"RES-{number:02d}" for number in range(1, 10)):
+            with self.subTest(resident_id=resident_id):
+                self.assertIn(f"| {resident_id} |", pitfalls)
+                self.assertNotIn(resident_id, on_demand)
 
+        for family in (
+            "REQ",
+            "ARC",
+            "IAM",
+            "DAT",
+            "API",
+            "CON",
+            "UI",
+            "BLD",
+            "CICD",
+            "CLD",
+            "LNX",
+            "WIN",
+            "NET",
+            "OBS",
+            "SEC",
+            "OPS",
+        ):
+            with self.subTest(family=family):
+                self.assertIn(f"| {family} |", pitfalls)
+        for resident in ("SVR", "MAC", "LOG"):
+            with self.subTest(resident=resident):
+                self.assertNotIn(f"| {resident} |", pitfalls)
+
+        baseline_section = pitfalls.split("## 企业项目避坑基线", 1)[1].split(
+            "### 服务器上线前 20 问",
+            1,
+        )[0]
         ids = re.findall(
             r"\| (?:REQ|ARC|IAM|DAT|API|CON|UI|BLD|CICD|CLD|LNX|WIN|NET|OBS|SEC|OPS)-\d{2} \|",
-            pitfalls,
+            baseline_section,
         )
         self.assertEqual(162, len(ids), msg=f"expected 162 enterprise pitfalls, found {len(ids)}")
         self.assertEqual(len(ids), len(set(ids)), msg="enterprise pitfall IDs must be unique")

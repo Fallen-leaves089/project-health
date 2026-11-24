@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "chapter_ids": ["A", "B", "C", "D", "E", "F"],
+  "chapter_labels_zh": {
+    "A": "边界与所有权",
+    "B": "依赖与故障传播",
+    "C": "状态与一致性",
+    "D": "环境与启动",
+    "E": "证据与假绿",
+    "F": "演化与交付"
+  },
+  "chapter_labels_en": {
+    "A": "Boundaries and ownership",
+    "B": "Dependencies and failure propagation",
+    "C": "State and consistency",
+    "D": "Environment and startup",
+    "E": "Evidence and false green",
+    "F": "Evolution and delivery"
+  },
+  "status_keys": ["pending", "verified", "obsolete"],
+  "status_labels": {
+    "pending": ["待验证", "pending verification"],
+    "verified": ["已验证", "verified"],
+    "obsolete": ["已过时", "obsolete"]
+  },
+  "status_defaults": {
+    "pending": "soft",
+    "verified": "brief",
+    "obsolete": "soft"
+  },
+  "status_allowed_injections": {
+    "pending": ["soft", "brief"],
+    "verified": ["soft", "brief", "detailed"],
+    "obsolete": ["soft", "brief", "detailed"]
+  },
+  "injection_keys": ["soft", "brief", "detailed"],
+  "injection_labels": {
+    "soft": ["软提示", "soft hint"],
+    "brief": ["简略", "brief"],
+    "detailed": ["详细", "detailed"]
+  },
+  "branch_delimiter": "/",
+  "branch_segment_pattern": "^[a-z0-9][a-z0-9-]{0,39}$",
+  "relation_types": ["depends-on", "shares-data", "contract", "release-order", "observes", "none"],
+  "relation_separator": "; ",
+  "relation_max_length": 240,
+  "relation_target_pattern": "^(?:S-[A-F]-\\d{3}|[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-\\d{2}|[A-F]/[a-z0-9][a-z0-9-]{0,39}(?:/[a-z0-9][a-z0-9-]{0,39})*)$",
+  "pitfall_id_pattern": "[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-\\d{2}",
+  "field_limit": 240,
+  "required_fields": [
+    "id",
+    "status",
+    "injection",
+    "primary_branch",
+    "trigger",
+    "mechanism",
+    "boundary",
+    "verification",
+    "pitfalls"
+  ],
+  "optional_fields": ["related_branches", "region_links"]
+}

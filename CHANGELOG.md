@@ -4,6 +4,10 @@
 
 ### 中文
 
+- 新增空白起步的结构经验薄手册：按 A-F 六章建立必查/排除索引和六章覆盖状态，防止静默漏看；章下使用稳定逻辑分支逐层下潜，不设固定层数，精确路径为空时回退最近祖先，空区域继续探索但不写占位条目。跨章经验使用唯一主章、主分支和关联分支引用，并在条目下备注区域依赖，避免重复与遗漏；条目使用“已验证/待验证/已过时”状态及“详细/简略/软提示”注入级别。追加默认 2 条但不是硬上限，超过时须逐条说明独立性、无法合并或延后的原因及特殊理由。本地安装仅在实际产生第一条经验时创建 `STRUCTURE.local.md`，未分类发现不得入库。
+- 新增 `structure-schema.json` 单一规则源和 `record_structure.py --check/add` 受控写入器：校验 ID、状态、默认软提示、分支、必填字段、PITFALLS 关联、关系类型+ID、脱敏、文件锁和原子写入；误唤醒逐条淘汰，同级同状态冲突整组不注入并报告。
+- 为 `PITFALLS.md` 新增与结构经验模块一致的避坑索引：高风险 20 条、平台专项、服务器清单和维护者日志保留独立常驻入口；REQ/ARC/IAM 等企业避坑族进入按需索引，并列出正文位置、命中/排除信号、关联结构章和防疏漏规则。保留 162 条正文、ID 和历史日志不变。
+- 新增 9 条常驻隐藏坑绊线 `RES-01`～`RES-09`，覆盖假绿、退出码吞没、密钥泄露、租户边界、恢复/回滚、Rosetta、Windows 服务依赖、Linux 资源耗尽，以及用户显式要求升级为常驻的风险；报告必须逐条记录已查、不适用或未覆盖。
 - 调整 Agent 输出纪律：P0/P1 完整展开，P2 一行问题加一句影响/建议，P3 默认只列一行；次要点仅在影响上线判断时展开。
 - 新增 DeepSeek Harness 0.2.0-rc.2 + `deepseek-flash` 的长上下文行为观察：6 次自动压缩、累计 19,969,040 token，压缩后重新读取目录和 Git 基准并确认 HEAD 未漂移。该记录等级为 `observed`，不是 `validated`；测试、构建和部署仍未执行。
 - 新增从 3M 测试请求到启发式修复的决策链，记录对象映射、冒烟门禁、复取证、恢复和脱敏边界。
@@ -13,6 +17,10 @@
 
 ### English
 
+- Add a blank-start structural experience manual with A-F required/exclusion signals and six-chapter coverage status to prevent silent omissions. Stable logical branches descend under each chapter with no fixed depth limit; an empty exact path falls back to the nearest ancestor, and empty regions keep exploration going without placeholder entries. Cross-chapter lessons use one primary chapter, primary branch, and related-branch references, and each entry records its region dependencies, avoiding duplication and gaps. Entries use verified/pending/obsolete statuses and detailed/brief/soft-hint injection levels. The append default is two entries, not a hard limit; exceeding it requires an explanation of each entry's independence, why it cannot be merged or deferred, and the special reason. Installed skills create `STRUCTURE.local.md` only when the first entry exists; unclassified findings cannot be stored.
+- Add `structure-schema.json` as the single rule source and `record_structure.py --check/add` as a controlled writer. It validates IDs, status, soft-hint defaults, branches, required fields, PITFALLS references, relation-type+ID notes, redaction, file locking, and atomic writes. A false wake-up discards one entry; a same-level, same-status conflict group is not injected and is reported.
+- Add an index to `PITFALLS.md` matching the structural-experience module: top risks, platform guides, server checklist, and maintainer log remain separate resident entry points, while REQ/ARC/IAM baseline families use the on-demand index with locations, trigger/exclusion signals, related structural chapters, and omission controls. The 162 entries, IDs, and dated log remain unchanged.
+- Add nine resident hidden-pitfall tripwires, `RES-01` through `RES-09`, covering false green, swallowed exit codes, secret exposure, tenant boundaries, restore/rollback, Rosetta, Windows service dependency, Linux resource exhaustion, and user-requested promotion to resident status. Every audit report must mark each checked, not applicable, or uncovered.
 - Change the agent output contract: expand P0/P1, keep P2 to one problem line plus a brief impact/recommendation, and keep P3 to one line; expand secondary items only when they change the release decision.
 - Add a long-context behavior observation for DeepSeek Harness 0.2.0-rc.2 with `deepseek-flash`: 6 automatic compactions and 19,969,040 cumulative provider tokens, followed by post-compaction re-reads that confirmed the retained Git baseline. The record is `observed`, not `validated`; tests, builds, and deployment were not executed.
 - Add the decision path from the 3M test request through the heuristic fix, covering object mapping, smoke gates, re-acquisition, restoration, and sanitization boundaries.
