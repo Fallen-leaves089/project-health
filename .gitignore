@@ -4,6 +4,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 PITFALLS.local.md
+STRUCTURE.local.md
+STRUCTURE.lock
 
 # Release output and local signing material
 /project-health-*.zip

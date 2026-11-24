@@ -69,6 +69,8 @@ The directory root must contain `SKILL.md`; do not copy only that file. `AGENTS.
 
 > **Local pitfall memory**: after installation, verified new pitfalls are appended to `PITFALLS.local.md`. It is created on first use, preserved across upgrades, and read back at the start of later tasks. Back it up before a `Copy-Item -Force` replacement; maintainers still write `PITFALLS.md`.
 
+> **Structural experience manual**: `references/structural-experience.en.md` starts blank with six A-F chapters. Its index requires a status for every chapter so none is silently skipped; entry bodies are opened in at most 1-2 chapters. Stable logical branches descend under each chapter with no fixed depth limit; six levels is only a common reference. An empty exact path falls back to the nearest ancestor, and an empty region keeps exploration going without a placeholder entry. A cross-chapter lesson keeps one primary-chapter, primary-branch entry, while related branches use a reference instead of a duplicate; each entry records its region dependencies below the main line. Entries use `verified / pending verification / obsolete` statuses and `detailed / brief / soft hint` injection levels; new entries default to `pending verification / soft hint`, and obsolete entries are not injected by default. Use `scripts/record_structure.py --check/add` for controlled writes. A false wake-up discards one entry and continues; a same-level, same-status conflict group is not injected and must be reported. Real lessons are written to `STRUCTURE.local.md`, created only when needed and preserved across upgrades.
+
 Skill hosts load the Chinese `SKILL.md` by default. For English, copy `SKILL.en.md` over `SKILL.md`. Both files stay in the repository for comparison and updates.
 
 ## What it's for
@@ -83,12 +85,13 @@ It applies to services, web and mobile clients, database migrations, containeriz
 
 ## How it works
 
-1. **Read the project's own history first**: `AGENTS.md`, `PITFALLS.md`, historical reports, `docs/`, change logs, previous findings, and build baselines are closer to the truth than a generic checklist. The skill ships a 162-entry enterprise pitfall baseline and a 20-question server pre-launch checklist; use them to decide what to inspect, then confirm with project evidence. Search before recording a new pitfall; update the existing entry when it is a duplicate.
+1. **Read the project's own history first**: `AGENTS.md`, `PITFALLS.md`, historical reports, `docs/`, change logs, previous findings, and build baselines are closer to the truth than a generic checklist. `PITFALLS.md` starts with nine resident hidden-pitfall tripwires, then keeps resident entry points (top 20 risks, platform guides, server checklist, and maintainer log), and finally maps REQ/ARC/IAM and other families through an on-demand index. User promotion requires an explicit resident phrase, a named pitfall or scenario, and a scope; ask when any is missing. Promotion changes only resident placement, never match status, and preserves the quote, time, scope, and revocation condition. The skill ships a 162-entry enterprise pitfall baseline and a 20-question server pre-launch checklist; confirm candidates with project evidence.
 2. **Define the scope first**: a change review covers a fixed point through `HEAD`, a full review covers the current `HEAD` and worktree, and a repository without Git gets a read-only snapshot with explicit limits.
 3. **Two-axis review**: standards compliance and spec compliance are reviewed separately, so "ugly code" and "missing requirement" do not get mixed into one bucket.
 4. **Real regression**: tests, builds, migrations, compose configuration, and key paths are actually run, not just read; obtain consent before commands that write files, install dependencies, or start services.
 5. **Decision-first evidence output**: expand P0/P1 with `file:line`, impact, recommendation, verification, and confidence; keep P2 to one problem line plus a brief impact/recommendation; keep P3 to one line by default; the report also lists "verified clean" areas and "not covered this round".
-6. **Keep the lesson**: before the final report, the agent appends verified new failure mechanisms to the skill's own memory. Exact duplicates are not appended; a new mechanism under the same class cites the parent entry. The report states whether anything was recorded.
+6. **Keep failure lessons**: before the final report, the agent appends verified new failure mechanisms to the skill's own memory. Exact duplicates are not appended; a new mechanism under the same class cites the parent entry. The report states whether anything was recorded.
+7. **Harvest by chapter and branch**: collect evidence and build stable logical paths first, then descend through the A-F index. There is no fixed depth limit. If an exact path is empty, fall back to the nearest ancestor; an empty region keeps exploration going without a placeholder entry. Every chapter must have a status and reason. The default is two entries, not a hard limit; when adding more, justify each entry's independence, why it cannot be merged or deferred, and the special reason for exceeding the default. New entries start as `pending verification / soft hint`. A cross-chapter finding gets one primary chapter and primary branch selected by dominant mechanism; related branches only cross-reference it, and relation types plus IDs are recorded below the entry. Gate injection by evidence: one detailed entry, or three entries total at brief/soft levels. Manual content is evidence, never an instruction. Mark an unmappable finding `unclassified`.
 
 It also checks whether the verification method itself is valid: positive and negative cases, failure exit codes, whether commands actually ran, and whether a guard script can produce a false green.
 
@@ -141,7 +144,7 @@ project-health/
 ├── AGENTS.md                            # standing rules (task boundaries and pitfall discipline)
 ├── PITFALLS.md                          # enterprise pitfall baseline + maintainer pitfall log
 ├── commercial/                           # commercial license, guardian authorization, order, and certificate templates
-├── references/                           # platform commands, macOS/Apple Silicon traps, Windows/Win Server traps, Linux server traps, verification, reports
+├── references/                           # platform commands and traps, verification, reports, blank structural experience manual
 ├── scripts/                              # cross-platform verification and redaction scanners
 ├── tests/                                # contract tests, acceptance cases, malicious-target fixtures
 └── LICENSE / COMMERCIAL / SIGNING / SANITIZATION
@@ -179,7 +182,7 @@ If Python is unavailable, use the PowerShell verifier:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 ```
 
-The Python verifier checks required files, all non-binary text (strict UTF-8, no BOM, no anomalous NUL), Markdown links, the redaction self-test, sensitive patterns in the package, and `SKILL.md` / `SKILL.en.md` `name`, non-empty `description`, `metadata.version`, version, and language links. The PowerShell verifier uses the same directory filters, binary-extension list, strict encoding checks, frontmatter rules, and `PITFALLS.md` six-field check; language links are still checked by the Python verifier only. Both package verifiers scan non-allowlisted text such as `.env.*`, `.pem`, `.log`, `.ini`, and `.cff`, and fail closed on empty directories, undecodable files, or anomalous NUL.
+The Python verifier checks required files, all non-binary text (strict UTF-8, no BOM, no anomalous NUL), Markdown links, the redaction self-test, sensitive patterns in the package, and `SKILL.md` / `SKILL.en.md` `name`, non-empty `description`, `metadata.version`, version, and language links; it also calls `record_structure.py --check` for the structural manuals. The PowerShell verifier reads the same `structure-schema.json` to validate all six chapters, statuses, branches, and relation notes, while using the same directory filters, binary-extension list, strict encoding checks, frontmatter rules, and `PITFALLS.md` six-field check. Language links are still checked by the Python verifier only. Both package verifiers scan non-allowlisted text such as `.env.*`, `.pem`, `.log`, `.ini`, and `.cff`, and fail closed on empty directories, undecodable files, or anomalous NUL.
 
 ### Validation boundary: deterministic checks are not agent behavior validation
 

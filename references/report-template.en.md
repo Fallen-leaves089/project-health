@@ -105,6 +105,52 @@ git diff <COMMIT>...HEAD --stat
 |---|---|---|---|---|
 | `YYYY-MM-DD` | P0-1 | ... | ... | `<sha>` |
 
+## Resident hidden-pitfall coverage
+
+### Baseline resident set (RES-01 through RES-08)
+
+| Tripwire | Status | Evidence | Full entry |
+|---|---|---|---|
+| RES-01 false green / skipped tests | checked / not applicable / uncovered | `...` | CICD-02 |
+| RES-02 exit code swallowed by a pipe or wrapper | checked / not applicable / uncovered | `...` | CICD-02 |
+| RES-03 secrets or personal data in artifacts/logs | checked / not applicable / uncovered | `...` | SEC-01, SEC-07 |
+| RES-04 tenant or resource boundary supplied by the client | checked / not applicable / uncovered | `...` | IAM-04 |
+| RES-05 backup exists but restore/rollback was not exercised | checked / not applicable / uncovered | `...` | DAT-01, OBS-07 |
+| RES-06 Rosetta treated as native architecture | checked / not applicable / uncovered | `...` | MAC-H01 |
+| RES-07 Windows service depends on desktop or personal account | checked / not applicable / uncovered | `...` | WIN-02 |
+| RES-08 Linux disk/inode/log/memory exhaustion | checked / not applicable / uncovered | `...` | LNX-05 |
+
+### User-promoted resident set (triggered by RES-09)
+
+| URES ID | Source entry | Minimal user quote | Upgraded at | Scope | Revocation/downgrade condition | Current status |
+|---|---|---|---|---|---|---|
+| none | - | - | - | - | - | RES-09 not triggered |
+
+- RES-09 promotion control: not triggered / applied / not applicable / uncovered
+- Resident capacity: baseline 8 + user-promoted `N` = `M`; when `M > 12`, warn that the resident layer is heavy and recommend reviewing downgrade candidates
+
+> The eight baseline rows and RES-09 control must have a status; every user-promoted entry must also be `checked / not applicable / uncovered`. `uncovered` must never be reported as passed.
+
+## Structural experience harvest
+
+| Primary chapter | Deepest path | Chapter coverage | Branch result | Entry matched | Entry status | Injection | Evidence |
+|---|---|---|---|---|---|---|---|
+| A | `A/<slug>/...` | opened / no signal / not applicable / cross-chapter reference / unclassified | leaf match / ancestor match / explored with no match (report only) / insufficient granularity / conflict (group not injected) / cross-chapter reference | none / `S-...` | none / `verified / pending verification / obsolete` | none / `detailed / brief / soft hint` | `...` |
+| B | ... | ... | ... | ... | ... | ... | `...` |
+| C | ... | ... | ... | ... | ... | ... | `...` |
+| D | ... | ... | ... | ... | ... | ... | `...` |
+| E | ... | ... | ... | ... | ... | ... | `...` |
+| F | ... | ... | ... | ... | ... | ... | `...` |
+
+> Keep at least one row for each A-F chapter. Add rows for additional branches in the same chapter, but never omit another chapter.
+
+- Entries matched: none / `S-...` (primary chapter `X`; primary branch `...`; related branches `...`)
+- Conflict group: none / `S-..., S-...` (same branch, trigger category, status, and level; no entry injected)
+- Sibling granularity warning: none / `...` (report-only; the recorder does not reject the write)
+- Current-project verification: none / `evidence and result`
+- Added: none / `N` (`references/structural-experience.en.md` or `STRUCTURE.local.md`)
+- Over-limit justification: not applicable / for more than two entries, explain each entry's independence and why it cannot be merged or deferred
+
 ## Memory result
 
 - Memory: appended `<N>` entry/entries, `<M>` duplicate(s) (`<PITFALLS.md or PITFALLS.local.md>`)

@@ -89,12 +89,18 @@ $required = @(
     'references/verification-playbook.en.md',
     'references/report-template.md',
     'references/report-template.en.md',
+    'references/structural-experience.md',
+    'references/structural-experience.en.md',
     'scripts/check_redaction.py',
     'scripts/verify_package.py',
     'scripts/record_pitfall.py',
+    'scripts/record_structure.py',
+    'scripts/structure-schema.json',
     'scripts/check-redaction.ps1',
     'scripts/verify-package.ps1',
     'tests/test_contract.py',
+    'tests/test_structural_experience.py',
+    'tests/test_record_structure.py',
     'tests/test_record_pitfall.py',
     'tests/test_agent_memory_eval.py',
     'tests/agent_memory_eval.py',
@@ -116,6 +122,123 @@ foreach ($rel in $required) {
         $failures.Add(('Missing required file: {0}' -f $rel))
     }
 }
+
+function Test-StructureManuals {
+    param([string]$Root)
+
+    $schemaPath = Join-Path $Root 'scripts/structure-schema.json'
+    if (-not (Test-Path -LiteralPath $schemaPath)) {
+        $failures.Add('Missing structure schema.')
+        return
+    }
+    try {
+        $schema = Get-Content -LiteralPath $schemaPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        $failures.Add(('Invalid structure schema: {0}' -f $_.Exception.Message))
+        return
+    }
+
+    $chapterIds = @($schema.chapter_ids)
+    $statusLabels = @()
+    foreach ($statusKey in @($schema.status_keys)) {
+        $statusLabels += @($schema.status_labels.PSObject.Properties[$statusKey].Value)
+    }
+    $injectionLabels = @()
+    foreach ($injectionKey in @($schema.injection_keys)) {
+        $injectionLabels += @($schema.injection_labels.PSObject.Properties[$injectionKey].Value)
+    }
+    $pendingLabels = @($schema.status_labels.pending)
+    $detailedLabels = @($schema.injection_labels.detailed)
+    $pitfallPattern = [string]$schema.pitfall_id_pattern
+
+    foreach ($rel in @(
+        'references/structural-experience.md',
+        'references/structural-experience.en.md'
+    )) {
+        $manualPath = Join-Path $Root $rel
+        if (-not (Test-Path -LiteralPath $manualPath)) { continue }
+        $lines = [System.IO.File]::ReadAllLines($manualPath, [System.Text.Encoding]::UTF8)
+        $versionLine = 'schema-version: {0}' -f $schema.schema_version
+        if (-not ($lines -contains $versionLine)) {
+            $failures.Add(('Structure manual {0} is missing {1}' -f $rel, $versionLine))
+        }
+        $language = if ($rel.EndsWith('.en.md')) { 'en' } else { 'zh' }
+        $labelMapName = 'chapter_labels_' + $language
+        $chapterLabels = $schema.PSObject.Properties[$labelMapName].Value
+        foreach ($chapterId in $chapterIds) {
+            $title = [string]$chapterLabels.PSObject.Properties[$chapterId].Value
+            $heading = '### {0}. {1}' -f $chapterId, $title
+            if (-not ($lines -contains $heading)) {
+                $failures.Add(('Structure manual {0} is missing heading: {1}' -f $rel, $heading))
+            }
+        }
+
+        $segmentPattern = [string]$schema.branch_segment_pattern
+        $segmentPattern = $segmentPattern.Trim('^').Trim('$')
+        $branchPattern = '^[A-F]/' + $segmentPattern + '(?:/' + $segmentPattern + ')*$'
+        $currentChapter = $null
+        $seenIds = @{}
+        for ($i = 0; $i -lt $lines.Count; $i++) {
+            $line = $lines[$i]
+            if ($line -match '^### ([A-F])\. ') {
+                $currentChapter = $matches[1]
+                continue
+            }
+            if (-not $line.StartsWith('- S-')) { continue }
+            $lineNo = $i + 1
+            $parts = @($line -split '\|' | ForEach-Object { $_.Trim() })
+            if ($parts.Count -ne 10) {
+                $failures.Add(('{0}:{1}: structural entry must contain 10 fields' -f $rel, $lineNo))
+                continue
+            }
+            if ($parts[0] -notmatch '^-\s+S-([A-F])-\d{3}$') {
+                $failures.Add(('{0}:{1}: invalid structural entry ID' -f $rel, $lineNo))
+                continue
+            }
+            $entryChapter = $matches[1]
+            $entryId = ($parts[0] -replace '^-\s+', '')
+            if ($null -eq $currentChapter -or $entryChapter -ne $currentChapter) {
+                $failures.Add(('{0}:{1}: structural entry is outside chapter {2}' -f $rel, $lineNo, $entryChapter))
+            }
+            if ($seenIds.ContainsKey($entryId)) {
+                $failures.Add(('{0}:{1}: duplicate structural entry ID {2}' -f $rel, $lineNo, $entryId))
+            } else {
+                $seenIds[$entryId] = $true
+            }
+            if ($statusLabels -notcontains $parts[1]) {
+                $failures.Add(('{0}:{1}: invalid structural status {2}' -f $rel, $lineNo, $parts[1]))
+            }
+            if ($injectionLabels -notcontains $parts[2]) {
+                $failures.Add(('{0}:{1}: invalid injection level {2}' -f $rel, $lineNo, $parts[2]))
+            }
+            if (($pendingLabels -contains $parts[1]) -and ($detailedLabels -contains $parts[2])) {
+                $failures.Add(('{0}:{1}: pending entry cannot use detailed injection' -f $rel, $lineNo))
+            }
+            if ($parts[3] -notmatch $branchPattern) {
+                $failures.Add(('{0}:{1}: invalid primary branch {2}' -f $rel, $lineNo, $parts[3]))
+            } elseif (($parts[3] -split '/')[0] -ne $entryChapter) {
+                $failures.Add(('{0}:{1}: primary branch chapter mismatch' -f $rel, $lineNo))
+            }
+            foreach ($fieldIndex in @(4, 5, 6, 7, 8, 9)) {
+                if ([string]::IsNullOrWhiteSpace($parts[$fieldIndex])) {
+                    $failures.Add(('{0}:{1}: required structural field is empty' -f $rel, $lineNo))
+                }
+            }
+            $note = ''
+            for ($j = $i + 1; $j -lt [Math]::Min($i + 5, $lines.Count); $j++) {
+                if (-not [string]::IsNullOrWhiteSpace($lines[$j])) {
+                    $note = $lines[$j].Trim()
+                    break
+                }
+            }
+            if ($note -notmatch '^-\s*(?:区域关联|Region links)\s*[:：]\s*(.+)$') {
+                $failures.Add(('{0}:{1}: entry is missing its region-link note' -f $rel, $lineNo))
+            }
+        }
+    }
+}
+
+Test-StructureManuals -Root $root
 
 function Read-SkillFrontmatter {
     param([string]$Relative)
