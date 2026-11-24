@@ -342,7 +342,8 @@ def _canonical_pitfalls(raw: str, root: Path) -> str:
 def _scan_text(text: str) -> None:
     with tempfile.TemporaryDirectory(prefix="structure-redaction-") as temp_dir:
         path = Path(temp_dir) / "entry.md"
-        path.write_text(text + "\n", encoding="utf-8", newline="\n")
+        with path.open("w", encoding="utf-8", newline="\n") as handle:
+            handle.write(text + "\n")
         result = SCANNER.scan(path, quiet=True)
     problems = list(result.findings) + list(result.errors)
     if problems:
@@ -623,7 +624,8 @@ def record(
 def check_manual_text(text: str, path: Path, root: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="structure-check-") as temp_dir:
         candidate = Path(temp_dir) / path.name
-        candidate.write_text(text, encoding="utf-8", newline="\n")
+        with candidate.open("w", encoding="utf-8", newline="\n") as handle:
+            handle.write(text)
         check_manual(candidate, root)
 
 

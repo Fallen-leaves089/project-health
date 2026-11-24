@@ -34,7 +34,8 @@ RECORDER = _load_recorder()
 
 def _write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8", newline="\n")
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(text)
 
 
 def _manual(schema: Dict[str, Any], language: str) -> str:
@@ -205,11 +206,10 @@ class RecordStructureTests(unittest.TestCase):
             root = _root(temp_dir)
             first = RECORDER.record(root, _entry())
             text = first.path.read_text(encoding="utf-8")
-            first.path.write_text(
-                text.replace("| 待验证 | 软提示 |", "| 已过时 | 软提示 |", 1),
-                encoding="utf-8",
-                newline="\n",
-            )
+            with first.path.open("w", encoding="utf-8", newline="\n") as handle:
+                handle.write(
+                    text.replace("| 待验证 | 软提示 |", "| 已过时 | 软提示 |", 1)
+                )
             second = RECORDER.record(
                 root,
                 _entry(
@@ -253,11 +253,8 @@ class RecordStructureTests(unittest.TestCase):
 
             appended = RECORDER.record(root, _entry())
             text = appended.path.read_text(encoding="utf-8")
-            appended.path.write_text(
-                text.replace("  - 区域关联：", "  - removed note：", 1),
-                encoding="utf-8",
-                newline="\n",
-            )
+            with appended.path.open("w", encoding="utf-8", newline="\n") as handle:
+                handle.write(text.replace("  - 区域关联：", "  - removed note：", 1))
             with self.assertRaisesRegex(ValueError, "missing its region-link note"):
                 RECORDER.check_manual(appended.path, root)
 
