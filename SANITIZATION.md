@@ -50,7 +50,7 @@
 
 ## 自动化检查
 
-包内提供 Python 与 PowerShell 两条校验路径：
+包内提供 Python 规范校验和 PowerShell 薄适配入口：
 
 ```bash
 # 跨平台：只跑脱敏扫描器的正反例自检
@@ -88,7 +88,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 - `Authorization: Bearer` 头、含长值的 Cookie 头和 JWT
 - `api_key` / `secret` / `client_secret` / `access_token` / `refresh_token` / `private_key` / `password` 等赋值形式的长字符串（含 JSON/TOML/YAML 的引号键）
 
-Python 与 PowerShell 包校验器使用相同的目录过滤、二进制扩展名清单和严格编码规则，并检查 `description`、嵌套在 `metadata` 下的 `version` 以及 `PITFALLS.md` 的六字段格式。语言链接一致性仍只由 Python 版检查。
+规范校验语义只维护在 Python 版；PowerShell 入口负责调用同一验证器并返回相同退出码。独立的 `check-redaction.ps1` 仍可作为 Windows 脱敏扫描器使用。
 
 项目专属词、客户名、内部代号不在默认规则里。需要时用 `-ExtraPatterns` 传入，例如：
 

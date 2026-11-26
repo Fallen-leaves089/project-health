@@ -176,13 +176,13 @@ python scripts\verify_package.py
 python -B -m unittest discover -s tests -p "test_*.py"
 ```
 
-没有 Python 时可用 PowerShell 版：
+Windows PowerShell 版是同一验证器的薄适配层，仍需要 Python 3.9+：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 ```
 
-Python 版检查必需文件、所有非二进制文本（严格 UTF-8、无 BOM、无异常 NUL）、Markdown 链接、脱敏自检、包内敏感模式，以及 `SKILL.md` / `SKILL.en.md` 的 `name`、非空 `description`、`metadata.version`、版本和语言链接是否一致；同时调用 `record_structure.py --check` 校验结构经验手册。PowerShell 版读取同一份 `structure-schema.json` 校验六章、状态、分支和关系备注，并使用相同的目录过滤、二进制扩展名清单、严格编码检查、frontmatter 与 `PITFALLS.md` 六字段规则；语言链接仍只由 Python 版检查。两版包校验器都会扫描 `.env.*`、`.pem`、`.log`、`.ini`、`.cff` 等非白名单文本，并对空目录、不可解码文件或异常 NUL fail closed。
+规范语义只由 Python 版实现：必需文件、所有非二进制文本（严格 UTF-8、无 BOM、无异常 NUL）、Markdown 链接、脱敏自检、包内敏感模式、frontmatter、版本、语言链接和结构经验手册。PowerShell 版只负责找到 Python、传递 `-Path` 并返回同一退出码，避免两套规则漂移。独立的 `check-redaction.ps1` 仍可用于只跑 Windows 脱敏扫描。
 
 ### 验证边界：确定性检查不等于 Agent 行为验证
 

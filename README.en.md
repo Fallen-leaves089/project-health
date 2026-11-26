@@ -176,13 +176,13 @@ Run contract tests and the malicious-target fixture check:
 python -B -m unittest discover -s tests -p "test_*.py"
 ```
 
-If Python is unavailable, use the PowerShell verifier:
+The Windows PowerShell entry point is a thin adapter and still requires Python 3.9+:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 ```
 
-The Python verifier checks required files, all non-binary text (strict UTF-8, no BOM, no anomalous NUL), Markdown links, the redaction self-test, sensitive patterns in the package, and `SKILL.md` / `SKILL.en.md` `name`, non-empty `description`, `metadata.version`, version, and language links; it also calls `record_structure.py --check` for the structural manuals. The PowerShell verifier reads the same `structure-schema.json` to validate all six chapters, statuses, branches, and relation notes, while using the same directory filters, binary-extension list, strict encoding checks, frontmatter rules, and `PITFALLS.md` six-field check. Language links are still checked by the Python verifier only. Both package verifiers scan non-allowlisted text such as `.env.*`, `.pem`, `.log`, `.ini`, and `.cff`, and fail closed on empty directories, undecodable files, or anomalous NUL.
+The Python verifier is the canonical implementation for required files, all non-binary text (strict UTF-8, no BOM, no anomalous NUL), Markdown links, the redaction self-test, sensitive patterns, frontmatter, versions, language links, and structural manuals. The PowerShell entry point only locates Python, forwards `-Path`, and returns the same exit code, preventing rule drift between implementations. The standalone `check-redaction.ps1` remains available for Windows-only redaction scans.
 
 ### Validation boundary: deterministic checks are not agent behavior validation
 
