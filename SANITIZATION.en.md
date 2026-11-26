@@ -49,7 +49,7 @@ English documents are translations of the Chinese originals. They do not add new
 
 ## Automated checks
 
-The package provides a Python path for every operating system and a PowerShell path for Windows:
+The package provides a canonical Python verifier and a thin PowerShell adapter for Windows:
 
 ```bash
 # Cross-platform scanner self-test
@@ -83,7 +83,7 @@ The scanners check for:
 - `Authorization: Bearer` headers, Cookie headers with long values, and JWTs
 - long values assigned to `api_key`, `secret`, `client_secret`, `access_token`, `refresh_token`, `private_key`, `password`, and similar names, including quoted JSON/TOML/YAML keys
 
-The Python and PowerShell package verifiers use the same directory filters, binary-extension list, and strict encoding rules, and check `description`, a `version` nested under `metadata`, and the six-field format of `PITFALLS.md`. Language-link consistency is still checked by the Python verifier only.
+The canonical package semantics live only in Python. The PowerShell entry point calls that verifier and returns the same exit code. The standalone `check-redaction.ps1` remains available as a Windows redaction scanner.
 
 Project-specific words, client names, and internal code names are not in the default rules. Pass them explicitly:
 

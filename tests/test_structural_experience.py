@@ -214,17 +214,20 @@ class StructuralExperienceContractTests(unittest.TestCase):
         self.assertIn("STRUCTURE.local.md", read_text(".gitignore"))
 
     def test_structural_experience_files_are_packaged_and_linked(self) -> None:
-        for relative in ("scripts/verify_package.py", "scripts/verify-package.ps1"):
-            verifier = read_text(relative)
-            for required in (
-                "references/structural-experience.md",
-                "references/structural-experience.en.md",
-                "scripts/record_structure.py",
-                "scripts/structure-schema.json",
-                "tests/test_record_structure.py",
-            ):
-                with self.subTest(verifier=relative, required=required):
-                    self.assertIn(required, verifier)
+        verifier = read_text("scripts/verify_package.py")
+        for required in (
+            "references/structural-experience.md",
+            "references/structural-experience.en.md",
+            "scripts/record_structure.py",
+            "scripts/structure-schema.json",
+            "tests/test_record_structure.py",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, verifier)
+        self.assertIn(
+            "scripts/verify_package.py",
+            read_text("scripts/verify-package.ps1"),
+        )
 
         language_verifier = read_text("scripts/verify_package.py")
         for relative in (

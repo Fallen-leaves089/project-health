@@ -505,11 +505,11 @@ class UntrustedTargetContractTests(unittest.TestCase):
     def test_pitfall_recorder_is_packaged(self) -> None:
         self.assertTrue((ROOT / "scripts/record_pitfall.py").is_file())
         self.assertTrue((ROOT / "tests/test_record_pitfall.py").is_file())
-        for relative in ("scripts/verify_package.py", "scripts/verify-package.ps1"):
-            verifier = read_text(relative)
-            for required in ("scripts/record_pitfall.py", "tests/test_record_pitfall.py"):
-                with self.subTest(verifier=relative, required=required):
-                    self.assertIn(required, verifier)
+        verifier = read_text("scripts/verify_package.py")
+        for required in ("scripts/record_pitfall.py", "tests/test_record_pitfall.py"):
+            with self.subTest(required=required):
+                self.assertIn(required, verifier)
+        self.assertIn("scripts/verify_package.py", read_text("scripts/verify-package.ps1"))
 
     def test_report_templates_include_memory_result(self) -> None:
         expectations = {
@@ -646,11 +646,11 @@ class UntrustedTargetContractTests(unittest.TestCase):
             "commercial/first-reply-email.template.en.md",
             "commercial/license-registry.template.csv",
         )
-        for relative in ("scripts/verify_package.py", "scripts/verify-package.ps1"):
-            verifier = read_text(relative)
-            for required_path in required_paths:
-                with self.subTest(verifier=relative, path=required_path):
-                    self.assertIn(required_path, verifier)
+        verifier = read_text("scripts/verify_package.py")
+        for required_path in required_paths:
+            with self.subTest(path=required_path):
+                self.assertIn(required_path, verifier)
+        self.assertIn("verify_package.py", read_text("scripts/verify-package.ps1"))
 
         workflow = read_text(".github/workflows/verify.yml")
         self.assertIn(
