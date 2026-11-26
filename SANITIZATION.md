@@ -7,7 +7,7 @@
 ## 来源
 
 - 内部技能整理日期：2026-09-04
-- 公开版版本：1.5.0
+- 公开版版本：1.5.1
 - 处理方式：逐段重写，不用简单查找替换；敏感段落直接删除或抽象化
 
 ## 已移除
@@ -85,6 +85,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-package.ps1
 - 私有 IPv4 地址
 - OpenAI 风格密钥、GitHub 令牌、AWS Access Key
 - PEM 私钥块
+- `Authorization: Bearer` 头、含长值的 Cookie 头和 JWT
 - `api_key` / `secret` / `client_secret` / `access_token` / `refresh_token` / `private_key` / `password` 等赋值形式的长字符串（含 JSON/TOML/YAML 的引号键）
 
 Python 与 PowerShell 包校验器使用相同的目录过滤、二进制扩展名清单和严格编码规则，并检查 `description`、嵌套在 `metadata` 下的 `version` 以及 `PITFALLS.md` 的六字段格式。语言链接一致性仍只由 Python 版检查。

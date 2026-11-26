@@ -7,7 +7,7 @@ This document records what changed from the internal edition to the public editi
 ## Source
 
 - Internal skill compilation date: 2026-09-04
-- Public package version: 1.5.0
+- Public package version: 1.5.1
 - Method: rewrite section by section instead of find-and-replace; delete or abstract sensitive passages
 
 ## Removed
@@ -80,6 +80,7 @@ The scanners check for:
 - private IPv4 addresses
 - OpenAI-style keys, GitHub tokens, and AWS access keys
 - PEM private-key blocks
+- `Authorization: Bearer` headers, Cookie headers with long values, and JWTs
 - long values assigned to `api_key`, `secret`, `client_secret`, `access_token`, `refresh_token`, `private_key`, `password`, and similar names, including quoted JSON/TOML/YAML keys
 
 The Python and PowerShell package verifiers use the same directory filters, binary-extension list, and strict encoding rules, and check `description`, a `version` nested under `metadata`, and the six-field format of `PITFALLS.md`. Language-link consistency is still checked by the Python verifier only.

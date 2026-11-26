@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.5.1 - 2026-11-26
+
+### 中文
+
+- 修正 `record_structure.py` 的安装范围判断：Git 克隆安装到 `skills/project-health` 时改为写入 `STRUCTURE.local.md`，不再修改随包维护的 `references/structural-experience.md`。
+- 修复英文结构经验写入：全新安装可用 `--language en` 创建英文本地手册，仓库范围会选择 `references/structural-experience.en.md`；本地条目语言与章节标题语言解耦。
+- 收紧结构经验状态规则：`已过时` 条目只允许软提示，禁止与“只有已验证条目允许详细注入”的文档契约冲突。
+- 扩展 Python/PowerShell 脱敏扫描：新增 `Authorization: Bearer`、含长值的 Cookie 头和 JWT 规则及正反例。
+- 刷新验证边界和版本元数据；本版本先完成本地确定性验证，GitHub CI 结果需在推送后补录。
+
+### English
+
+- Fix `record_structure.py` installation scoping: a Git clone installed under `skills/project-health` now writes `STRUCTURE.local.md` instead of modifying the maintained `references/structural-experience.md`.
+- Fix English structural-experience writes: fresh installations can create an English local manual with `--language en`, repository scope selects `references/structural-experience.en.md`, and entry language is decoupled from chapter-heading language.
+- Tighten structural status rules: `obsolete` entries may only use soft hints, matching the documented rule that only verified entries may use detailed injection.
+- Extend the Python and PowerShell redaction scanners with `Authorization: Bearer`, long Cookie-header, and JWT patterns plus positive and negative cases.
+- Refresh validation boundaries and release metadata. This version records local deterministic validation first; GitHub CI evidence must be added after pushing.
+
 ## 1.5.0 - 2026-11-24
 
 ### 中文

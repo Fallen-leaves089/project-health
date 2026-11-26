@@ -74,6 +74,9 @@ function Get-ScanPatterns {
         @{ Name = 'GitHub token'; Regex = '\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\b|\bgithub_pat_[A-Za-z0-9_]{20,}\b' },
         @{ Name = 'AWS access key'; Regex = '\bAKIA[0-9A-Z]{16}\b' },
         @{ Name = 'Private key block'; Regex = '-----BEGIN [A-Z ]*PRIVATE KEY-----' },
+        @{ Name = 'Authorization bearer token'; Regex = '(?i)\bAuthorization\s*[:=]\s*Bearer\s+[A-Za-z0-9._~+/=-]{8,}' },
+        @{ Name = 'Cookie header'; Regex = '(?i)\bCookie\s*:\s*[^;\r\n]{1,80}=[A-Za-z0-9._~+/=-]{8,}' },
+        @{ Name = 'JWT'; Regex = '\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b' },
         @{ Name = 'Assigned secret'; Regex = $assignedSecretRegex }
     )
 
@@ -338,6 +341,13 @@ function Invoke-SelfTest {
         $dirtyFields = 'client_secret=' + $secretValue + "`naccess_token=" + $secretValue + "`nrefresh_token=" + $secretValue + "`nsecret=" + $secretValue
         [System.IO.File]::WriteAllText((Join-Path $temp 'dirty-fields.json'), $dirtyFields, [System.Text.UTF8Encoding]::new($false))
 
+        $dirtyBearer = 'Authorization: Bearer ' + $secretValue
+        [System.IO.File]::WriteAllText((Join-Path $temp 'dirty-bearer.txt'), $dirtyBearer, [System.Text.UTF8Encoding]::new($false))
+        $dirtyCookie = 'Cookie: sessionid=' + $secretValue
+        [System.IO.File]::WriteAllText((Join-Path $temp 'dirty-cookie.txt'), $dirtyCookie, [System.Text.UTF8Encoding]::new($false))
+        $dirtyJwt = 'jwt_value ' + 'eyJhbGciOiJIUzI1NiJ9.' + $secretValue + '.' + $secretValue
+        [System.IO.File]::WriteAllText((Join-Path $temp 'dirty-jwt.txt'), $dirtyJwt, [System.Text.UTF8Encoding]::new($false))
+
         [System.IO.File]::WriteAllText((Join-Path $temp '.env.local'), ('API_KEY=' + $secretValue), [System.Text.UTF8Encoding]::new($false))
         [System.IO.File]::WriteAllText((Join-Path $temp 'server.pem'), ('-----BEGIN ' + 'PRIVATE KEY-----'), [System.Text.UTF8Encoding]::new($false))
         $utf16Path = Join-Path $temp 'utf16-notes.txt'
@@ -370,6 +380,9 @@ function Invoke-SelfTest {
         $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-path-slash.md') -Extra @() -ShouldFind $true -Label 'personal path with slashes is caught') -and $ok
         $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-key.md') -Extra @() -ShouldFind $true -Label 'secret-looking key is caught') -and $ok
         $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-json-key.md') -Extra @() -ShouldFind $true -Label 'quoted JSON secret is caught') -and $ok
+        $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-bearer.txt') -Extra @() -ShouldFind $true -Label 'Authorization bearer token is caught') -and $ok
+        $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-cookie.txt') -Extra @() -ShouldFind $true -Label 'Cookie header is caught') -and $ok
+        $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-jwt.txt') -Extra @() -ShouldFind $true -Label 'JWT is caught') -and $ok
         $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-ip.md') -Extra @() -ShouldFind $true -Label 'private IPv4 is caught') -and $ok
         $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-extra.md') -Extra @('ACME-INTERNAL') -ShouldFind $true -Label 'extra literal pattern is caught') -and $ok
         $ok = (Test-ScanExpectation -Root (Join-Path $temp 'dirty-fields.json') -Extra @() -ShouldFind $true -Label 'prefixed secret fields are caught') -and $ok

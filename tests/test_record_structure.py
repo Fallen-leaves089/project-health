@@ -64,7 +64,7 @@ def _root(temp_dir: str, repo: bool = False) -> Path:
         "name: project-health\n"
         "description: structure recorder fixture\n"
         "metadata:\n"
-        "  version: 1.5.0\n"
+        "  version: 1.5.1\n"
         "license: PolyForm-Noncommercial-1.0.0\n"
         "---\n",
     )
@@ -170,11 +170,64 @@ class RecordStructureTests(unittest.TestCase):
             self.assertIn("| 待验证 | 软提示 |", text)
             self.assertIn("  - 区域关联： shares-data:C/cache/order; depends-on:ARC-01", text)
 
+    def test_english_add_creates_english_local_manual(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-structure-") as temp_dir:
+            root = _root(temp_dir)
+            result = RECORDER.record(root, _entry(language="en"))
+
+            self.assertEqual(result.status, "appended")
+            self.assertEqual(result.path.resolve(), (root / "STRUCTURE.local.md").resolve())
+            text = result.path.read_text(encoding="utf-8")
+            self.assertIn("### A. Boundaries and ownership", text)
+            self.assertIn("| pending verification | soft hint |", text)
+            self.assertIn("  - Region links:", text)
+
+    def test_git_install_under_skills_uses_local_manual(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-structure-") as temp_dir:
+            original = _root(temp_dir, repo=True)
+            root = Path(temp_dir) / "skills" / "project-health"
+            root.parent.mkdir()
+            original.rename(root)
+            repo_manual = root / "references" / "structural-experience.md"
+            original_repo = repo_manual.read_bytes()
+
+            result = RECORDER.record(root, _entry())
+
+            self.assertEqual(result.path.resolve(), (root / "STRUCTURE.local.md").resolve())
+            self.assertEqual(repo_manual.read_bytes(), original_repo)
+
+    def test_repo_english_add_uses_english_manual(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-structure-") as temp_dir:
+            root = _root(temp_dir, repo=True)
+            chinese_manual = root / "references" / "structural-experience.md"
+            original_chinese = chinese_manual.read_bytes()
+
+            result = RECORDER.record(root, _entry(language="en"), scope="repo")
+
+            self.assertEqual(
+                result.path.resolve(),
+                (root / "references" / "structural-experience.en.md").resolve(),
+            )
+            self.assertEqual(chinese_manual.read_bytes(), original_chinese)
+            self.assertIn(
+                "| pending verification | soft hint |",
+                result.path.read_text(encoding="utf-8"),
+            )
+
     def test_pending_entry_cannot_use_detailed_injection(self) -> None:
         with tempfile.TemporaryDirectory(prefix="record-structure-") as temp_dir:
             root = _root(temp_dir)
             with self.assertRaisesRegex(ValueError, "not allowed"):
                 RECORDER.record(root, _entry(injection="详细"))
+
+    def test_obsolete_entry_cannot_use_detailed_injection(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-structure-") as temp_dir:
+            root = _root(temp_dir)
+            with self.assertRaisesRegex(ValueError, "not allowed"):
+                RECORDER.record(
+                    root,
+                    _entry(status="已过时", injection="详细"),
+                )
 
     def test_unknown_or_missing_pitfall_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="record-structure-") as temp_dir:
@@ -280,6 +333,31 @@ class RecordStructureTests(unittest.TestCase):
             )
             self.assertEqual(completed.returncode, 0, msg=completed.stdout + completed.stderr)
             self.assertIn("CHECK PASSED", completed.stdout)
+
+    def test_cli_check_defaults_to_empty_local_manual_for_git_install(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="record-structure-") as temp_dir:
+            original = _root(temp_dir, repo=True)
+            root = Path(temp_dir) / "skills" / "project-health"
+            root.parent.mkdir()
+            original.rename(root)
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--check",
+                    "--root",
+                    str(root),
+                ],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 0, msg=completed.stdout + completed.stderr)
+            self.assertIn("no local structure manual yet", completed.stdout)
 
 
 if __name__ == "__main__":

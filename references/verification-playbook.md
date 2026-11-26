@@ -148,15 +148,15 @@
 
 ## 10. 覆盖边界与未测试项
 
-> 截至 **2026-11-18 / 1.4.8**。这是当前验收边界，不是已知缺陷清单。只有实际执行并核对了结果的项才算“已测试”；`SKIP`、工具不存在、作业被跳过，或只验证了工具的帮助/枚举能力，都必须标为“未测试 / 未覆盖”。未测试不代表功能有 bug，也不得在报告里写成通过。包校验、契约测试和 CI 全绿也不等于真实 Agent 行为已验证。
+> 截至 **2026-11-26 / 1.5.1 本地验证边界**。GitHub CI 结果需在推送后补录；这是当前验收边界，不是已知缺陷清单。只有实际执行并核对了结果的项才算“已测试”；`SKIP`、工具不存在、作业被跳过，或只验证了工具的帮助/枚举能力，都必须标为“未测试 / 未覆盖”。未测试不代表功能有 bug，也不得在报告里写成通过。包校验、契约测试和 CI 全绿也不等于真实 Agent 行为已验证。
 
 ### 10.1 当前公开证据
 
 | 环境 | 实际结果 | 证据 |
 |---|---|---|
-| GitHub Actions `Verify package` | Ubuntu 24.04、`macos-latest`、Windows Server 2025 的 Python 3.9/3.12 全部成功；Windows 还执行了 PowerShell 5.1/7 包校验 | [run 43792286318](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286318) |
+| GitHub Actions `Verify package` | 历史 v1.4.8 记录：Ubuntu 24.04、`macos-latest`、Windows Server 2025 的 Python 3.9/3.12 全部成功；Windows 还执行了 PowerShell 5.1/7 包校验。v1.5.1 未在推送后补录 | [run 43792286318](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286318) |
 | GitHub Actions `Verify server playbooks` | Linux `pass=61 skip=7 fail=0 systemd=1`；托管 Windows Server `Windows Server: True`、`pass=33 skip=6 fail=0`；自建 roles 作业 `skipped` | [run 43792286327](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286327) |
-| 本地 Windows 11 | Python 3.10/3.14.2 各 53 项测试通过；Python 与 PowerShell 包校验通过 | 维护者本地运行，不是公开 CI |
+| 本地 Windows 11 | v1.5.1 在当前工作树运行 Python 3.10 的 83 项测试、Python 包校验和 PowerShell 包校验，全部通过 | 本轮维护者本地运行，不是公开 CI |
 | Ubuntu 24.04 容器 | Python 3.9/3.12 各 52 项测试、11 项跳过；运行于 1.4.4 之前，未对 1.4.5 重跑 | 维护者历史记录 |
 
 ### 10.2 未测试或未覆盖
@@ -180,7 +180,7 @@
 
 ### 10.3 门禁边界
 
-- 当前 `main` 的必需检查只有六个 `Verify package` 矩阵作业（Ubuntu、macOS、Windows × Python 3.9/3.12），并且启用了严格状态检查和管理员同样受约束。
+- 本轮未联网复核 GitHub 分支保护。此前记录显示必需检查为六个 `Verify package` 矩阵作业（Ubuntu、macOS、Windows × Python 3.9/3.12），并启用严格状态检查和管理员同样受约束；推送前应以 GitHub 实际配置为准。
 - `Verify server playbooks` 受路径过滤，且没有加入 required checks；它的自建 roles 作业还可能显示 `skipped`。因此 PR 全绿不能单独证明服务器冒烟已经执行。
 - 遇到上表环境时，报告中引用对应的未覆盖原因和补测条件；补测完成后更新本节日期、版本和实际证据，不要把历史跳过结果继续当作当前结果。
 

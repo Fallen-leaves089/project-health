@@ -148,15 +148,15 @@ Choose the negative case carefully:
 
 ## 10. Coverage boundaries and untested items
 
-> As of **2026-11-18 / 1.4.8**. This is the current acceptance boundary, not a list of known defects. A result counts as "tested" only when the check was actually executed and its result was inspected. A `SKIP`, a missing tool, a skipped job, or a check that only verified a tool's help or enumeration output must be classified as **untested / uncovered**. Untested does not mean broken, and it must never be reported as passed. A green package verifier, contract suite, or CI run also does not prove that real agent behavior has been validated.
+> As of **2026-11-26 / 1.5.1 local validation boundary**. GitHub CI evidence must be added after pushing. This is the current acceptance boundary, not a list of known defects. A result counts as "tested" only when the check was actually executed and its result was inspected. A `SKIP`, a missing tool, a skipped job, or a check that only verified a tool's help or enumeration output must be classified as **untested / uncovered**. Untested does not mean broken, and it must never be reported as passed. A green package verifier, contract suite, or CI run also does not prove that real agent behavior has been validated.
 
 ### 10.1 Current public evidence
 
 | Environment | Actual result | Evidence |
 |---|---|---|
-| GitHub Actions `Verify package` | Ubuntu 24.04, `macos-latest`, and Windows Server 2025 all passed on Python 3.9 and 3.12; Windows also ran the PowerShell 5.1 and 7 package verifiers | [run 43792286318](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286318) |
+| GitHub Actions `Verify package` | Historical v1.4.8 result: Ubuntu 24.04, `macos-latest`, and Windows Server 2025 all passed on Python 3.9 and 3.12; Windows also ran the PowerShell 5.1 and 7 package verifiers. v1.5.1 has not yet been recorded after pushing | [run 43792286318](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286318) |
 | GitHub Actions `Verify server playbooks` | Linux `pass=61 skip=7 fail=0 systemd=1`; hosted Windows Server `Windows Server: True` and `pass=33 skip=6 fail=0`; the self-hosted roles job was `skipped` | [run 43792286327](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286327) |
-| Local Windows 11 | Python 3.10 and 3.14.2 each passed 53 tests; Python and PowerShell package verification passed | Maintainer-local run, not public CI |
+| Local Windows 11 | v1.5.1 passed all 83 Python 3.10 tests plus the Python and PowerShell package verifiers on the current working tree | Maintainer local run from this round, not public CI |
 | Ubuntu 24.04 containers | Python 3.9 and 3.12 each passed 52 tests with 11 skips; run before 1.4.4 and not rerun for 1.4.5 | Maintainer historical record |
 
 ### 10.2 Untested or uncovered
@@ -180,7 +180,7 @@ Choose the negative case carefully:
 
 ### 10.3 Gate boundaries
 
-- The current `main` required checks are only the six `Verify package` matrix jobs (Ubuntu, macOS, and Windows, each on Python 3.9 and 3.12), with strict status checks and administrators enforced too.
+- GitHub branch protection was not rechecked over the network this round. The prior record lists the six `Verify package` matrix jobs (Ubuntu, macOS, and Windows, each on Python 3.9 and 3.12) as required, with strict status checks and administrators enforced too; use the live GitHub configuration before pushing.
 - `Verify server playbooks` is path-filtered and is not a required check; its self-hosted roles job can also report `skipped`. A green pull request therefore does not by itself prove that server smoke ran.
 - When a report reaches one of the rows above, cite the untested reason and the closing condition. After a rerun, update the date, version, and actual evidence; do not keep using a historical skip as the current result.
 
