@@ -16,6 +16,7 @@ from typing import Any, Dict
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts" / "record_pitfall.py"
+RUNTIME = ROOT / "scripts" / "skill_runtime.py"
 
 
 def _load_recorder() -> Any:
@@ -54,6 +55,7 @@ def _root(temp_dir: str, repo: bool = False) -> Path:
     _write(root / "references" / "report-template.md", "# report\n")
     (root / "scripts").mkdir()
     shutil.copyfile(SCRIPT, root / "scripts" / "record_pitfall.py")
+    shutil.copyfile(RUNTIME, root / "scripts" / "skill_runtime.py")
     if repo:
         (root / ".git").mkdir()
         _write(root / "PITFALLS.md", "# maintainer log\n\n")
@@ -225,6 +227,7 @@ class RecordPitfallTests(unittest.TestCase):
             _write(root / "references" / "report-template.md", "# report\n")
             (root / "scripts").mkdir()
             shutil.copyfile(SCRIPT, root / "scripts" / "record_pitfall.py")
+            shutil.copyfile(RUNTIME, root / "scripts" / "skill_runtime.py")
             (root / ".git").mkdir()
             _write(root / "PITFALLS.md", "# baseline\n\n")
 

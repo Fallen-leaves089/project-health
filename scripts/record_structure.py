@@ -20,7 +20,6 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
-import os
 import re
 import sys
 import tempfile
@@ -32,6 +31,9 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tupl
 
 SCRIPT_PATH = Path(__file__).resolve()
 DEFAULT_ROOT = SCRIPT_PATH.parent.parent
+sys.path.insert(0, str(SCRIPT_PATH.parent))
+import skill_runtime  # noqa: E402
+
 SCHEMA_PATH = SCRIPT_PATH.parent / "structure-schema.json"
 SCANNER_PATH = SCRIPT_PATH.parent / "check_redaction.py"
 LOCAL_NAME = "STRUCTURE.local.md"
@@ -47,6 +49,7 @@ REQUIRED_ROOT_FILES = (
     "references/report-template.md",
     "references/structural-experience.md",
     "references/structural-experience.en.md",
+    "scripts/skill_runtime.py",
     "scripts/record_structure.py",
     "scripts/structure-schema.json",
 )
@@ -150,53 +153,21 @@ SCANNER = _load_scanner()
 
 
 def _configure_stdio() -> None:
-    for stream in (sys.stdout, sys.stderr):
-        reconfigure = getattr(stream, "reconfigure", None)
-        if reconfigure is None:
-            continue
-        try:
-            reconfigure(errors="backslashreplace")
-        except (OSError, ValueError):
-            pass
+    skill_runtime.configure_stdio()
 
 
 def _read_frontmatter(path: Path) -> Dict[str, str]:
-    data = path.read_bytes()
-    if data.startswith(b"\xef\xbb\xbf"):
-        raise ValueError(f"{path.name} must be UTF-8 without BOM")
-    try:
-        lines = data.decode("utf-8").splitlines()
-    except UnicodeDecodeError as exc:
-        raise ValueError(f"{path.name} is not valid UTF-8") from exc
-    if not lines or lines[0].strip() != "---":
-        raise ValueError(f"{path.name} is missing YAML frontmatter")
-
-    fields: Dict[str, str] = {}
-    for line in lines[1:]:
-        if line.strip() == "---":
-            return fields
-        if not line or line[0].isspace() or ":" not in line:
-            continue
-        key, value = line.split(":", 1)
-        fields[key.strip()] = value.strip().strip('"').strip("'")
-    raise ValueError(f"{path.name} frontmatter is not closed")
+    return skill_runtime.read_frontmatter(path)
 
 
 def _validate_skill_root(root: Path) -> None:
     root = root.expanduser().resolve()
-    if not root.is_dir():
-        raise ValueError(f"root is not a directory: {root}")
-    for relative in REQUIRED_ROOT_FILES:
-        if not (root / relative).is_file():
-            raise ValueError(f"root is missing structural file: {relative}")
-
-    fields = _read_frontmatter(root / "SKILL.md")
-    if fields.get("name") != SKILL_NAME:
-        raise ValueError("SKILL.md name is not project-health")
-    if fields.get("license") != SKILL_LICENSE:
-        raise ValueError("SKILL.md license is not the expected project-health license")
-    if not fields.get("description", "").strip():
-        raise ValueError("SKILL.md is missing a non-empty description")
+    skill_runtime.validate_skill_root(
+        root,
+        SKILL_NAME,
+        SKILL_LICENSE,
+        REQUIRED_ROOT_FILES,
+    )
 
     if (root / "scripts" / "record_structure.py").read_bytes() != SCRIPT_PATH.read_bytes():
         raise ValueError("root structural recorder does not match this recorder")
@@ -208,32 +179,15 @@ def _manual_path(root: Path, scope: str, for_write: bool, language: str = "zh") 
     root = root.expanduser().resolve()
     _validate_skill_root(root)
 
-    if scope == "auto":
-        installed_under_skills = root.parent.name.casefold() == "skills"
-        has_local = (root / LOCAL_NAME).is_file()
-        if has_local or installed_under_skills or not (root / ".git").exists():
-            scope = "local"
-        else:
-            scope = "repo"
-    if scope not in {"repo", "local"}:
-        raise ValueError("scope must be auto, repo, or local")
     if language not in {"zh", "en"}:
         raise ValueError("language must be zh or en")
-    if scope == "repo" and for_write and not (root / ".git").exists():
-        raise ValueError("repository scope requires a .git entry at the skill root")
-
-    if scope == "local":
-        path = root / LOCAL_NAME
-    else:
-        path = root / (REPO_NAME_EN if language == "en" else REPO_NAME)
-    if path.resolve(strict=False).parent not in {
+    repository_relative = REPO_NAME_EN if language == "en" else REPO_NAME
+    return skill_runtime.resolve_memory_path(
         root,
-        (root / "references").resolve(),
-    }:
-        raise ValueError("refusing to write outside the expected skill paths")
-    if scope == "repo" and not path.is_file():
-        raise ValueError(f"repository structure manual does not exist: {path}")
-    return path
+        scope,
+        LOCAL_NAME,
+        repository_relative,
+    )
 
 
 def _clean_field(name: str, raw: str, limit: int = FIELD_LIMIT) -> str:
@@ -545,64 +499,20 @@ def _local_header(language: str = "zh") -> str:
 
 
 def _read_existing(path: Path) -> str:
-    if not path.exists():
-        return ""
-    data = path.read_bytes()
-    if data.startswith(b"\xef\xbb\xbf"):
-        raise ValueError(f"refusing to write to a UTF-8 BOM file: {path}")
-    try:
-        return data.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise ValueError(f"structure manual is not valid UTF-8: {path}") from exc
+    return skill_runtime.read_existing_utf8(
+        path,
+        "refusing to write to a UTF-8 BOM file",
+    )
 
 
 @contextmanager
 def _file_lock(path: Path) -> Iterator[None]:
-    lock_path = path.parent / "STRUCTURE.lock"
-    lock_path.parent.mkdir(parents=True, exist_ok=True)
-    with lock_path.open("a+b") as handle:
-        if handle.tell() == 0:
-            handle.write(b"0")
-            handle.flush()
-        handle.seek(0)
-        if os.name == "nt":
-            import msvcrt
-
-            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
-            try:
-                yield
-            finally:
-                handle.seek(0)
-                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
-        else:
-            import fcntl
-
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
-            try:
-                yield
-            finally:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+    with skill_runtime.file_lock(path, "STRUCTURE.lock"):
+        yield
 
 
 def _atomic_write(path: Path, text: str) -> None:
-    temporary_name = ""
-    try:
-        with tempfile.NamedTemporaryFile(
-            "w",
-            encoding="utf-8",
-            newline="\n",
-            dir=str(path.parent),
-            prefix=f".{path.name}.",
-            delete=False,
-        ) as handle:
-            temporary_name = handle.name
-            handle.write(text)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary_name, path)
-    finally:
-        if temporary_name:
-            Path(temporary_name).unlink(missing_ok=True)
+    skill_runtime.write_text_atomic(path, text)
 
 
 def _next_id(text: str, chapter: str) -> str:

@@ -17,6 +17,7 @@ from typing import Any, Dict
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts" / "record_structure.py"
 SCHEMA = ROOT / "scripts" / "structure-schema.json"
+RUNTIME = ROOT / "scripts" / "skill_runtime.py"
 
 
 def _load_recorder() -> Any:
@@ -89,6 +90,7 @@ def _root(temp_dir: str, repo: bool = False) -> Path:
     (root / "scripts").mkdir()
     shutil.copyfile(SCRIPT, root / "scripts" / "record_structure.py")
     shutil.copyfile(SCHEMA, root / "scripts" / "structure-schema.json")
+    shutil.copyfile(RUNTIME, root / "scripts" / "skill_runtime.py")
     if repo:
         (root / ".git").mkdir()
     return root

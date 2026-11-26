@@ -156,7 +156,7 @@ Choose the negative case carefully:
 |---|---|---|
 | GitHub Actions `Verify package` | Historical v1.4.8 result: Ubuntu 24.04, `macos-latest`, and Windows Server 2025 all passed on Python 3.9 and 3.12; Windows also ran the PowerShell 5.1 and 7 package verifiers. v1.5.1 has not yet been recorded after pushing | [run 43792286318](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286318) |
 | GitHub Actions `Verify server playbooks` | Linux `pass=61 skip=7 fail=0 systemd=1`; hosted Windows Server `Windows Server: True` and `pass=33 skip=6 fail=0`; the self-hosted roles job was `skipped` | [run 43792286327](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286327) |
-| Local Windows 11 | v1.5.1 passed all 83 Python 3.10 tests plus the Python and PowerShell package verifiers on the current working tree | Maintainer local run from this round, not public CI |
+| Local Windows 11 | The current worktree passed all 87 Python 3.10 tests plus the Python and PowerShell package verifiers; package verification covered 90 text files | Maintainer local run from this round, not public CI |
 | Ubuntu 24.04 containers | Python 3.9 and 3.12 each passed 52 tests with 11 skips; run before 1.4.4 and not rerun for 1.4.5 | Maintainer historical record |
 
 ### 10.2 Untested or uncovered

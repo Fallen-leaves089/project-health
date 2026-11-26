@@ -156,7 +156,7 @@
 |---|---|---|
 | GitHub Actions `Verify package` | 历史 v1.4.8 记录：Ubuntu 24.04、`macos-latest`、Windows Server 2025 的 Python 3.9/3.12 全部成功；Windows 还执行了 PowerShell 5.1/7 包校验。v1.5.1 未在推送后补录 | [run 43792286318](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286318) |
 | GitHub Actions `Verify server playbooks` | Linux `pass=61 skip=7 fail=0 systemd=1`；托管 Windows Server `Windows Server: True`、`pass=33 skip=6 fail=0`；自建 roles 作业 `skipped` | [run 43792286327](https://github.com/Fallen-leaves089/project-health/actions/runs/43792286327) |
-| 本地 Windows 11 | v1.5.1 在当前工作树运行 Python 3.10 的 83 项测试、Python 包校验和 PowerShell 包校验，全部通过 | 本轮维护者本地运行，不是公开 CI |
+| 本地 Windows 11 | 当前工作树运行 Python 3.10 的 87 项测试、Python 包校验和 PowerShell 包校验，全部通过；包校验覆盖 90 个文本文件 | 本轮维护者本地运行，不是公开 CI |
 | Ubuntu 24.04 容器 | Python 3.9/3.12 各 52 项测试、11 项跳过；运行于 1.4.4 之前，未对 1.4.5 重跑 | 维护者历史记录 |
 
 ### 10.2 未测试或未覆盖
