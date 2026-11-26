@@ -253,6 +253,28 @@ def _patterns(extra: Sequence[str] = ()) -> List[Pattern]:
         Pattern("AWS access key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
         Pattern("Private key block", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
         Pattern(
+            "Authorization bearer token",
+            re.compile(
+                r"(?i)\bAuthorization\s*[:=]\s*Bearer\s+"
+                r"[A-Za-z0-9._~+/=-]{8,}"
+            ),
+        ),
+        Pattern(
+            "Cookie header",
+            re.compile(
+                r"(?i)\bCookie\s*:\s*"
+                r"[^;\r\n]{1,80}=[A-Za-z0-9._~+/=-]{8,}"
+            ),
+        ),
+        Pattern(
+            "JWT",
+            re.compile(
+                r"\beyJ[A-Za-z0-9_-]{8,}\."
+                r"[A-Za-z0-9_-]{8,}\."
+                r"[A-Za-z0-9_-]{8,}\b"
+            ),
+        ),
+        Pattern(
             "Assigned secret",
             ASSIGNED_SECRET_RE,
         ),
@@ -348,6 +370,10 @@ def self_test() -> int:
             "refresh_token=" + "abcdefghijklmnopqrstuvwxyz" + "\n"
             "secret=" + "abcdefghijklmnopqrstuvwxyz"
         )
+        sample_token = "abcdefghijklmnopqrstuvwxyz"
+        dirty_bearer = "Authorization: Bearer " + sample_token
+        dirty_cookie = "Cookie: sessionid=" + sample_token
+        dirty_jwt = "jwt_value " + "eyJhbGciOiJIUzI1NiJ9." + sample_token + "." + sample_token
         dirty_private_ip = "host: " + "192" + ".168" + ".1" + ".10"
         dirty_extra_marker = "marker: ACME-" + "INTERNAL-TOKEN"
         samples: List[Tuple[str, str, Sequence[str], bool, str]] = [
@@ -401,6 +427,27 @@ def self_test() -> int:
                 (),
                 True,
                 "quoted JSON secret is caught",
+            ),
+            (
+                "dirty-bearer.txt",
+                dirty_bearer,
+                (),
+                True,
+                "Authorization bearer token is caught",
+            ),
+            (
+                "dirty-cookie.txt",
+                dirty_cookie,
+                (),
+                True,
+                "Cookie header is caught",
+            ),
+            (
+                "dirty-jwt.txt",
+                dirty_jwt,
+                (),
+                True,
+                "JWT is caught",
             ),
             (
                 "dirty-ip.md",

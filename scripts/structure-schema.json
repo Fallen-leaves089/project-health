@@ -31,7 +31,7 @@
   "status_allowed_injections": {
     "pending": ["soft", "brief"],
     "verified": ["soft", "brief", "detailed"],
-    "obsolete": ["soft", "brief", "detailed"]
+    "obsolete": ["soft"]
   },
   "injection_keys": ["soft", "brief", "detailed"],
   "injection_labels": {

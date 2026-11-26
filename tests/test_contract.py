@@ -16,8 +16,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "malicious-target"
 FIXTURE = FIXTURE_DIR / "malicious-agents.fixture"
-EXPECTED_VERSION = "1.5.0"
-EXPECTED_RELEASE_DATE = "2026-11-24"
+EXPECTED_VERSION = "1.5.1"
+EXPECTED_RELEASE_DATE = "2026-11-26"
 
 
 def read_text(relative: str) -> str:
@@ -894,6 +894,15 @@ class ScannerAndVerifierRegressionTests(unittest.TestCase):
                 "config.ini": "refresh_token=" + sample_value + "\n",
                 "citation.cff": "client_secret=" + sample_value + "\n",
                 "secret.txt": "secret=" + sample_value + "\n",
+                "auth-header.txt": "Authorization: Bearer " + sample_value + "\n",
+                "cookie-header.txt": "Cookie: sessionid=" + sample_value + "\n",
+                "jwt-token.txt": (
+                    "eyJhbGciOiJIUzI1NiJ9."
+                    + sample_value
+                    + "."
+                    + sample_value
+                    + "\n"
+                ),
                 "macos-path.txt": "Path: /" + "Users/example-user/private\n",
             }
             for name, content in fixtures.items():

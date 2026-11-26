@@ -36,6 +36,7 @@ SCHEMA_PATH = SCRIPT_PATH.parent / "structure-schema.json"
 SCANNER_PATH = SCRIPT_PATH.parent / "check_redaction.py"
 LOCAL_NAME = "STRUCTURE.local.md"
 REPO_NAME = "references/structural-experience.md"
+REPO_NAME_EN = "references/structural-experience.en.md"
 PITFALLS_NAME = "PITFALLS.md"
 SKILL_NAME = "project-health"
 SKILL_LICENSE = "PolyForm-Noncommercial-1.0.0"
@@ -203,21 +204,28 @@ def _validate_skill_root(root: Path) -> None:
         raise ValueError("root structure schema does not match this package")
 
 
-def _manual_path(root: Path, scope: str, for_write: bool) -> Path:
+def _manual_path(root: Path, scope: str, for_write: bool, language: str = "zh") -> Path:
     root = root.expanduser().resolve()
     _validate_skill_root(root)
 
     if scope == "auto":
-        if (root / LOCAL_NAME).is_file() or not (root / ".git").exists():
+        installed_under_skills = root.parent.name.casefold() == "skills"
+        has_local = (root / LOCAL_NAME).is_file()
+        if has_local or installed_under_skills or not (root / ".git").exists():
             scope = "local"
         else:
             scope = "repo"
     if scope not in {"repo", "local"}:
         raise ValueError("scope must be auto, repo, or local")
+    if language not in {"zh", "en"}:
+        raise ValueError("language must be zh or en")
     if scope == "repo" and for_write and not (root / ".git").exists():
         raise ValueError("repository scope requires a .git entry at the skill root")
 
-    path = root / (LOCAL_NAME if scope == "local" else REPO_NAME)
+    if scope == "local":
+        path = root / LOCAL_NAME
+    else:
+        path = root / (REPO_NAME_EN if language == "en" else REPO_NAME)
     if path.resolve(strict=False).parent not in {
         root,
         (root / "references").resolve(),
@@ -433,6 +441,20 @@ def _chapter_headings(language: str = "zh") -> Dict[str, str]:
     }
 
 
+def _manual_language(text: str, path: Path) -> str:
+    if path.name.endswith(".en.md"):
+        return "en"
+    if path.name != LOCAL_NAME:
+        return "zh"
+    english = _chapter_headings("en").values()
+    chinese = _chapter_headings("zh").values()
+    if all(heading in text for heading in english) and not all(
+        heading in text for heading in chinese
+    ):
+        return "en"
+    return "zh"
+
+
 def check_manual(path: Path, root: Path, missing_ok: bool = False) -> CheckResult:
     _validate_skill_root(root)
     if not path.is_file():
@@ -445,7 +467,7 @@ def check_manual(path: Path, root: Path, missing_ok: bool = False) -> CheckResul
     version_line = f"schema-version: {SCHEMA['schema_version']}"
     if version_line not in text.splitlines():
         raise ValueError(f"structure manual must declare {version_line}")
-    language = "en" if path.name.endswith(".en.md") else "zh"
+    language = _manual_language(text, path)
     headings = _chapter_headings(language)
     for chapter, heading in headings.items():
         if heading not in text:
@@ -499,16 +521,26 @@ def check_manual(path: Path, root: Path, missing_ok: bool = False) -> CheckResul
     return CheckResult(path=path, entry_count=entry_count)
 
 
-def _local_header() -> str:
+def _local_header(language: str = "zh") -> str:
     lines = [
         "# 结构经验手册 / Structural Experience Manual",
         "",
         f"schema-version: {SCHEMA['schema_version']}",
-        "状态：只记录实际遇到并核实可复用的结构经验；零条是正常状态。",
+        (
+            "Status: record only reusable structural experience verified in context; "
+            "zero entries is a normal state."
+            if language == "en"
+            else "状态：只记录实际遇到并核实可复用的结构经验；零条是正常状态。"
+        ),
         "",
     ]
-    for chapter, heading in _chapter_headings("zh").items():
-        lines.extend([heading, "", "<!-- 没有经验时保持空白。 -->", ""])
+    empty_note = (
+        "<!-- Keep this section empty when there are no entries. -->"
+        if language == "en"
+        else "<!-- 没有经验时保持空白。 -->"
+    )
+    for chapter, heading in _chapter_headings(language).items():
+        lines.extend([heading, "", empty_note, ""])
     return "\n".join(lines)
 
 
@@ -602,15 +634,16 @@ def record(
     dry_run: bool = False,
 ) -> RecordResult:
     root = root.expanduser().resolve()
-    path = _manual_path(root, scope, for_write=True)
+    path = _manual_path(root, scope, for_write=True, language=entry.language)
     with _file_lock(path):
         existing = _read_existing(path)
         if not existing:
-            existing = _local_header()
+            existing = _local_header(entry.language)
         check_manual_text(existing, path, root)
+        manual_language = _manual_language(existing, path)
         entry_id = _next_id(existing, entry.chapter)
         line, note = build_entry(entry, entry_id, root)
-        updated = _insert_entry(existing, entry.chapter, line + "\n" + note, entry.language)
+        updated = _insert_entry(existing, entry.chapter, line + "\n" + note, manual_language)
         if not existing.endswith("\n"):
             updated = updated.rstrip() + "\n"
         check_manual_text(updated, path, root)
@@ -659,8 +692,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     try:
         root = args.root.expanduser().resolve()
         if args.check:
-            path = args.path.expanduser().resolve() if args.path else _manual_path(root, args.scope, for_write=False)
-            missing_ok = args.scope == "local" and args.path is None
+            path = (
+                args.path.expanduser().resolve()
+                if args.path
+                else _manual_path(root, args.scope, for_write=False, language=args.language)
+            )
+            missing_ok = args.path is None and path.name == LOCAL_NAME
             result = check_manual(path, root, missing_ok=missing_ok)
             if result.missing:
                 print(f"OK: no local structure manual yet: {result.path}")

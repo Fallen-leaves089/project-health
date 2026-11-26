@@ -266,7 +266,7 @@ Use the [commercial license templates](commercial/README.en.md) for the agreemen
 ## Version
 
 - Full changelog: [CHANGELOG.md](CHANGELOG.md)
-- Version: 1.5.0
+- Version: 1.5.1
 - Internal source date: 2026-09-04
 - Public release: 2026-11-04
 - Security fix: 2026-11-07
@@ -280,3 +280,4 @@ Use the [commercial license templates](commercial/README.en.md) for the agreemen
 - Commercial license template pack: 2026-11-16
 - International commercial terms: 2026-11-16
 - Structural experience and resident hidden-pitfall modules: 2026-11-24
+- Structural-experience write boundaries and redaction rules: 2026-11-26
