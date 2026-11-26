@@ -57,6 +57,7 @@ class StructuralExperienceContractTests(unittest.TestCase):
                     "区域关联",
                     "已翻阅 / 无信号 / 不适用 / 跨章引用 / 未分类",
                     "STRUCTURE.local.md",
+                    "自动回收",
                 ),
             ),
             (
@@ -90,6 +91,7 @@ class StructuralExperienceContractTests(unittest.TestCase):
                     "Region links",
                     "opened / no signal / not applicable / cross-chapter reference / unclassified",
                     "STRUCTURE.local.md",
+                    "Automatic harvest",
                 ),
             ),
         ):
@@ -110,6 +112,8 @@ class StructuralExperienceContractTests(unittest.TestCase):
         docs = {
             "SKILL.md": (
                 "STRUCTURE.local.md",
+                "任务收尾自动记录",
+                "结构经验：无新增",
                 "未分类",
                 "待验证",
                 "已过时",
@@ -130,6 +134,8 @@ class StructuralExperienceContractTests(unittest.TestCase):
             ),
             "SKILL.en.md": (
                 "STRUCTURE.local.md",
+                "Automatic end-of-task recording",
+                "Structural experience: no additions",
                 "unclassified",
                 "pending verification",
                 "obsolete",
@@ -150,6 +156,8 @@ class StructuralExperienceContractTests(unittest.TestCase):
             ),
             "AGENTS.md": (
                 "STRUCTURE.local.md",
+                "自主记录门禁",
+                "结构经验：无新增",
                 "未分类",
                 "待验证",
                 "已验证",
@@ -268,6 +276,7 @@ class StructuralExperienceContractTests(unittest.TestCase):
                 "仅报告 warning",
                 "超过默认 2 条时",
                 "特殊原因",
+                "记录动作",
             ),
             "references/report-template.en.md": (
                 "## Structural experience harvest",
@@ -296,6 +305,7 @@ class StructuralExperienceContractTests(unittest.TestCase):
                 "report-only",
                 "more than two entries",
                 "why it cannot be merged or deferred",
+                "Recording action",
             ),
         }
         for relative, phrases in expectations.items():

@@ -149,6 +149,7 @@ git diff <COMMIT>...HEAD --stat
 - 兄弟粒度提示：无 / `...`（仅报告 warning，受控器不拒绝写入）
 - 当前项目复核：无 / `证据与结果`
 - 新增：无 / `N` 条（`references/structural-experience.md` 或 `STRUCTURE.local.md`）
+- 记录动作：已自动写入 / 无新增 / 写入失败（`原因与待记录内容`）
 - 超额说明：不适用 / 超过默认 2 条时，逐条写独立性与无法合并或延后的特殊原因
 
 ## 记忆结果

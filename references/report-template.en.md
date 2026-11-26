@@ -149,6 +149,7 @@ git diff <COMMIT>...HEAD --stat
 - Sibling granularity warning: none / `...` (report-only; the recorder does not reject the write)
 - Current-project verification: none / `evidence and result`
 - Added: none / `N` (`references/structural-experience.en.md` or `STRUCTURE.local.md`)
+- Recording action: automatically written / no additions / write failed (`reason and pending content`)
 - Over-limit justification: not applicable / for more than two entries, explain each entry's independence and why it cannot be merged or deferred
 
 ## Memory result
