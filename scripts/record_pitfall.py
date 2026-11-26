@@ -22,10 +22,8 @@ from __future__ import annotations
 
 import argparse
 import datetime as _datetime
-import os
 import re
 import sys
-import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -33,6 +31,9 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 SCRIPT_PATH = Path(__file__).resolve()
 DEFAULT_ROOT = SCRIPT_PATH.parent.parent
+sys.path.insert(0, str(SCRIPT_PATH.parent))
+import skill_runtime  # noqa: E402
+
 LOCAL_NAME = "PITFALLS.local.md"
 REPO_NAME = "PITFALLS.md"
 TAG_LIMIT = 40
@@ -47,6 +48,7 @@ SKILL_LICENSE = "PolyForm-Noncommercial-1.0.0"
 REQUIRED_ROOT_FILES = (
     "AGENTS.md",
     "references/report-template.md",
+    "scripts/skill_runtime.py",
     "scripts/record_pitfall.py",
 )
 
@@ -220,45 +222,17 @@ def build_line(entry: Entry, record_date: Optional[str] = None) -> str:
 
 
 def _read_frontmatter(path: Path) -> Dict[str, str]:
-    data = path.read_bytes()
-    if data.startswith(b"\xef\xbb\xbf"):
-        raise ValueError(f"SKILL.md must be UTF-8 without BOM: {path}")
-    try:
-        lines = data.decode("utf-8").splitlines()
-    except UnicodeDecodeError as exc:
-        raise ValueError(f"SKILL.md is not valid UTF-8: {path}") from exc
-    if not lines or lines[0].strip() != "---":
-        raise ValueError("SKILL.md is missing YAML frontmatter")
-
-    fields: Dict[str, str] = {}
-    for line in lines[1:]:
-        if line.strip() == "---":
-            return fields
-        if not line or line[0].isspace():
-            continue
-        if ":" not in line:
-            continue
-        key, value = line.split(":", 1)
-        fields[key.strip()] = value.strip().strip('"').strip("'")
-    raise ValueError("SKILL.md frontmatter is not closed")
+    return skill_runtime.read_frontmatter(path)
 
 
 def _validate_skill_root(root: Path) -> None:
-    skill = root / "SKILL.md"
-    if not skill.is_file():
-        raise ValueError("root does not contain SKILL.md")
-
-    fields = _read_frontmatter(skill)
-    if fields.get("name") != SKILL_NAME:
-        raise ValueError("SKILL.md name is not project-health")
-    if fields.get("license") != SKILL_LICENSE:
-        raise ValueError("SKILL.md license is not the expected project-health license")
-    if not fields.get("description", "").strip():
-        raise ValueError("SKILL.md is missing a non-empty description")
-
-    for relative in REQUIRED_ROOT_FILES:
-        if not (root / relative).is_file():
-            raise ValueError(f"root is missing structural file: {relative}")
+    root = root.expanduser().resolve()
+    skill_runtime.validate_skill_root(
+        root,
+        SKILL_NAME,
+        SKILL_LICENSE,
+        REQUIRED_ROOT_FILES,
+    )
 
     recorder = root / "scripts" / "record_pitfall.py"
     try:
@@ -271,31 +245,8 @@ def _validate_skill_root(root: Path) -> None:
 
 def _memory_path(root: Path, scope: str) -> Path:
     root = root.expanduser().resolve()
-    if not root.is_dir():
-        raise ValueError(f"root is not a directory: {root}")
     _validate_skill_root(root)
-
-    if scope == "auto":
-        if (root / LOCAL_NAME).is_file():
-            scope = "local"
-        elif root.parent.name.casefold() == "skills":
-            scope = "local"
-        elif (root / ".git").exists():
-            scope = "repo"
-        else:
-            scope = "local"
-    if scope not in {"repo", "local"}:
-        raise ValueError("scope must be auto, repo, or local")
-    if scope == "repo" and not (root / ".git").exists():
-        raise ValueError("repository scope requires a .git entry at the skill root")
-
-    path = root / (LOCAL_NAME if scope == "local" else REPO_NAME)
-    resolved = path.resolve(strict=False)
-    if resolved.parent != root:
-        raise ValueError("refusing to write outside the skill root")
-    if scope == "repo" and not path.is_file():
-        raise ValueError(f"repository memory does not exist: {path}")
-    return path
+    return skill_runtime.resolve_memory_path(root, scope, LOCAL_NAME, REPO_NAME)
 
 
 def _normalise_for_compare(value: str) -> str:
@@ -330,58 +281,22 @@ def _find_duplicate(existing: str, line: str) -> Optional[Tuple[int, int, str]]:
 def _refresh_date(path: Path, existing: str, duplicate: Tuple[int, int, str], date_text: str) -> None:
     start, end, _ = duplicate
     updated = existing[:start] + date_text + existing[end:]
-    temporary_name = ""
-    try:
-        with tempfile.NamedTemporaryFile(
-            "w",
-            encoding="utf-8",
-            newline="",
-            dir=str(path.parent),
-            prefix=f".{path.name}.",
-            delete=False,
-        ) as handle:
-            temporary_name = handle.name
-            handle.write(updated)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary_name, path)
-    finally:
-        if temporary_name:
-            try:
-                Path(temporary_name).unlink(missing_ok=True)
-            except OSError:
-                pass
+    skill_runtime.write_text_atomic(path, updated)
 
 
 def _read_existing(path: Path) -> str:
-    if not path.exists():
-        return ""
-    data = path.read_bytes()
-    if data.startswith(b"\xef\xbb\xbf"):
-        raise ValueError(f"refusing to append to a UTF-8 BOM file: {path}")
-    try:
-        return data.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise ValueError(f"memory file is not valid UTF-8: {path}") from exc
+    return skill_runtime.read_existing_utf8(
+        path,
+        "refusing to append to a UTF-8 BOM file",
+    )
 
 
 def _create_local(path: Path) -> None:
-    try:
-        with path.open("x", encoding="utf-8", newline="\n") as handle:
-            handle.write(LOCAL_HEADER)
-            handle.flush()
-            os.fsync(handle.fileno())
-    except FileExistsError:
-        return
+    skill_runtime.create_text_exclusive(path, LOCAL_HEADER)
 
 
 def _append_line(path: Path, existing: str, line: str) -> None:
-    with path.open("a", encoding="utf-8", newline="\n") as handle:
-        if existing and not existing.endswith("\n"):
-            handle.write("\n")
-        handle.write(line + "\n")
-        handle.flush()
-        os.fsync(handle.fileno())
+    skill_runtime.append_text(path, existing, line + "\n")
 
 
 def record(
@@ -438,14 +353,7 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
 
 
 def _configure_stdio() -> None:
-    for stream in (sys.stdout, sys.stderr):
-        reconfigure = getattr(stream, "reconfigure", None)
-        if reconfigure is None:
-            continue
-        try:
-            reconfigure(errors="backslashreplace")
-        except (OSError, ValueError):
-            pass
+    skill_runtime.configure_stdio()
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
